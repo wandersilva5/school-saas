@@ -1,5 +1,10 @@
 <?php
 
+// Inicia a sessão no topo do arquivo
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // Carrega as variáveis de ambiente
@@ -23,9 +28,16 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $institutionCheck = new \App\Middleware\InstitutionCheck();
 
 // Rotas que não precisam de verificação de instituição
-$publicRoutes = ['/login', '/register', '/forgot-password'];
+$publicRoutes = ['/', '/login', '/register', '/forgot-password'];
 
+// Verifica se a rota atual precisa de verificação
 if (!in_array($uri, $publicRoutes)) {
+    error_log("Verificando middleware para rota: " . $uri);
+    if (!isset($_SESSION['user'])) {
+        error_log("Usuário não está logado, redirecionando para login");
+        header('Location: /login');
+        exit;
+    }
     $institutionCheck->handle();
 }
 
@@ -33,6 +45,7 @@ if (!in_array($uri, $publicRoutes)) {
 $routes = [
     '' => ['controller' => 'HomeController', 'action' => 'index'],
     'login' => ['controller' => 'AuthController', 'action' => 'login'],
+    'logout' => ['controller' => 'AuthController', 'action' => 'logout'],
     'register' => ['controller' => 'AuthController', 'action' => 'register'],
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
     // Adicione mais rotas conforme necessário
