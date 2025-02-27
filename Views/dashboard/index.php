@@ -1,76 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?> - Sistema</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            min-height: 100vh;
-            background: #154A9A;
-            color: white;
-            width: 250px;
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,.08);
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,.05);
-        }
-        .card-stats {
-            transition: transform 0.3s;
-        }
-        .card-stats:hover {
-            transform: translateY(-5px);
-        }
-        .stat-icon {
-            font-size: 2rem;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
-</head>
-<body>
-    <?php require_once __DIR__ . '/../layouts/sidebar.php'; ?>
-
-    <div class="main-content">
-        <nav class="navbar navbar-expand-lg mb-4 rounded">
-            <div class="container-fluid">
-                <h1 class="h3 mb-0">Dashboard</h1>
-                <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <a class="btn btn-link dropdown-toggle text-dark text-decoration-none" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> <?= htmlspecialchars($user['name']) ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Perfil</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Sair</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
         <div class="container-fluid">
             <div class="row">
                 <div class="col-xl-3 col-md-6 mb-4">
@@ -146,8 +73,5 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

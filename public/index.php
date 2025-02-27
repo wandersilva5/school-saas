@@ -51,6 +51,7 @@ $routes = [
     'access-management' => ['controller' => 'AccessManagementController', 'action' => 'index'],
     'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
     'access-management/create-user' => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
+    'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
     // Adicione mais rotas conforme necessário
 ];
 

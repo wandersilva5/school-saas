@@ -4,100 +4,102 @@
 $userRoles = $_SESSION['user']['roles'] ?? [];
 error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
 ?>
-<nav id="sidebar" class="sidebar">
-    <div class="sidebar-content">
-        <div class="sidebar-brand">
-            <div class="brand-content">
-                <?php
-                // Busca os dados da instituição
-                $institutionId = $_SESSION['user']['institution_id'] ?? null;
-                $db = \App\Config\Database::getInstance()->getConnection();
-                $stmt = $db->prepare("SELECT name, logo_url FROM institutions WHERE id = ?");
-                $stmt->execute([$institutionId]);
-                $institution = $stmt->fetch(\PDO::FETCH_ASSOC);
-                ?>
-                
-                <div class="institution-logo">
-                    <?php if ($institution['logo_url']): ?>
-                        <img src="<?= htmlspecialchars($institution['logo_url']) ?>" alt="Logo" class="img-fluid">
-                    <?php else: ?>
-                        <i class="bi bi-building"></i>
-                    <?php endif; ?>
-                </div>
-                <div class="institution-name">
-                    <?= htmlspecialchars($institution['name'] ?? 'School SaaS') ?>
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white">
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-brand">
+                <div class="brand-content">
+                    <?php
+                    // Busca os dados da instituição
+                    $institutionId = $_SESSION['user']['institution_id'] ?? null;
+                    $db = \App\Config\Database::getInstance()->getConnection();
+                    $stmt = $db->prepare("SELECT name, logo_url FROM institutions WHERE id = ?");
+                    $stmt->execute([$institutionId]);
+                    $institution = $stmt->fetch(\PDO::FETCH_ASSOC);
+                    ?>
+                    
+                    <div class="institution-logo">
+                        <?php if ($institution['logo_url']): ?>
+                            <img src="<?= htmlspecialchars($institution['logo_url']) ?>" alt="Logo" class="img-fluid">
+                        <?php else: ?>
+                            <i class="bi bi-building"></i>
+                        <?php endif; ?>
+                    </div>
+                    <div class="institution-name">
+                        <?= htmlspecialchars($institution['name'] ?? 'School SaaS') ?>
+                    </div>
                 </div>
             </div>
+
+            <ul class="sidebar-nav">
+                <li class="sidebar-header">
+                    Principal
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/dashboard">
+                        <i class="bi bi-house-door"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'calendar' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/calendar">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Calendário</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-header">
+                    Acadêmico
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'courses' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/courses">
+                        <i class="bi bi-book"></i>
+                        <span>Cursos</span>
+                    </a>
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'classes' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/classes">
+                        <i class="bi bi-people"></i>
+                        <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'students' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/students">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Alunos</span>
+                    </a>
+                </li>
+
+                <?php if (in_array('TI', $userRoles)): ?>
+                <li class="sidebar-header">
+                    Administração
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'users' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/users">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Usuários</span>
+                    </a>
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'settings' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/settings">
+                        <i class="bi bi-gear"></i>
+                        <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="sidebar-header">
+                    Configurações do Sistema
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'access-management' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/access-management">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Gerenciar Acessos</span>
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
         </div>
-
-        <ul class="sidebar-nav">
-            <li class="sidebar-header">
-                Principal
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/dashboard">
-                    <i class="bi bi-house-door"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'calendar' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/calendar">
-                    <i class="bi bi-calendar3"></i>
-                    <span>Calendário</span>
-                </a>
-            </li>
-
-            <li class="sidebar-header">
-                Acadêmico
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'courses' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/courses">
-                    <i class="bi bi-book"></i>
-                    <span>Cursos</span>
-                </a>
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'classes' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/classes">
-                    <i class="bi bi-people"></i>
-                    <span>Turmas</span>
-                </a>
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'students' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/students">
-                    <i class="bi bi-person-badge"></i>
-                    <span>Alunos</span>
-                </a>
-            </li>
-
-            <?php if (in_array('TI', $userRoles)): ?>
-            <li class="sidebar-header">
-                Administração
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'users' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/users">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Usuários</span>
-                </a>
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'settings' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/settings">
-                    <i class="bi bi-gear"></i>
-                    <span>Configurações</span>
-                </a>
-            </li>
-            <li class="sidebar-header">
-                Configurações do Sistema
-            </li>
-            <li class="sidebar-item <?= $currentPage === 'access-management' ? 'active' : '' ?>">
-                <a class="sidebar-link" href="/access-management">
-                    <i class="bi bi-shield-lock"></i>
-                    <span>Gerenciar Acessos</span>
-                </a>
-            </li>
-            <?php endif; ?>
-        </ul>
-    </div>
-</nav>
+    </nav>
+</div>
 
 <style>
 .sidebar {

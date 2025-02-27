@@ -37,7 +37,25 @@ class BaseController {
 
     protected function render($view, $data = [])
     {
+        // Extrai os dados para variáveis
         extract($data);
+        
+        // Inicia o buffer de saída
+        ob_start();
+        
+        // Inclui a view específica
         require_once __DIR__ . '/../../Views/' . $view . '.php';
+        
+        // Captura o conteúdo da view
+        $content = ob_get_clean();
+        
+        // Verifica se é uma página pública (login/register) ou protegida
+        if (!isset($_SESSION['user']) && in_array($view, ['auth/login', 'auth/register'])) {
+            // Renderiza diretamente sem o layout principal
+            echo $content;
+        } else {
+            // Renderiza com o layout principal
+            require_once __DIR__ . '/../../Views/layouts/main.php';
+        }
     }
 }

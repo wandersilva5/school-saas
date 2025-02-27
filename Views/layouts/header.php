@@ -1,10 +1,5 @@
-<nav class="navbar navbar-expand-lg mb-4 rounded">
+<nav class="navbar navbar-expand-lg rounded">
     <div class="container-fluid">
-        <!-- Botão para toggle do sidebar -->
-        <button class="btn" id="sidebar-toggle">
-            <i class="bi bi-list"></i>
-        </button>
-
         <!-- Brand/logo -->
         <a class="navbar-brand mx-3" href="/dashboard">
             <?= $_SESSION['institution_name'] ?? 'Portal Escola' ?>
