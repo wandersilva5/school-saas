@@ -31,7 +31,7 @@
             <hr>
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <thead>
+                    <thead class=" table-primary">
                         <tr>
                             <th>Nome</th>
                             <th>Email</th>
