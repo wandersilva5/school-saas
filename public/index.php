@@ -48,6 +48,9 @@ $routes = [
     'logout' => ['controller' => 'AuthController', 'action' => 'logout'],
     'register' => ['controller' => 'AuthController', 'action' => 'register'],
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
+    'access-management' => ['controller' => 'AccessManagementController', 'action' => 'index'],
+    'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
+    'access-management/create-user' => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
     // Adicione mais rotas conforme necessário
 ];
 

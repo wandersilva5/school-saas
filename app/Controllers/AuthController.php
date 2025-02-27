@@ -24,44 +24,39 @@ class AuthController extends BaseController {
             error_log('Dados POST: ' . print_r($_POST, true));
 
             try {
-                $email = $_POST['email'] ?? '';
+                $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 $password = $_POST['password'] ?? '';
                 
                 error_log("Tentando login com email: $email");
 
-                // Validação básica
-                if (empty($email) || empty($password)) {
-                    error_log("Campos vazios detectados");
-                    return $this->render('auth/login', [
-                        'error' => 'Por favor, preencha todos os campos'
-                    ]);
-                }
-
-                // Query simples para debug
-                $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
+                // Busca o usuário e seus roles
+                $stmt = $this->db->prepare("
+                    SELECT u.*, GROUP_CONCAT(r.name) as roles
+                    FROM users u
+                    LEFT JOIN user_roles ur ON u.id = ur.user_id
+                    LEFT JOIN roles r ON ur.role_id = r.id
+                    WHERE u.email = ?
+                    GROUP BY u.id
+                ");
+                
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-                error_log("Resultado da busca do usuário: " . ($user ? 'Encontrado' : 'Não encontrado'));
+                error_log("Dados do usuário: " . print_r($user, true));
 
-                if ($user) {
-                    error_log("Verificando senha para usuário: " . $user['email']);
-                    if (password_verify($password, $user['password'])) {
-                        error_log("Senha correta - Configurando sessão");
-                        
-                        $_SESSION['user'] = [
-                            'id' => $user['id'],
-                            'name' => $user['name'],
-                            'email' => $user['email'],
-                            'institution_id' => $user['institution_id']
-                        ];
+                if ($user && password_verify($password, $user['password'])) {
+                    $_SESSION['user'] = [
+                        'id' => $user['id'],
+                        'name' => $user['name'],
+                        'email' => $user['email'],
+                        'institution_id' => $user['institution_id'],
+                        'roles' => $user['roles'] ? explode(',', $user['roles']) : []
+                    ];
 
-                        error_log("Sessão configurada: " . print_r($_SESSION, true));
-                        error_log("Redirecionando para dashboard");
-
-                        header('Location: /dashboard');
-                        exit;
-                    }
+                    error_log("Sessão configurada: " . print_r($_SESSION['user'], true));
+                    error_log("Redirecionando para dashboard");
+                    header('Location: /dashboard');
+                    exit;
                 }
 
                 error_log("Login falhou - retornando erro");

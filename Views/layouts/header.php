@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg mb-4 rounded">
     <div class="container-fluid">
         <!-- Botão para toggle do sidebar -->
         <button class="btn" id="sidebar-toggle">
@@ -7,7 +7,7 @@
 
         <!-- Brand/logo -->
         <a class="navbar-brand mx-3" href="/dashboard">
-            <?= $_SESSION['institution_name'] ?? 'Portal Escolar' ?>
+            <?= $_SESSION['institution_name'] ?? 'Portal Escola' ?>
         </a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -30,7 +30,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle"></i>
-                        <?= $_SESSION['user_name'] ?? 'Usuário' ?>
+                        <?= $_SESSION['user']['name'] ?? 'Usuário' ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Perfil</a></li>

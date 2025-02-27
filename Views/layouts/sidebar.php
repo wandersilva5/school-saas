@@ -1,9 +1,33 @@
 <?php use App\Helpers\AuthHelper; ?>
+<?php 
+// No início do arquivo, após o uso do AuthHelper
+$userRoles = $_SESSION['user']['roles'] ?? [];
+error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
+?>
 <nav id="sidebar" class="sidebar">
     <div class="sidebar-content">
         <div class="sidebar-brand">
-            <i class="bi bi-building"></i>
-            <span class="align-middle ms-2">School SaaS</span>
+            <div class="brand-content">
+                <?php
+                // Busca os dados da instituição
+                $institutionId = $_SESSION['user']['institution_id'] ?? null;
+                $db = \App\Config\Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT name, logo_url FROM institutions WHERE id = ?");
+                $stmt->execute([$institutionId]);
+                $institution = $stmt->fetch(\PDO::FETCH_ASSOC);
+                ?>
+                
+                <div class="institution-logo">
+                    <?php if ($institution['logo_url']): ?>
+                        <img src="<?= htmlspecialchars($institution['logo_url']) ?>" alt="Logo" class="img-fluid">
+                    <?php else: ?>
+                        <i class="bi bi-building"></i>
+                    <?php endif; ?>
+                </div>
+                <div class="institution-name">
+                    <?= htmlspecialchars($institution['name'] ?? 'School SaaS') ?>
+                </div>
+            </div>
         </div>
 
         <ul class="sidebar-nav">
@@ -45,7 +69,7 @@
                 </a>
             </li>
 
-            <?php if (in_array('TI', $_SESSION['user']['roles'] ?? [])): ?>
+            <?php if (in_array('TI', $userRoles)): ?>
             <li class="sidebar-header">
                 Administração
             </li>
@@ -59,6 +83,15 @@
                 <a class="sidebar-link" href="/settings">
                     <i class="bi bi-gear"></i>
                     <span>Configurações</span>
+                </a>
+            </li>
+            <li class="sidebar-header">
+                Configurações do Sistema
+            </li>
+            <li class="sidebar-item <?= $currentPage === 'access-management' ? 'active' : '' ?>">
+                <a class="sidebar-link" href="/access-management">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Gerenciar Acessos</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -154,6 +187,46 @@
     .sidebar.toggled {
         margin-left: 0;
     }
+}
+
+.brand-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.institution-logo {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    padding: 1rem;
+}
+
+.institution-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.institution-logo i {
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.institution-name {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 0.5rem;
+    word-wrap: break-word;
 }
 </style>
 
