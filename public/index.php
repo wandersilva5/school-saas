@@ -46,7 +46,7 @@ $routes = [
     '' => ['controller' => 'HomeController', 'action' => 'index'],
     'login' => ['controller' => 'AuthController', 'action' => 'login'],
     'logout' => ['controller' => 'AuthController', 'action' => 'logout'],
-    'register' => ['controller' => 'AuthController', 'action' => 'register'],
+    // 'register' => ['controller' => 'AuthController', 'action' => 'register'],
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
     'access-management' => ['controller' => 'AccessManagementController', 'action' => 'index'],
     'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
