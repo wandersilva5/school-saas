@@ -4,7 +4,7 @@
 $userRoles = $_SESSION['user']['roles'] ?? [];
 error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
 ?>
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white">
+<div class="d-flex flex-column flex-shrink-0 text-white">
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-content">
             <div class="sidebar-brand">
