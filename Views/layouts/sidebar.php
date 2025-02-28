@@ -89,8 +89,8 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         </a>
                     </li>
 
-                <?php endif; ?>
-                <?php if (in_array('Master', $userRoles)): ?>
+                <?php //endif; ?>
+                <?php //if (in_array('Master', $userRoles)): ?>
                     <li class="sidebar-header">
                         Configurações do Sistema
                     </li>
@@ -98,6 +98,12 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         <a class="sidebar-link" href="/access-management">
                             <i class="bi bi-shield-lock"></i>
                             <span>Gerenciar Acessos</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item <?= $currentPage === 'institution' ? 'active' : '' ?>">
+                        <a class="sidebar-link" href="/institution">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Isntitnuições</span>
                         </a>
                     </li>
                 <?php endif; ?>

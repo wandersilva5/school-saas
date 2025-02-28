@@ -39,6 +39,17 @@ class Institution {
         }
     }
 
+    public function getInstitutions() {
+        $sql = "SELECT * FROM institutions";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->fetch();
+        } catch (\PDOException $e) {
+            throw new \Exception("Erro ao buscar instituição: " . $e->getMessage());
+        }
+    }
+
     public function update(int $id, array $data) {
         $sql = "UPDATE institutions SET 
                 name = :name,

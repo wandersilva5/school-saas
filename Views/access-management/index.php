@@ -1,7 +1,3 @@
-<!-- Content Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Gerenciar Acessos</h1>
-</div>
 <!-- Content -->
 <div class="row">
     <?php if (isset($_GET['success'])): ?>
@@ -19,12 +15,17 @@
     <?php endif; ?>
 
     <div class="card">
+        <div class="card-heard">
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <h1 class="h3 mb-0">Gerenciar Acessos</h1>
+            </div>
+        </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-2 ms-auto">
                     <!-- Botão para abrir o modal -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
-                        <i class="fas fa-user-plus"></i> Gestão de Acesso
+                        <i class="fas fa-user-plus"></i> Criar Novo Acesso
                     </button>
                 </div>
             </div>
@@ -123,10 +124,7 @@
                     <!-- Campo Perfil -->
                     <div class="mb-3">
                         <label for="role_id" class="form-label">Perfil</label>
-                        <select class="form-select"
-                            id="role_id"
-                            name="role_id"
-                            required>
+                        <select class="form-select" id="role_id" name="role_id" required>
                             <option value="">Selecione um perfil...</option>
                             <?php if (!empty($roles)): ?>
                                 <?php foreach ($roles as $role): ?>
@@ -158,24 +156,23 @@
         <div class="modal-content">
             <form action="/access-management/update-roles" method="POST">
                 <div class="modal-header">
-                    <h5 class="modal-title">Editar Perfis - <span id="userName"></span></h5>
+                    <h5 class="modal-title">Alterar Perfis - <span id="userName"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="user_id" id="userId">
-                    <?php foreach ($roles as $role): ?>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox"
-                                name="roles[]" value="<?= $role['id'] ?>"
-                                id="role<?= $role['id'] ?>">
-                            <label class="form-check-label" for="role<?= $role['id'] ?>">
-                                <?= htmlspecialchars($role['name']) ?>
-                                <small class="text-muted d-block">
-                                    <?= htmlspecialchars($role['description']) ?>
-                                </small>
-                            </label>
-                        </div>
-                    <?php endforeach; ?>
+                    <label for="role_id" class="form-label">Perfil</label>
+                    <select class="form-select" id="role_id" name="role_id" required>
+                        <option value="">Selecione um perfil...</option>
+                        <?php if (!empty($roles)): ?>
+                            <?php foreach ($roles as $role): ?>
+                                <option value="<?= htmlspecialchars($role['id']) ?>"
+                                    data-description="<?= htmlspecialchars($role['description']) ?>">
+                                    <?= htmlspecialchars($role['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -186,7 +183,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     function editRoles(userId, userName, currentRoles) {
         document.getElementById('userId').value = userId;
@@ -207,6 +204,3 @@
         new bootstrap.Modal(document.getElementById('editRolesModal')).show();
     }
 </script>
-</body>
-
-</html>
