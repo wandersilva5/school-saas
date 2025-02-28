@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Config\Database;
+use PDO;
 
 class Institution {
     private $db;
@@ -41,10 +42,12 @@ class Institution {
 
     public function getInstitutions() {
         $sql = "SELECT * FROM institutions";
-        
+
         try {
             $stmt = $this->db->prepare($sql);
-            return $stmt->fetch();
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
         } catch (\PDOException $e) {
             throw new \Exception("Erro ao buscar instituição: " . $e->getMessage());
         }
