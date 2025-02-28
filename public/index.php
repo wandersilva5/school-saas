@@ -12,7 +12,8 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 // Função para limpar a URL
-function cleanUrl($url) {
+function cleanUrl($url)
+{
     $url = trim($url, '/');
     $url = filter_var($url, FILTER_SANITIZE_URL);
     return $url;
@@ -53,6 +54,7 @@ $routes = [
     'access-management/create-user' => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
     'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
     'institution' => ['controller' => 'InstitutionController', 'action' => 'index'],
+    'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
     // Adicione mais rotas conforme necessário
 ];
 
@@ -64,7 +66,7 @@ $routeKey = $urlParts[0];
 if (array_key_exists($routeKey, $routes)) {
     $controllerName = "\\App\\Controllers\\" . $routes[$routeKey]['controller'];
     $actionName = $routes[$routeKey]['action'];
-    
+
     if (class_exists($controllerName)) {
         $controller = new $controllerName();
         if (method_exists($controller, $actionName)) {

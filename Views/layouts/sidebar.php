@@ -102,7 +102,7 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                     </li>
                     <li class="sidebar-item <?= $currentPage === 'institution' ? 'active' : '' ?>">
                         <a class="sidebar-link" href="/institution">
-                            <i class="bi bi-shield-lock"></i>
+                            <i class="bi bi-building"></i>
                             <span>Isntitnuições</span>
                         </a>
                     </li>
@@ -114,134 +114,7 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
 </div>
 
 <style>
-    .sidebar {
-        min-height: 100vh;
-        background: #154A9A;
-        color: rgba(255, 255, 255, 0.9);
-        width: 260px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        transition: all 0.3s;
-        z-index: 100;
-    }
-
-    .sidebar-content {
-        padding: 1.5rem;
-    }
-
-    .sidebar-brand {
-        padding: 1rem 0;
-        font-size: 1.15rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-    }
-
-    .sidebar-nav {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .sidebar-header {
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 0.75rem;
-        padding: 1.5rem 0 0.375rem;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-    .sidebar-item {
-        position: relative;
-    }
-
-    .sidebar-link {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        color: rgba(255, 255, 255, 0.7);
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: all 0.2s;
-        margin: 0.1rem 0;
-    }
-
-    .sidebar-link i {
-        margin-right: 0.75rem;
-        font-size: 1.1rem;
-        color: rgba(255, 255, 255, 0.5);
-        transition: all 0.2s;
-    }
-
-    .sidebar-link:hover {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar-link:hover i {
-        color: #fff;
-    }
-
-    .sidebar-item.active .sidebar-link {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.15);
-        font-weight: 500;
-    }
-
-    .sidebar-item.active .sidebar-link i {
-        color: #fff;
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            margin-left: -260px;
-        }
-
-        .sidebar.toggled {
-            margin-left: 0;
-        }
-    }
-
-    .brand-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        padding: 0.1rem 0;
-    }
-
-    .institution-logo {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        padding: 1rem;
-    }
-
-    .institution-logo img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-
-    .institution-logo i {
-        font-size: 2.5rem;
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .institution-name {
-        color: white;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: center;
-        padding: 0 0.5rem;
-        word-wrap: break-word;
-    }
+    
 </style>
 
 <script>

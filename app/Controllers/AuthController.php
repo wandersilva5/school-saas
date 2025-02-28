@@ -55,7 +55,12 @@ class AuthController extends BaseController {
 
                     error_log("Sessão configurada: " . print_r($_SESSION['user'], true));
                     error_log("Redirecionando para dashboard");
-                    header('Location: /dashboard');
+
+                    if (in_array('Master', $_SESSION['user']['roles'])) {
+                        header('Location: /dashboard');
+                    } else {
+                        header('Location: /dashboard-institution');
+                    }
                     exit;
                 }
 

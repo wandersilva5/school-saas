@@ -5,7 +5,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-                                    <i class="bi bi-people"></i>
+                                    <i class="bi bi-people" style="font-size: 3rem; color: cornflowerblue; padding: 10px;"></i>
                                 </div>
                                 <div class="ms-3">
                                     <h6 class="mb-1">Total de Usuários</h6>
@@ -20,7 +20,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stat-icon bg-success bg-opacity-10 text-success">
-                                    <i class="bi bi-book"></i>
+                                    <i class="bi bi-book" style="font-size: 3rem; color: cornflowergreen; padding: 10px;"></i>
                                 </div>
                                 <div class="ms-3">
                                     <h6 class="mb-1">Cursos</h6>
@@ -35,7 +35,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-                                    <i class="bi bi-calendar3"></i>
+                                    <i class="bi bi-calendar3" style="font-size: 3rem; color: cornflowerorange; padding: 10px;"></i>
                                 </div>
                                 <div class="ms-3">
                                     <h6 class="mb-1">Turmas Ativas</h6>
@@ -50,7 +50,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stat-icon bg-info bg-opacity-10 text-info">
-                                    <i class="bi bi-person-plus"></i>
+                                    <i class="bi bi-person-plus" style="font-size: 3rem; color: cornflowercyan; padding: 10px;"></i>
                                 </div>
                                 <div class="ms-3">
                                     <h6 class="mb-1">Novos Alunos</h6>
