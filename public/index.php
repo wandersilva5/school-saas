@@ -48,13 +48,25 @@ $routes = [
     'login' => ['controller' => 'AuthController', 'action' => 'login'],
     'logout' => ['controller' => 'AuthController', 'action' => 'logout'],
     // 'register' => ['controller' => 'AuthController', 'action' => 'register'],
+
+    // Rotas para o painel de controle
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
+    'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
+    
+    // Rotas para gerenciamento de acesso
     'access-management' => ['controller' => 'AccessManagementController', 'action' => 'index'],
     'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
     'access-management/create-user' => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
+    
+    // Rotas para calendário
     'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
+
+    // Rotas para instituições
     'institution' => ['controller' => 'InstitutionController', 'action' => 'index'],
-    'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
+    'institution/store' => ['controller' => 'InstitutionController', 'action' => 'store'],
+    'institution/update' => ['controller' => 'InstitutionController', 'action' => 'update'],
+    
+    
     // Adicione mais rotas conforme necessário
 ];
 

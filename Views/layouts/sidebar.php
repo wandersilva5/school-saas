@@ -37,12 +37,22 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                 <li class="sidebar-header">
                     Principal
                 </li>
-                <li class="sidebar-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/dashboard">
-                        <i class="bi bi-house-door"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
+                <?php if (in_array('Master', $userRoles)): ?>
+                    <li class="sidebar-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
+                        <a class="sidebar-link" href="/dashboard">
+                            <i class="bi bi-house-door"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
+                <?php if (!in_array('Master', $userRoles)): ?>
+                    <li class="sidebar-item <?= $currentPage === 'dashboard-institution' ? 'active' : '' ?>">
+                        <a class="sidebar-link" href="/dashboard-institution">
+                            <i class="bi bi-house-door"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
                 <li class="sidebar-item <?= $currentPage === 'calendar' ? 'active' : '' ?>">
                     <a class="sidebar-link" href="/calendar">
                         <i class="bi bi-calendar3"></i>
@@ -89,8 +99,10 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         </a>
                     </li>
 
-                <?php //endif; ?>
-                <?php //if (in_array('Master', $userRoles)): ?>
+                    <?php //endif; 
+                    ?>
+                    <?php //if (in_array('Master', $userRoles)): 
+                    ?>
                     <li class="sidebar-header">
                         Configurações do Sistema
                     </li>
@@ -114,7 +126,7 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
 </div>
 
 <style>
-    
+
 </style>
 
 <script>

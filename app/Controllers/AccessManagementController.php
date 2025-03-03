@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers;  
+
+use App\Controllers\BaseController;
 
 use \Exception;
 use \PDO;
@@ -209,6 +211,44 @@ class AccessManagementController extends BaseController
         } catch (Exception $e) {
             error_log("Erro ao atualizar role: " . $e->getMessage());
             return ['success' => false, 'message' => 'Erro ao atualizar perfil'];
+        }
+    }
+
+    public function createUserTI()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            exit;
+        }
+
+        try {
+            $name = $_POST['name'];
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $password = $_POST['password'];
+            $roleId = 'TI';
+            $institutionId = $_SESSION['institution_id'];
+
+            $this->db->beginTransaction();
+
+            // Insere o usuário
+            $stmt = $this->db->prepare(
+                "INSERT INTO users (name, email, password, institution_id, created_at) 
+                 VALUES (?, ?, ?, ?, NOW())"
+            );
+            
+            $stmt->execute([
+                $name,
+                $email,
+                password_hash($password, PASSWORD_DEFAULT),
+                $institutionId
+            ]);
+
+            $this->db->commit();
+            header('Location: /access-management?success=1');
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            header('Location: /access-management?error=' . urlencode($e->getMessage()));
         }
     }
 } 

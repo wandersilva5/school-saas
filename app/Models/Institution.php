@@ -85,4 +85,21 @@ class Institution {
             throw new \Exception("Erro ao deletar instituição: " . $e->getMessage());
         }
     }
+
+      
+    public function getInstitutionsById(int $id): ?array
+    {
+        try {
+            $query = "SELECT * FROM institutions WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ?: null;
+        } catch (\PDOException $e) {
+            error_log("Error fetching role by ID: " . $e->getMessage());
+            return null;
+        }
+    }
 }
