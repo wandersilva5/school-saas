@@ -17,24 +17,55 @@ class InstitutionController extends BaseController
         $this->roleModel = new Institution();
     }
 
-    public function index()
+        public function index()
     {
-        error_log('Store method called');
-        error_log('POST data: ' . print_r($_POST, true));
-        error_log('FILES data: ' . print_r($_FILES, true));
-
         // Verifica se o usuário tem permissão
         if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
             header('Location: /dashboard');
             exit;
         }
-
-        $institutions = $this->roleModel->getInstitutions();
-        return $this->render('institution/index', [
-            'institutions' => $institutions,
-            'currentPage' => 'institution',
-            'pageTitle' => 'Gerenciar Instituições'
-        ]);
+    
+        // Configuração da paginação
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 5; // itens por página
+        $offset = ($page - 1) * $limit;
+    
+        try {
+            // Conta total de registros
+            $stmt = $this->db->prepare("
+                SELECT COUNT(*) as total 
+                FROM institutions 
+                WHERE deleted_at IS NULL
+            ");
+            $stmt->execute();
+            $totalInstitutions = $stmt->fetch(\PDO::FETCH_ASSOC)['total'];
+            $totalPages = ceil($totalInstitutions / $limit);
+    
+            // Busca instituições com paginação
+            $stmt = $this->db->prepare("
+                SELECT *
+                FROM institutions 
+                WHERE deleted_at IS NULL
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            ");
+            
+            // Corrige a ordem dos parâmetros para corresponder à query
+            $stmt->execute([$limit, $offset]);
+            $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    
+            return $this->render('institution/index', [
+                'institutions' => $institutions,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'pageTitle' => 'Gerenciar Instituições'
+            ]);
+    
+        } catch (\PDOException $e) {
+            error_log("Erro na paginação de instituições: " . $e->getMessage());
+            header('Location: /institution?error=' . urlencode('Erro ao carregar as instituições'));
+            exit;
+        }
     }
 
     public function store()

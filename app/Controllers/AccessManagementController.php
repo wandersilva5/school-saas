@@ -18,7 +18,7 @@ class AccessManagementController extends BaseController
 
     public function index()
     {
-        // Verifica se o usuário tem permissão
+        // Verifica permissão
         if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
             header('Location: /dashboard');
             exit;
@@ -26,40 +26,72 @@ class AccessManagementController extends BaseController
 
         $institutionId = $_SESSION['user']['institution_id'];
 
-        // Busca usuários da mesma instituição
-        $stmt = $this->db->prepare("
-            SELECT u.id, u.name, u.email, u.created_at, i.name as institution_name, GROUP_CONCAT(r.name) as roles
-            FROM users u
-            LEFT JOIN user_roles ur ON u.id = ur.user_id
-            LEFT JOIN roles r ON ur.role_id = r.id
-            LEFT JOIN institutions i ON u.institution_id = i.id
-            WHERE u.institution_id = ?
-            GROUP BY u.id
-            ORDER BY u.name Desc
-        ");
-        $stmt->execute([$institutionId]);
-        $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        // Configuração da paginação
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10; // itens por página
+        $offset = ($page - 1) * $limit;
 
-        // Busca todas as instituições ativas
-        $stmtInstitutions = $this->db->prepare("
-            SELECT id, name 
-            FROM institutions 
-            WHERE active = 1  /* Or use your existing status column */
-            ORDER BY name
-        ");
+        try {
+            // Conta total de registros
+            $stmt = $this->db->prepare("
+                SELECT COUNT(DISTINCT u.id) as total
+                FROM users u
+                LEFT JOIN institutions i ON u.institution_id = i.id
+                WHERE u.institution_id = ?
+            ");
+            $stmt->execute([$institutionId]);
+            $totalUsers = $stmt->fetch(\PDO::FETCH_ASSOC)['total'];
+            $totalPages = ceil($totalUsers / $limit);
 
+            // Busca usuários da mesma instituição com paginação
+            $stmt = $this->db->prepare("
+                SELECT 
+                    u.id, 
+                    u.name, 
+                    u.email, 
+                    u.created_at, 
+                    i.name as institution_name, 
+                    GROUP_CONCAT(r.name) as roles
+                FROM users u
+                LEFT JOIN institutions i ON u.institution_id = i.id
+                LEFT JOIN user_roles ur ON u.id = ur.user_id
+                LEFT JOIN roles r ON ur.role_id = r.id
+                WHERE u.institution_id = ?
+                GROUP BY u.id, u.name, u.email, u.created_at, i.name
+                ORDER BY u.created_at DESC
+                LIMIT ? OFFSET ?
+            ");
 
-        $stmtInstitutions->execute();
-        $institutions = $stmtInstitutions->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt->execute([$institutionId, $limit, $offset]);
+            $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $roles = $this->getRoles();
-        return $this->render('access-management/index', [
-            'users' => $users,
-            'roles' => $roles,
-            'institutions' => $institutions,
-            'currentPage' => 'access-management',
-            'pageTitle' => 'Gerenciar Acessos'
-        ]);
+            // Busca todas as instituições ativas
+            $stmtInstitutions = $this->db->prepare("
+                SELECT id, name 
+                FROM institutions 
+                WHERE deleted_at IS NULL
+                ORDER BY name
+            ");
+            $stmtInstitutions->execute();
+            $institutions = $stmtInstitutions->fetchAll(\PDO::FETCH_ASSOC);
+
+            $roles = $this->getRoles();
+
+            return $this->render('access-management/index', [
+                'users' => $users,
+                'roles' => $roles,
+                'institutions' => $institutions,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'pageTitle' => 'Gerenciar Acessos'
+            ]);
+        } catch (\PDOException $e) {
+            // Log do erro
+            error_log("Erro na paginação: " . $e->getMessage());
+            // Redireciona com mensagem de erro
+            header('Location: /access-management?error=' . urlencode('Erro ao carregar os usuários'));
+            exit;
+        }
     }
 
     public function updateUserRoles()
@@ -115,12 +147,13 @@ class AccessManagementController extends BaseController
             exit;
         }
 
+        $transactionStarted = false;
+
         try {
             // Validação dos campos
             $name = trim($_POST['name'] ?? '');
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $password = trim($_POST['password'] ?? '');
-            $roleIds = $_POST['roles'] ?? [];
+            $roleId = $_POST['role_id'] ?? null;
             $institutionId = $_POST['institution_id'] ?? $_SESSION['user']['institution_id'];
 
             // Validações
@@ -132,11 +165,7 @@ class AccessManagementController extends BaseController
                 throw new \Exception('Email inválido');
             }
 
-            if (empty($password) || strlen($password) < 6) {
-                throw new \Exception('A senha deve ter pelo menos 6 caracteres');
-            }
-
-            if (empty($roleIds)) {
+            if (empty($roleId)) {
                 throw new \Exception('Selecione pelo menos um perfil');
             }
 
@@ -147,14 +176,12 @@ class AccessManagementController extends BaseController
                 throw new \Exception('Este email já está em uso');
             }
 
-            // Verifica se a instituição existe
-            $stmt = $this->db->prepare("SELECT id FROM institutions WHERE id = ? AND deleted_at IS NULL");
-            $stmt->execute([$institutionId]);
-            if (!$stmt->fetch()) {
-                throw new \Exception('Instituição inválida');
-            }
+            // Gera uma senha aleatória
+            $password = bin2hex(random_bytes(8));
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             $this->db->beginTransaction();
+            $transactionStarted = true;
 
             // Insere o usuário
             $stmt = $this->db->prepare(
@@ -165,30 +192,30 @@ class AccessManagementController extends BaseController
             $stmt->execute([
                 $name,
                 $email,
-                password_hash($password, PASSWORD_DEFAULT),
+                $hashedPassword,
                 $institutionId
             ]);
 
             $userId = $this->db->lastInsertId();
 
-            // Associa os roles selecionados
-            if (!empty($roleIds)) {
-                $stmt = $this->db->prepare(
-                    "INSERT INTO user_roles (user_id, role_id) 
-                 SELECT ?, id FROM roles 
-                 WHERE id IN (" . implode(',', array_fill(0, count($roleIds), '?')) . ")
-                 AND institution_id = ?"
-                );
-
-                $params = array_merge([$userId], $roleIds, [$institutionId]);
-                $stmt->execute($params);
-            }
+            // Associa o role ao usuário
+            $stmt = $this->db->prepare(
+                "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)"
+            );
+            $stmt->execute([$userId, $roleId]);
 
             $this->db->commit();
+
+            // TODO: Enviar email com a senha para o usuário
+
             header('Location: /access-management?success=1');
+            exit;
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            if ($transactionStarted) {
+                $this->db->rollBack();
+            }
             header('Location: /access-management?error=' . urlencode($e->getMessage()));
+            exit;
         }
     }
 

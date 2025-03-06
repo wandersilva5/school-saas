@@ -36,7 +36,8 @@
                         <tr>
                             <th>Nome</th>
                             <th>Email</th>
-                            <th>Perfis</th>
+                            <th>Email</th>
+                            <th>Instituição</th>
                             <th>Data de Criação</th>
                             <th>Ações</th>
                         </tr>
@@ -46,6 +47,7 @@
                             <tr>
                                 <td><?= htmlspecialchars($user['name']) ?></td>
                                 <td><?= htmlspecialchars($user['email']) ?></td>
+                                <td><?= htmlspecialchars($user['institution_name']) ?></td>
                                 <td>
                                     <?php
                                     $rolesList = explode(',', $user['roles'] ?? '');
@@ -74,17 +76,36 @@
             <!-- Paginação -->
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Anterior</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Próximo</a>
-                    </li>
+                    <?php if ($totalPages > 1): ?>
+                        <!-- Botão Anterior -->
+                        <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                                href="<?= ($currentPage <= 1) ? '#' : '?page=' . ($currentPage - 1) ?>"
+                                tabindex="-1">
+                                Anterior
+                            </a>
+                        </li>
+
+                        <!-- Números das Páginas -->
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= ($currentPage == $i) ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=<?= $i ?>">
+                                    <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <!-- Botão Próximo -->
+                        <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                                href="<?= ($currentPage >= $totalPages) ? '#' : '?page=' . ($currentPage + 1) ?>">
+                                Próximo
+                            </a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </nav>
+            <!-- end Paginação -->
         </div>
     </div>
 
@@ -221,5 +242,18 @@
 
         new bootstrap.Modal(document.getElementById('editRolesModal')).show();
     }
+
+    // Função para preservar parâmetros na paginação
+    document.querySelectorAll('.pagination .page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.getAttribute('href') !== '#') {
+                e.preventDefault();
+                const currentUrl = new URL(window.location.href);
+                const newPage = new URLSearchParams(this.getAttribute('href')).get('page');
+                currentUrl.searchParams.set('page', newPage);
+                window.location.href = currentUrl.toString();
+            }
+        });
+    });
 </script>
 <?php endpush() ?>
