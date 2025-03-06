@@ -44,13 +44,16 @@
                     <tbody>
                         <?php foreach ($institutions as $institution): ?>
                             <tr>
-                                <?php
-                                $imageUrl = empty($institution['logo_url']) ?
-                                    base_url('public/images/no-image.png') :
-                                    base_url($institution['logo_url']);
-                                error_log('Image URL: ' . $imageUrl);
-                                ?>
-                                <td><img src="<?= empty($institution['logo_url']) ? "" : base_url('public' . ($institution['logo_url'])) ?>" alt="logo" width="80" class="img-thumbnail"></td>
+                                <td>
+                                    <?php if (!empty($institution['logo_url'])): ?>
+                                        <img src="<?= base_url($institution['logo_url']) ?>" alt="logo" width="80" class="img-thumbnail">
+                                    <?php else: ?>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" class="bi bi-building img-thumbnail" viewBox="0 0 16 16">
+                                            <path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z" />
+                                            <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z" />
+                                        </svg>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars($institution['name']) ?></td>
                                 <td><?= htmlspecialchars($institution['domain']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($institution['created_at'])) ?></td>
@@ -136,7 +139,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- <form id="uploadForm" method="POST" action="institution/store" enctype="multipart/form-data"> -->
                 <form id="uploadForm" method="POST" action="/institution/store" enctype="multipart/form-data">
                     <!-- Campo Nome -->
                     <div class="mb-3">
@@ -404,6 +406,33 @@
                 editPreviewContainer.style.display = 'block';
                 editImagePreview.src = logo;
             });
+        });
+
+        // Add this inside the DOMContentLoaded event listener
+        const nameInput = document.getElementById('name');
+        const domainInput = document.getElementById('domain');
+        const editNameInput = document.getElementById('editName');
+        const editDomainInput = document.getElementById('editDomain');
+
+        function formatDomain(text) {
+            return text
+                .toLowerCase()
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                .replace(/[^a-z0-9-]/g, '-') // Substitui caracteres especiais por hífen
+                .replace(/-+/g, '-') // Remove hífens duplicados
+                .replace(/^-|-$/g, ''); // Remove hífens do início e fim
+        }
+
+        // Para o formulário de criação
+        nameInput.addEventListener('input', function() {
+            domainInput.value = formatDomain(this.value);
+        });
+
+        // Para o formulário de edição
+        editNameInput.addEventListener('input', function() {
+            editDomainInput.value = formatDomain(this.value);
         });
     });
 </script>

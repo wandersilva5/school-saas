@@ -120,7 +120,7 @@ class InstitutionController extends BaseController
     {
         // Lógica Upload da imagem aqui
         if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = 'public/uploads/institutions/';
+            $uploadDir = 'uploads/institutions/';
 
             // Crie um diretório se ele não existir
             if (!is_dir($uploadDir)) {
