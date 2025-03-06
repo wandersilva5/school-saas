@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Portal Escolar' ?></title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="/assets/css/style.css" rel="stylesheet">
+    <!-- Page Specific Styles -->
+    <?= render_styles() ?>
 </head>
+
 <body>
     <?php if (isset($_SESSION['user'])): ?>
         <div class="wrapper">
@@ -41,5 +45,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="/assets/js/script.js"></script>
+    <!-- Page Specific Scripts -->
+    <?= render_scripts() ?>
 </body>
+
 </html>

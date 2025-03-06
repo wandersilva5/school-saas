@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,31 +14,36 @@
             align-items: center;
             justify-content: center;
         }
+
         .login-box {
             background: white;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
         }
+
         .login-box h2 {
             color: #154A9A;
             text-align: center;
             margin-bottom: 1.5rem;
         }
+
         .btn-primary {
             background-color: #154A9A;
             border-color: #154A9A;
             width: 100%;
             padding: 0.8rem;
         }
+
         .btn-primary:hover {
             background-color: #1e6ddf;
             border-color: #1e6ddf;
         }
     </style>
 </head>
+
 <body>
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -48,7 +54,7 @@
     <div class="container">
         <div class="login-box">
             <h2>Login</h2>
-            
+
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger" role="alert">
                     <?= htmlspecialchars($error) ?>
@@ -73,4 +79,5 @@
         </div>
     </div>
 </body>
+
 </html>

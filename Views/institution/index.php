@@ -73,18 +73,18 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-warning edit-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editInstitutionModal"
-                                        data-id="<?= $institution['id'] ?>"
-                                        data-name="<?= htmlspecialchars($institution['name']) ?>"
-                                        data-domain="<?= htmlspecialchars($institution['domain']) ?>"
-                                        data-email="<?= htmlspecialchars($institution['email']) ?>"
-                                        data-phone="<?= htmlspecialchars($institution['phone']) ?>"
-                                        data-name-contact="<?= htmlspecialchars($institution['name_contact']) ?>"
-                                        data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </button>
+                                        <button type="button" class="btn btn-sm btn-warning edit-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editInstitutionModal"
+                                            data-id="<?= $institution['id'] ?>"
+                                            data-name="<?= htmlspecialchars($institution['name']) ?>"
+                                            data-domain="<?= htmlspecialchars($institution['domain']) ?>"
+                                            data-email="<?= htmlspecialchars($institution['email']) ?>"
+                                            data-phone="<?= htmlspecialchars($institution['phone']) ?>"
+                                            data-name-contact="<?= htmlspecialchars($institution['name_contact']) ?>"
+                                            data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-danger ">
                                             <i class="bi bi-trash"></i> Desativar</button>
                                     </div>
@@ -113,48 +113,7 @@
     </div>
 </div>
 
-<style>
-    /* Minimal custom styles that aren't disponíveis em Bootstrap */
-    .upload-area {
-        min-height: 300px;
-        cursor: pointer;
-        border: 2px dashed #dee2e6;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
 
-    .upload-area.dragover {
-        border-color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.05);
-    }
-
-    .preview-container {
-        display: none;
-        margin-top: 20px;
-    }
-
-    #imagePreview {
-        width: 100%;
-        max-height: 300px;
-        object-fit: contain;
-    }
-
-    .upload-icon {
-        width: 64px;
-        height: 64px;
-    }
-
-    .modal-body {
-        overflow-y: auto;
-    }
-
-    .position-absolute {
-        position: absolute !important;
-    }
-</style>
 
 <!-- Modal de Nova Instituição -->
 <div class="modal fade" id="institutionModal" tabindex="-1" aria-labelledby="institutionModalLabel" aria-hidden="true">
@@ -334,12 +293,58 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" form="editForm" class="btn btn-primary">Salvar</button>
-                
+
             </div>
         </div>
     </div>
 </div>
 
+<?php push('styles') ?>
+<style>
+    /* Minimal custom styles that aren't disponíveis em Bootstrap */
+    .upload-area {
+        min-height: 300px;
+        cursor: pointer;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .upload-area.dragover {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .preview-container {
+        display: none;
+        margin-top: 20px;
+    }
+
+    #imagePreview {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+    }
+
+    .upload-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .modal-body {
+        overflow-y: auto;
+    }
+
+    .position-absolute {
+        position: absolute !important;
+    }
+</style>
+<?php endpush() ?>
+
+<?php push('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Elementos do DOM
@@ -522,3 +527,4 @@
         });
     });
 </script>
+<?php endpush() ?>

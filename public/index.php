@@ -65,9 +65,9 @@ $routes = [
     'institution' => ['controller' => 'InstitutionController', 'action' => 'index'],
     'institution/store' => ['controller' => 'InstitutionController', 'action' => 'store'],
     'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
-
-
+    
     // Adicione mais rotas conforme necessário
+
 ];
 
 // Parse da URL

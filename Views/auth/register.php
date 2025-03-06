@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,37 +14,42 @@
             align-items: center;
             justify-content: center;
         }
+
         .register-box {
             background: white;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 500px;
             margin: 2rem auto;
         }
+
         .register-box h2 {
             color: #154A9A;
             text-align: center;
             margin-bottom: 1.5rem;
         }
+
         .btn-primary {
             background-color: #154A9A;
             border-color: #154A9A;
             width: 100%;
             padding: 0.8rem;
         }
+
         .btn-primary:hover {
             background-color: #1e6ddf;
             border-color: #1e6ddf;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="register-box">
             <h2>Criar Conta</h2>
-            
+
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger" role="alert">
                     <?= htmlspecialchars($error) ?>
@@ -100,4 +106,5 @@
         </div>
     </div>
 </body>
+
 </html>

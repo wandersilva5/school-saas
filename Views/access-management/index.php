@@ -201,6 +201,7 @@
 </div>
 
 
+<?php push('scripts') ?>
 <script>
     function editRoles(userId, userName, currentRoles) {
         document.getElementById('userId').value = userId;
@@ -221,3 +222,4 @@
         new bootstrap.Modal(document.getElementById('editRolesModal')).show();
     }
 </script>
+<?php endpush() ?>
