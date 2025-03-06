@@ -5,10 +5,12 @@ namespace App\Controllers;
 use App\Config\Database;
 use App\Models\User;
 
-class AuthController extends BaseController {
+class AuthController extends BaseController
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         try {
             $this->db = Database::getInstance()->getConnection();
         } catch (\PDOException $e) {
@@ -16,9 +18,16 @@ class AuthController extends BaseController {
         }
     }
 
-    public function login() {
+    public function login()
+    {
         // Debug inicial
         error_log('Método login chamado. Método: ' . $_SERVER['REQUEST_METHOD']);
+
+        // Redirect if already logged in
+        if (isset($_SESSION['user'])) {
+            header('Location: /dashboard');
+            exit;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log('Dados POST: ' . print_r($_POST, true));
@@ -26,7 +35,7 @@ class AuthController extends BaseController {
             try {
                 $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 $password = $_POST['password'] ?? '';
-                
+
                 error_log("Tentando login com email: $email");
 
                 // Busca o usuário e seus roles
@@ -38,7 +47,7 @@ class AuthController extends BaseController {
                     WHERE u.email = ?
                     GROUP BY u.id
                 ");
-                
+
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -68,11 +77,10 @@ class AuthController extends BaseController {
                 return $this->render('auth/login', [
                     'error' => 'Email ou senha inválidos'
                 ]);
-
             } catch (\Exception $e) {
                 error_log("Erro no login: " . $e->getMessage());
                 error_log("Stack trace: " . $e->getTraceAsString());
-                
+
                 return $this->render('auth/login', [
                     'error' => 'Erro ao realizar login: ' . $e->getMessage()
                 ]);
@@ -82,7 +90,8 @@ class AuthController extends BaseController {
         return $this->render('auth/login');
     }
 
-    public function logout() {
+    public function logout()
+    {
         session_start();
         session_destroy();
         header('Location: /login');
@@ -91,6 +100,12 @@ class AuthController extends BaseController {
 
     public function register()
     {
+        // Redirect if already logged in
+        if (isset($_SESSION['user'])) {
+            header('Location: /dashboard');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $name = $_POST['name'] . ' ' . $_POST['surname'];
@@ -120,7 +135,7 @@ class AuthController extends BaseController {
                      domain=VALUES(domain)
                      active=1"
                 );
-                
+
                 // Verifica se já existe uma instituição com este nome
                 $stmtCheckInst = $this->db->prepare("SELECT id FROM institutions WHERE name = ?");
                 $stmtCheckInst->execute([$institution]);
@@ -129,13 +144,13 @@ class AuthController extends BaseController {
                 if (!$existingInst) {
                     // Só insere se não existir
                     $domain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $institution)) . '.com.br';
-                    
+
                     $stmtInst->execute([
                         $institution,  // nome da instituição do formulário
                         $domain,      // domínio gerado
                         null          // logo_url
                     ]);
-                    
+
                     $institutionId = $this->db->lastInsertId();
                 } else {
                     $institutionId = $existingInst['id'];
@@ -155,14 +170,14 @@ class AuthController extends BaseController {
                     "INSERT INTO users (name, email, password, institution_id, created_at) 
                      VALUES (?, ?, ?, ?, NOW())"
                 );
-                
+
                 $stmt->execute([
                     $name,
                     $email,
                     password_hash($password, PASSWORD_DEFAULT),
                     $institutionId
                 ]);
-                
+
                 $userId = $this->db->lastInsertId();
 
                 // 4. Associa o usuário ao papel de TI
@@ -177,7 +192,6 @@ class AuthController extends BaseController {
                     'success' => 'Cadastro realizado com sucesso! Você já pode fazer login.',
                     'redirect' => '/login'
                 ]);
-                
             } catch (\PDOException $e) {
                 $this->db->rollBack();
                 error_log($e->getMessage());

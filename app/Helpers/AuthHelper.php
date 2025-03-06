@@ -14,8 +14,24 @@ class AuthHelper
         if (!self::isLoggedIn()) {
             return false;
         }
-        
-        return isset($_SESSION['user']['permissions']) && 
-               in_array($permission, $_SESSION['user']['permissions']);
+
+        return isset($_SESSION['user']['permissions']) &&
+            in_array($permission, $_SESSION['user']['permissions']);
     }
-} 
+
+    public static function checkAuth()
+    {
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+    }
+
+    public static function checkGuest()
+    {
+        if (isset($_SESSION['user'])) {
+            header('Location: /dashboard');
+            exit;
+        }
+    }
+}

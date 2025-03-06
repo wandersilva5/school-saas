@@ -2,6 +2,7 @@
 
 use App\Helpers\UrlHelper;
 use App\Helpers\TemplateHelper;
+use App\Helpers\AuthHelper;
 
 if (!function_exists('base_url')) {
     function base_url($path = '')
@@ -35,5 +36,19 @@ if (!function_exists('render_styles')) {
     function render_styles()
     {
         return TemplateHelper::renderStyles();
+    }
+}
+
+if (!function_exists('check_auth')) {
+    function check_auth()
+    {
+        AuthHelper::checkAuth();
+    }
+}
+
+if (!function_exists('check_guest')) {
+    function check_guest()
+    {
+        AuthHelper::checkGuest();
     }
 }
