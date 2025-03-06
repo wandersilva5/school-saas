@@ -67,15 +67,27 @@
                                 <td>
                                     <?php if ($institution['active'] === 1): ?>
                                         <span class="badge bg-success">Ativo</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-danger">Inativo</span>
-                                        <?php endif; ?>
-                                    </td>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger">Inativo</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#editInstitutionModal" data-id="<?= $institution['id'] ?>" data-name="<?= htmlspecialchars($institution['name']) ?>" data-domain="<?= htmlspecialchars($institution['domain']) ?>" data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
-                                        <i class="bi bi-pencil"></i> Editar</button>
-                                    <button type="button" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Desativar</button>
+                                    <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-warning edit-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editInstitutionModal"
+                                        data-id="<?= $institution['id'] ?>"
+                                        data-name="<?= htmlspecialchars($institution['name']) ?>"
+                                        data-domain="<?= htmlspecialchars($institution['domain']) ?>"
+                                        data-email="<?= htmlspecialchars($institution['email']) ?>"
+                                        data-phone="<?= htmlspecialchars($institution['phone']) ?>"
+                                        data-name-contact="<?= htmlspecialchars($institution['name_contact']) ?>"
+                                        data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                        <button type="button" class="btn btn-sm btn-danger ">
+                                            <i class="bi bi-trash"></i> Desativar</button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -195,18 +207,18 @@
                                 Por favor, informe um telefone válido.
                             </div>
                         </div>
-                        
+
                         <!-- Campo Nome do Contato -->
                         <div class="col-5 mb-3">
                             <label for="name_contact" class="form-label">Nome do Contato</label>
                             <input type="text" class="form-control" id="name_contact" name="name_contact" required
-                            placeholder="Nome do responsável">
+                                placeholder="Nome do responsável">
                             <div class="invalid-feedback">
                                 Por favor, informe o nome do contato.
                             </div>
                         </div>
                     </div>
-                        
+
 
                     <div class="mb-3">
                         <label for="image" class="form-label">Logo da Instituição</label>
@@ -273,6 +285,24 @@
                         </div>
                     </div>
 
+                    <!-- Campo Email -->
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+
+                    <!-- Campo Telefone -->
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" id="editPhone" name="phone" required>
+                    </div>
+
+                    <!-- Campo Nome do Contato -->
+                    <div class="mb-3">
+                        <label for="editNameContact" class="form-label">Nome do Contato</label>
+                        <input type="text" class="form-control" id="editNameContact" name="name_contact" required>
+                    </div>
+
                     <div class="mb-3">
                         <label for="editImage" class="form-label">Logo da Instituição</label>
                         <input type="file" class="form-control d-none" id="editImageInput" name="logo_url" accept="image/*">
@@ -303,19 +333,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <!-- <button type="submit" form="editForm" class="btn btn-primary">Salvar</button> -->
-                <button type="button" class="btn btn-sm btn-primary edit-btn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editInstitutionModal"
-                    data-id="<?= $institution['id'] ?>"
-                    data-name="<?= htmlspecialchars($institution['name']) ?>"
-                    data-domain="<?= htmlspecialchars($institution['domain']) ?>"
-                    data-email="<?= htmlspecialchars($institution['email']) ?>"
-                    data-phone="<?= htmlspecialchars($institution['phone']) ?>"
-                    data-name-contact="<?= htmlspecialchars($institution['name_contact']) ?>"
-                    data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
-                    <i class="bi bi-pencil"></i> Editar
-                </button>
+                <button type="submit" form="editForm" class="btn btn-primary">Salvar</button>
+                
             </div>
         </div>
     </div>
@@ -469,7 +488,6 @@
                 document.getElementById('editEmail').value = email;
                 document.getElementById('editPhone').value = phone;
                 document.getElementById('editNameContact').value = nameContact;
-                document.getElementById('existingLogoUrl').value = logo;
                 document.getElementById('existingLogoUrl').value = logo;
                 document.getElementById('editPreviewContainer').style.display = 'block';
                 document.getElementById('editImagePreview').src = logo;
