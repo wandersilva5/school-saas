@@ -101,7 +101,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="userForm" method="POST" action="/users/store">
+                <form id="userForm" method="POST" action="/access-management/create-user" class="needs-validation"
+                    novalidate>
                     <!-- Campo Nome -->
                     <div class="mb-3">
                         <label for="name" class="form-label">Nome</label>
@@ -139,6 +140,22 @@
                             Por favor, selecione um perfil.
                         </div>
                         <small id="roleDescription" class="form-text text-muted mt-1"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="institution" class="form-label">Instituição</label>
+                        <select class="form-select" id="institution" name="institution_id" required>
+                            <option value="">Selecione uma instituição</option>
+                            <?php foreach ($institutions as $institution): ?>
+                                <option value="<?= $institution['id'] ?>"
+                                    <?= ($institution['id'] == $_SESSION['user']['institution_id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($institution['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="invalid-feedback">
+                            Por favor, selecione uma instituição.
+                        </div>
                     </div>
                 </form>
             </div>

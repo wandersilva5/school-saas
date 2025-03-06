@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;  
+namespace App\Controllers;
 
 use App\Controllers\BaseController;
 
@@ -28,30 +28,35 @@ class AccessManagementController extends BaseController
 
         // Busca usuários da mesma instituição
         $stmt = $this->db->prepare("
-            SELECT u.id, u.name, u.email, u.created_at, GROUP_CONCAT(r.name) as roles
+            SELECT u.id, u.name, u.email, u.created_at, i.name as institution_name, GROUP_CONCAT(r.name) as roles
             FROM users u
             LEFT JOIN user_roles ur ON u.id = ur.user_id
             LEFT JOIN roles r ON ur.role_id = r.id
+            LEFT JOIN institutions i ON u.institution_id = i.id
             WHERE u.institution_id = ?
             GROUP BY u.id
-            ORDER BY u.name
+            ORDER BY u.name Desc
         ");
         $stmt->execute([$institutionId]);
         $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Busca roles disponíveis para a instituição
-        $stmtRoles = $this->db->prepare("
-            SELECT id, name, description 
-            FROM roles 
-            WHERE institution_id = ?
+        // Busca todas as instituições ativas
+        $stmtInstitutions = $this->db->prepare("
+            SELECT id, name 
+            FROM institutions 
+            WHERE active = 1  /* Or use your existing status column */
+            ORDER BY name
         ");
-        $stmtRoles->execute([$institutionId]);
-        $roles = $stmtRoles->fetchAll(\PDO::FETCH_ASSOC);
+
+
+        $stmtInstitutions->execute();
+        $institutions = $stmtInstitutions->fetchAll(\PDO::FETCH_ASSOC);
 
         $roles = $this->getRoles();
         return $this->render('access-management/index', [
             'users' => $users,
             'roles' => $roles,
+            'institutions' => $institutions,
             'currentPage' => 'access-management',
             'pageTitle' => 'Gerenciar Acessos'
         ]);
@@ -90,14 +95,13 @@ class AccessManagementController extends BaseController
                     WHERE id IN (" . implode(',', array_fill(0, count($roleIds), '?')) . ")
                     AND institution_id = ?
                 ");
-                
+
                 $params = array_merge([$userId], $roleIds, [$institutionId]);
                 $stmt->execute($params);
             }
 
             $this->db->commit();
             header('Location: /access-management?success=1');
-
         } catch (\Exception $e) {
             $this->db->rollBack();
             header('Location: /access-management?error=' . urlencode($e->getMessage()));
@@ -112,45 +116,76 @@ class AccessManagementController extends BaseController
         }
 
         try {
-            $name = $_POST['name'];
+            // Validação dos campos
+            $name = trim($_POST['name'] ?? '');
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $password = $_POST['password'];
+            $password = trim($_POST['password'] ?? '');
             $roleIds = $_POST['roles'] ?? [];
-            $institutionId = $_SESSION['user']['institution_id'];
+            $institutionId = $_POST['institution_id'] ?? $_SESSION['user']['institution_id'];
+
+            // Validações
+            if (empty($name)) {
+                throw new \Exception('O nome é obrigatório');
+            }
+
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new \Exception('Email inválido');
+            }
+
+            if (empty($password) || strlen($password) < 6) {
+                throw new \Exception('A senha deve ter pelo menos 6 caracteres');
+            }
+
+            if (empty($roleIds)) {
+                throw new \Exception('Selecione pelo menos um perfil');
+            }
+
+            // Verifica se o email já está em uso
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetch()) {
+                throw new \Exception('Este email já está em uso');
+            }
+
+            // Verifica se a instituição existe
+            $stmt = $this->db->prepare("SELECT id FROM institutions WHERE id = ? AND deleted_at IS NULL");
+            $stmt->execute([$institutionId]);
+            if (!$stmt->fetch()) {
+                throw new \Exception('Instituição inválida');
+            }
 
             $this->db->beginTransaction();
 
             // Insere o usuário
             $stmt = $this->db->prepare(
                 "INSERT INTO users (name, email, password, institution_id, created_at) 
-                 VALUES (?, ?, ?, ?, NOW())"
+             VALUES (?, ?, ?, ?, NOW())"
             );
-            
+
             $stmt->execute([
                 $name,
                 $email,
                 password_hash($password, PASSWORD_DEFAULT),
                 $institutionId
             ]);
-            
+
             $userId = $this->db->lastInsertId();
 
             // Associa os roles selecionados
             if (!empty($roleIds)) {
                 $stmt = $this->db->prepare(
                     "INSERT INTO user_roles (user_id, role_id) 
-                     SELECT ?, id FROM roles 
-                     WHERE id IN (" . implode(',', array_fill(0, count($roleIds), '?')) . ")
-                     AND institution_id = ?"
+                 SELECT ?, id FROM roles 
+                 WHERE id IN (" . implode(',', array_fill(0, count($roleIds), '?')) . ")
+                 AND institution_id = ?"
                 );
-                
+
                 $params = array_merge([$userId], $roleIds, [$institutionId]);
                 $stmt->execute($params);
             }
 
             $this->db->commit();
             header('Location: /access-management?success=1');
-
         } catch (\Exception $e) {
             $this->db->rollBack();
             header('Location: /access-management?error=' . urlencode($e->getMessage()));
@@ -235,7 +270,7 @@ class AccessManagementController extends BaseController
                 "INSERT INTO users (name, email, password, institution_id, created_at) 
                  VALUES (?, ?, ?, ?, NOW())"
             );
-            
+
             $stmt->execute([
                 $name,
                 $email,
@@ -245,10 +280,9 @@ class AccessManagementController extends BaseController
 
             $this->db->commit();
             header('Location: /access-management?success=1');
-
         } catch (\Exception $e) {
             $this->db->rollBack();
             header('Location: /access-management?error=' . urlencode($e->getMessage()));
         }
     }
-} 
+}
