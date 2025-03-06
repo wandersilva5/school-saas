@@ -49,6 +49,9 @@ class InstitutionController extends BaseController
         try {
             $name = $_POST['name'];
             $domain = $_POST['domain'];
+            $email = $_POST['email'];
+            $phone = $_POST['phone'];
+            $nameContact = $_POST['name_contact'];
             $logo_url = $this->uploadImage($_FILES['logo_url']);
 
             $this->db->beginTransaction();
@@ -56,14 +59,17 @@ class InstitutionController extends BaseController
 
             // Insere a instituição
             $stmt = $this->db->prepare(
-                "INSERT INTO institutions (name, domain, logo_url, created_at) 
-             VALUES (?, ?, ?, NOW())"
+                "INSERT INTO institutions (name, domain, logo_url, email, phone, name_contact, created_at) 
+             VALUES (?, ?, ?, ?, ?, ?, NOW())"
             );
 
             $stmt->execute([
                 $name,
                 $domain,
                 $logo_url,
+                $email,
+                $phone,
+                $nameContact
             ]);
 
             $this->db->commit();
@@ -89,13 +95,17 @@ class InstitutionController extends BaseController
         try {
             $name = $_POST['name'];
             $domain = $_POST['domain'];
+            $email = $_POST['email'];
+            $phone = $_POST['phone'];
+            $nameContact = $_POST['name_contact'];
             $logo_url = isset($_FILES['logo_url']) ? $this->uploadImage($_FILES['logo_url']) : $_POST['existing_logo_url'];
 
             $this->db->beginTransaction();
 
             // Atualiza a instituição
             $stmt = $this->db->prepare(
-                "UPDATE institutions SET name = ?, domain = ?, logo_url = ?, updated_at = NOW() 
+                "UPDATE institutions 
+             SET name = ?, domain = ?, logo_url = ?, email = ?, phone = ?, name_contact = ?, updated_at = NOW() 
              WHERE id = ?"
             );
 
@@ -103,6 +113,9 @@ class InstitutionController extends BaseController
                 $name,
                 $domain,
                 $logo_url,
+                $email,
+                $phone,
+                $nameContact,
                 $id
             ]);
 
@@ -136,18 +149,11 @@ class InstitutionController extends BaseController
                 $logoUrl = '/uploads/institutions/' . $fileName;
 
                 return $logoUrl;
-
             } else {
                 throw new Exception('Falha ao mover o arquivo carregado');
             }
         } else {
             throw new Exception('Nenhum arquivo carregado ou ocorreu um erro de carregamento');
         }
-
-
-
-        
-
-        
     }
 }

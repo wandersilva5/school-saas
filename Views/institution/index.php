@@ -37,7 +37,11 @@
                             <th>Logo</th>
                             <th>Nome</th>
                             <th>Domínio</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Contato</th>
                             <th>Data de Criação</th>
+                            <th>Situação</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -56,12 +60,22 @@
                                 </td>
                                 <td><?= htmlspecialchars($institution['name']) ?></td>
                                 <td><?= htmlspecialchars($institution['domain']) ?></td>
+                                <td><?= htmlspecialchars($institution['email']) ?></td>
+                                <td><?= htmlspecialchars($institution['phone']) ?></td>
+                                <td><?= htmlspecialchars($institution['name_contact']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($institution['created_at'])) ?></td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-trash"></i> Desativar</button>
-                                    <button type="button" class="btn btn-sm btn-primary edit-btn" data-bs-toggle="modal" data-bs-target="#editInstitutionModal" data-id="<?= $institution['id'] ?>" data-name="<?= htmlspecialchars($institution['name']) ?>" data-domain="<?= htmlspecialchars($institution['domain']) ?>" data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
+                                    <?php if ($institution['active'] === 1): ?>
+                                        <span class="badge bg-success">Ativo</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger">Inativo</span>
+                                        <?php endif; ?>
+                                    </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#editInstitutionModal" data-id="<?= $institution['id'] ?>" data-name="<?= htmlspecialchars($institution['name']) ?>" data-domain="<?= htmlspecialchars($institution['domain']) ?>" data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
                                         <i class="bi bi-pencil"></i> Editar</button>
+                                    <button type="button" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Desativar</button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -140,24 +154,59 @@
             </div>
             <div class="modal-body">
                 <form id="uploadForm" method="POST" action="/institution/store" enctype="multipart/form-data">
-                    <!-- Campo Nome -->
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="name" name="name" required minlength="3" maxlength="100"
-                            placeholder="Digite o nome completo">
-                        <div class="invalid-feedback">
-                            Por favor, informe um nome válido.
+                    <div class="row">
+                        <!-- Campo Nome -->
+                        <div class="col-8 mb-3">
+                            <label for="name" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="name" name="name" required minlength="3" maxlength="100"
+                                placeholder="Digite o nome completo">
+                            <div class="invalid-feedback">
+                                Por favor, informe um nome válido.
+                            </div>
+                        </div>
+
+                        <!-- Campo Domain -->
+                        <div class="col-4 mb-3">
+                            <label for="domain" class="form-label">Domain</label>
+                            <input type="text" class="form-control" id="domain" name="domain" required>
+                            <div class="invalid-feedback">
+                                Por favor, informe um domínio válido.
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Campo Domain -->
-                    <div class="mb-3">
-                        <label for="domain" class="form-label">Domain</label>
-                        <input type="text" class="form-control" id="domain" name="domain" required>
-                        <div class="invalid-feedback">
-                            Por favor, informe um domínio válido.
+                    <div class="row">
+                        <!-- Campo Email -->
+                        <div class="col-4 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                placeholder="contato@instituicao.com">
+                            <div class="invalid-feedback">
+                                Por favor, informe um email válido.
+                            </div>
+                        </div>
+
+                        <!-- Campo Telefone -->
+                        <div class="col-3 mb-3">
+                            <label for="phone" class="form-label">Telefone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required
+                                placeholder="(00) 00000-0000">
+                            <div class="invalid-feedback">
+                                Por favor, informe um telefone válido.
+                            </div>
+                        </div>
+                        
+                        <!-- Campo Nome do Contato -->
+                        <div class="col-5 mb-3">
+                            <label for="name_contact" class="form-label">Nome do Contato</label>
+                            <input type="text" class="form-control" id="name_contact" name="name_contact" required
+                            placeholder="Nome do responsável">
+                            <div class="invalid-feedback">
+                                Por favor, informe o nome do contato.
+                            </div>
                         </div>
                     </div>
+                        
 
                     <div class="mb-3">
                         <label for="image" class="form-label">Logo da Instituição</label>
@@ -254,7 +303,19 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" form="editForm" class="btn btn-primary">Salvar</button>
+                <!-- <button type="submit" form="editForm" class="btn btn-primary">Salvar</button> -->
+                <button type="button" class="btn btn-sm btn-primary edit-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editInstitutionModal"
+                    data-id="<?= $institution['id'] ?>"
+                    data-name="<?= htmlspecialchars($institution['name']) ?>"
+                    data-domain="<?= htmlspecialchars($institution['domain']) ?>"
+                    data-email="<?= htmlspecialchars($institution['email']) ?>"
+                    data-phone="<?= htmlspecialchars($institution['phone']) ?>"
+                    data-name-contact="<?= htmlspecialchars($institution['name_contact']) ?>"
+                    data-logo="<?= htmlspecialchars($institution['logo_url']) ?>">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
             </div>
         </div>
     </div>
@@ -397,14 +458,21 @@
                 const id = this.getAttribute('data-id');
                 const name = this.getAttribute('data-name');
                 const domain = this.getAttribute('data-domain');
+                const email = this.getAttribute('data-email');
+                const phone = this.getAttribute('data-phone');
+                const nameContact = this.getAttribute('data-name-contact');
                 const logo = this.getAttribute('data-logo');
 
                 document.getElementById('editId').value = id;
                 document.getElementById('editName').value = name;
                 document.getElementById('editDomain').value = domain;
+                document.getElementById('editEmail').value = email;
+                document.getElementById('editPhone').value = phone;
+                document.getElementById('editNameContact').value = nameContact;
                 document.getElementById('existingLogoUrl').value = logo;
-                editPreviewContainer.style.display = 'block';
-                editImagePreview.src = logo;
+                document.getElementById('existingLogoUrl').value = logo;
+                document.getElementById('editPreviewContainer').style.display = 'block';
+                document.getElementById('editImagePreview').src = logo;
             });
         });
 
