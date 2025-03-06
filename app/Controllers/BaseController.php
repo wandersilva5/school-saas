@@ -2,36 +2,40 @@
 
 namespace App\Controllers;
 
-class BaseController {
-    protected function view($path, $data = []) {
+class BaseController
+{
+    protected function view($path, $data = [])
+    {
         extract($data);
         require __DIR__ . '/../../Views/' . $path . '.php';
     }
 
-    protected function redirect($path) {
+    protected function redirect($path)
+    {
         header('Location: ' . $path);
         exit;
     }
 
-    protected function renderView($view, $data = []) {
+    protected function renderView($view, $data = [])
+    {
         // Extrair dados para serem usados na view
         extract($data);
-        
-        // Caminho base para as views
-        $viewPath = __DIR__ . '/../Views/';
-        
+
+        // Em renderView(), mude para:
+        $viewPath = __DIR__ . '/../../Views/';
+
         // Verifica se o arquivo existe
         if (file_exists($viewPath . $view . '.php')) {
             // Inicia o buffer de saída
             ob_start();
-            
+
             // Inclui a view
             include $viewPath . $view . '.php';
-            
+
             // Retorna o conteúdo do buffer e limpa
             return ob_get_clean();
         }
-        
+
         throw new \Exception("View {$view} not found");
     }
 
@@ -39,16 +43,16 @@ class BaseController {
     {
         // Extrai os dados para variáveis
         extract($data);
-        
+
         // Inicia o buffer de saída
         ob_start();
-        
+
         // Inclui a view específica
         require_once __DIR__ . '/../../Views/' . $view . '.php';
-        
+
         // Captura o conteúdo da view
         $content = ob_get_clean();
-        
+
         // Verifica se é uma página pública (login/register) ou protegida
         if (!isset($_SESSION['user']) && in_array($view, ['auth/login', 'auth/register'])) {
             // Renderiza diretamente sem o layout principal

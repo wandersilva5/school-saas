@@ -7,7 +7,8 @@
             "App\\": "app/"
         },
         "files": [
-            "app/Helpers/AuthHelper.php"
+            "app/Helpers/AuthHelper.php",
+            "app/Helpers/functions.php"
         ]
     }
 }

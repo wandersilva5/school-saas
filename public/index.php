@@ -52,33 +52,47 @@ $routes = [
     // Rotas para o painel de controle
     'dashboard' => ['controller' => 'DashboardController', 'action' => 'index'],
     'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
-    
+
     // Rotas para gerenciamento de acesso
     'access-management' => ['controller' => 'AccessManagementController', 'action' => 'index'],
     'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
     'access-management/create-user' => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
-    
+
     // Rotas para calendário
     'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
 
     // Rotas para instituições
     'institution' => ['controller' => 'InstitutionController', 'action' => 'index'],
     'institution/store' => ['controller' => 'InstitutionController', 'action' => 'store'],
-    'institution/update' => ['controller' => 'InstitutionController', 'action' => 'update'],
-    
-    
+    'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
+
+
     // Adicione mais rotas conforme necessário
 ];
 
 // Parse da URL
-$urlParts = explode('/', $url);
-$routeKey = $urlParts[0];
+if ($url) {
+    $urlParts = explode('/', $url);
+
+    // Primeiro tente a URL completa
+    if (array_key_exists($url, $routes)) {
+        $routeKey = $url;
+    }
+    // Se não encontrar, tente apenas o primeiro segmento
+    else if (array_key_exists($urlParts[0], $routes)) {
+        $routeKey = $urlParts[0];
+    } else {
+        $routeKey = null;
+    }
+} else {
+    $routeKey = '';
+}
 
 // Verifica se a rota existe
-if (array_key_exists($routeKey, $routes)) {
+if ($routeKey !== null && array_key_exists($routeKey, $routes)) {
     $controllerName = "\\App\\Controllers\\" . $routes[$routeKey]['controller'];
     $actionName = $routes[$routeKey]['action'];
-
+    
     if (class_exists($controllerName)) {
         $controller = new $controllerName();
         if (method_exists($controller, $actionName)) {

@@ -44,7 +44,13 @@
                     <tbody>
                         <?php foreach ($institutions as $institution): ?>
                             <tr>
-                                <td><img src="<?= htmlspecialchars($institution['logo_url']) ?? "" ?>" alt="logo" width="80"></td>
+                                <?php
+                                $imageUrl = empty($institution['logo_url']) ?
+                                    base_url('public/images/no-image.png') :
+                                    base_url($institution['logo_url']);
+                                error_log('Image URL: ' . $imageUrl);
+                                ?>
+                                <td><img src="<?= empty($institution['logo_url']) ? "" : base_url('public' . ($institution['logo_url'])) ?>" alt="logo" width="80" class="img-thumbnail"></td>
                                 <td><?= htmlspecialchars($institution['name']) ?></td>
                                 <td><?= htmlspecialchars($institution['domain']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($institution['created_at'])) ?></td>
@@ -130,6 +136,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- <form id="uploadForm" method="POST" action="institution/store" enctype="multipart/form-data"> -->
                 <form id="uploadForm" method="POST" action="/institution/store" enctype="multipart/form-data">
                     <!-- Campo Nome -->
                     <div class="mb-3">
@@ -179,7 +186,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" form="uploadForm" class="btn btn-primary">Cadastrar</button>
+                <button type="submit" form="uploadForm" class="btn btn-primary">Salvar</button>
             </div>
         </div>
     </div>
@@ -194,7 +201,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editForm" method="POST" action="/institution/update" enctype="multipart/form-data">
+                <form id="editForm" method="POST" action="institution/update" enctype="multipart/form-data">
                     <input type="hidden" id="editId" name="id">
                     <!-- Campo Nome -->
                     <div class="mb-3">
@@ -371,6 +378,7 @@
             }
             uploadForm.submit();
         });
+
 
         editForm.addEventListener('submit', function(e) {
             e.preventDefault();

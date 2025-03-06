@@ -1,106 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Escola - Gestão Educacional Inteligente</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
+
     <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #4e73df;
-            --secondary-color: #2e59d9;
-            --accent-color: #f8f9fc;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            min-height: 100vh;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            opacity: 0.1;
-        }
-
-        .feature-card {
-            border: none;
-            transition: transform 0.3s ease;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .pricing-card {
-            border-radius: 15px;
-            transition: transform 0.3s ease;
-        }
-
-        .pricing-card:hover {
-            transform: scale(1.05);
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1rem;
-        }
-
-        .testimonial-card {
-            background: var(--accent-color);
-            border-radius: 15px;
-            padding: 2rem;
-        }
-
-        .section-padding {
-            padding: 100px 0;
-        }
-
-        .navbar {
-            transition: background-color 0.3s ease;
-        }
-
-        .navbar.scrolled {
-            background-color: white !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-    </style>
+    <link href="<?= base_url('assets/css/home.css') ?>" rel="stylesheet">
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-transparent fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <img src="https://via.placeholder.com/150x50" alt="Portal Escola Logo" height="40">
+                <img src="<?= base_url('assets/images/logo-nome-branco.png') ?>" alt="Portal Escola Logo" height="80">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -132,7 +54,7 @@
 
     <!-- Hero Section -->
     <section class="hero-section d-flex align-items-center">
-        <div class="container">
+        <div class="container mt-5">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <h1 class="display-4 fw-bold mb-4">Transforme a gestão da sua escola com o Portal Escola</h1>
@@ -313,5 +235,29 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+
+            const handleScroll = () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                    navbar.style.backgroundColor = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--secondary-color');
+                } else {
+                    navbar.classList.remove('scrolled');
+                    navbar.style.backgroundColor = 'transparent';
+                }
+            };
+
+            // Add scroll event listener
+            window.addEventListener('scroll', handleScroll);
+
+            // Call handleScroll on page load
+            handleScroll();
+        });
+    </script>
+</body>
+
+</html

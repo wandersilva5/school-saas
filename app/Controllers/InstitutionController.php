@@ -19,6 +19,10 @@ class InstitutionController extends BaseController
 
     public function index()
     {
+        error_log('Store method called');
+        error_log('POST data: ' . print_r($_POST, true));
+        error_log('FILES data: ' . print_r($_FILES, true));
+
         // Verifica se o usuário tem permissão
         if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
             header('Location: /dashboard');
@@ -40,19 +44,22 @@ class InstitutionController extends BaseController
             exit;
         }
 
+        $transactionStarted = false;
+
         try {
             $name = $_POST['name'];
             $domain = $_POST['domain'];
             $logo_url = $this->uploadImage($_FILES['logo_url']);
 
             $this->db->beginTransaction();
+            $transactionStarted = true;
 
             // Insere a instituição
             $stmt = $this->db->prepare(
                 "INSERT INTO institutions (name, domain, logo_url, created_at) 
-                 VALUES (?, ?, ?, NOW())"
+             VALUES (?, ?, ?, NOW())"
             );
-            
+
             $stmt->execute([
                 $name,
                 $domain,
@@ -60,13 +67,17 @@ class InstitutionController extends BaseController
             ]);
 
             $this->db->commit();
-            header('Location: /institutions?success=1');
-
+            header('Location: /institution?success=1');
+            exit;
         } catch (\Exception $e) {
-            $this->db->rollBack();
-            header('Location: /institutions?error=' . urlencode($e->getMessage()));
+            if ($transactionStarted) {
+                $this->db->rollBack();
+            }
+            header('Location: /institution?error=' . urlencode($e->getMessage()));
+            exit;
         }
     }
+
 
     public function update($id)
     {
@@ -85,9 +96,9 @@ class InstitutionController extends BaseController
             // Atualiza a instituição
             $stmt = $this->db->prepare(
                 "UPDATE institutions SET name = ?, domain = ?, logo_url = ?, updated_at = NOW() 
-                 WHERE id = ?"
+             WHERE id = ?"
             );
-            
+
             $stmt->execute([
                 $name,
                 $domain,
@@ -96,50 +107,47 @@ class InstitutionController extends BaseController
             ]);
 
             $this->db->commit();
-            header('Location: /institutions?success=1');
-
+            header('Location: /institution?success=1');
+            exit;
         } catch (\Exception $e) {
             $this->db->rollBack();
-            header('Location: /institutions?error=' . urlencode($e->getMessage()));
+            header('Location: /institution?error=' . urlencode($e->getMessage()));
+            exit;
         }
     }
 
     private function uploadImage($file)
     {
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            throw new \Exception('Erro no upload do arquivo.');
-        }
+        // Lógica Upload da imagem aqui
+        if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = 'public/uploads/institutions/';
 
-        // Verifica se o arquivo é um PNG
-        if ($file['type'] !== 'image/png') {
-            throw new \Exception('Somente arquivos PNG são permitidos.');
-        }
+            // Crie um diretório se ele não existir
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
 
-        // Verifica as dimensões da imagem
-        list($width, $height) = getimagesize($file['tmp_name']);
-        if ($width !== 500 || $height !== 500) {
-            // Redimensiona a imagem para 500x500 pixels
-            $image = imagecreatefrompng($file['tmp_name']);
-            $resizedImage = imagescale($image, 500, 500);
-            imagedestroy($image);
+            $fileExtension = pathinfo($_FILES['logo_url']['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid() . '.' . $fileExtension;
+            $targetPath = $uploadDir . $fileName;
 
-            // Salva a imagem redimensionada em um arquivo temporário
-            $tempFile = tempnam(sys_get_temp_dir(), 'upload');
-            imagepng($resizedImage, $tempFile);
-            imagedestroy($resizedImage);
+            if (move_uploaded_file($_FILES['logo_url']['tmp_name'], $targetPath)) {
+                // O arquivo foi carregado com sucesso, agora salve os dados da instituição
+                $logoUrl = '/uploads/institutions/' . $fileName;
 
-            // Atualiza o caminho do arquivo para o arquivo temporário
-            $file['tmp_name'] = $tempFile;
-        }
+                return $logoUrl;
 
-        $uploadDir = __DIR__ . '/../../public/uploads/';
-        $fileName = uniqid() . '-' . basename($file['name']);
-        $uploadFile = $uploadDir . $fileName;
-
-        if (move_uploaded_file($file['tmp_name'], $uploadFile)) {
-            return '/uploads/' . $fileName;
+            } else {
+                throw new Exception('Falha ao mover o arquivo carregado');
+            }
         } else {
-            throw new \Exception('Falha ao mover o arquivo enviado.');
+            throw new Exception('Nenhum arquivo carregado ou ocorreu um erro de carregamento');
         }
+
+
+
+        
+
+        
     }
 }
