@@ -142,10 +142,45 @@
 .navbar {
     background: white !important;
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    padding: 1rem;
+    padding: 0.1rem;
     position: sticky;
     top: 0;
     z-index: 99;
+}
+
+.navbar {
+    min-height: 40px;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+.navbar .navbar-brand {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    font-size: 1rem;
+}
+
+.navbar .nav-link {
+    padding-top: 0.1rem !important;
+    padding-bottom: 0.1rem !important;
+}
+
+/* Adjust dropdown positioning for smaller navbar */
+.navbar .dropdown-menu {
+    margin-top: 0.1rem;
+}
+
+/* Adjust icon sizes */
+.navbar .bi {
+    font-size: 1rem;
+}
+
+.navbar .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
 }
 
 /* Content Area */
@@ -157,7 +192,7 @@
 
 /* Footer */
 .footer {
-    padding: 1rem;
+    padding: 0.1rem;
     background: white;
     border-top: 1px solid #dee2e6;
 }

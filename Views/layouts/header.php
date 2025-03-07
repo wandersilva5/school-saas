@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg rounded">
     <div class="container-fluid">
         <!-- Brand/logo -->
-        <a class="navbar-brand mx-3" href="/dashboard">
+        <a class="navbar-brand" href="/dashboard">
             <?= $_SESSION['institution_name'] ?? 'Portal Escola' ?>
         </a>
 

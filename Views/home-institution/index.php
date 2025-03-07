@@ -105,3 +105,40 @@
         </div>
     </div>
 </div>
+
+<?php push('styles') ?>
+<style>
+    /* Target only the carousel section */
+    #carouselExampleIndicators {
+        margin-top: -45px;
+        margin-left: -45px;
+        margin-right: -45px;
+        width: calc(100% + 90px);
+        position: relative;
+    }
+
+    /* Fix carousel image height */
+    #carouselExampleIndicators .carousel-item img {
+        width: 100%;
+        max-height: 680px;
+        object-fit: cover;
+    }
+
+    /* Stats cards section */
+    .container-fluid {
+        padding: 1.5rem;
+    }
+
+    /* Ensure carousel controls are visible */
+    .carousel-control-prev,
+    .carousel-control-next {
+        z-index: 100;
+    }
+
+    /* Remove inline styles from carousel-inner */
+    .carousel-inner {
+        width: 100%;
+        height: 680px;
+    }
+</style>
+<?php endpush() ?>

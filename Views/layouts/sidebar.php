@@ -125,10 +125,8 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
     </nav>
 </div>
 
-<style>
 
-</style>
-
+<?php push('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Adiciona classe active ao clicar no item do menu
@@ -141,3 +139,4 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
         });
     });
 </script>
+<?php endpush() ?>
