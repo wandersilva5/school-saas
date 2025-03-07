@@ -66,7 +66,10 @@ $routes = [
     'institution/store' => ['controller' => 'InstitutionController', 'action' => 'store'],
     'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
     
-    // Adicione mais rotas conforme necessário
+    // otas para usuários das instituições
+    'users' => ['controller' => 'UserController', 'action' => 'index'],
+    'users/store' => ['controller' => 'UserController', 'action' => 'store'],
+    'users/update/{id}' => ['controller' => 'UserController', 'action' => 'update'],
 
 ];
 

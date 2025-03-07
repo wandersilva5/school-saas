@@ -99,9 +99,9 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         </a>
                     </li>
 
-                    <?php //endif; 
+                    <?php endif; 
                     ?>
-                    <?php //if (in_array('Master', $userRoles)): 
+                    <?php if (in_array('Master', $userRoles)): 
                     ?>
                     <li class="sidebar-header">
                         Configurações do Sistema

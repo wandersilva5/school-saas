@@ -4,9 +4,13 @@ namespace App\Controllers;
 
 class BaseController
 {
-    protected function view($path, $data = [])
+    protected function view($path, array $data = [])
     {
-        extract($data);
+        // Extract data into variables
+        if (!empty($data) && is_array($data)) {
+            extract($data);
+        }
+        
         require __DIR__ . '/../../Views/' . $path . '.php';
     }
 
@@ -16,10 +20,12 @@ class BaseController
         exit;
     }
 
-    protected function renderView($view, $data = [])
+    protected function renderView($view, array $data = [])
     {
-        // Extrair dados para serem usados na view
-        extract($data);
+        // Extract data into variables
+        if (!empty($data) && is_array($data)) {
+            extract($data);
+        }
 
         // Em renderView(), mude para:
         $viewPath = __DIR__ . '/../../Views/';
@@ -39,10 +45,12 @@ class BaseController
         throw new \Exception("View {$view} not found");
     }
 
-    protected function render($view, $data = [])
+    protected function render($view, array $data = [])
     {
-        // Extrai os dados para variáveis
-        extract($data);
+        // Extract data into variables
+        if (!empty($data) && is_array($data)) {
+            extract($data);
+        }
 
         // Inicia o buffer de saída
         ob_start();

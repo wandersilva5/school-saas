@@ -17,20 +17,20 @@ class InstitutionController extends BaseController
         $this->roleModel = new Institution();
     }
 
-        public function index()
+    public function index()
     {
         // Verifica se o usuário tem permissão
         if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
             header('Location: /dashboard');
             exit;
         }
-    
+
         // Configuração da paginação
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 5; // itens por página
-        $offset = ($page - 1) * $limit;
-    
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $limit = 5; // itens por página
+            $offset = ($page - 1) * $limit;
+
             // Conta total de registros
             $stmt = $this->db->prepare("
                 SELECT COUNT(*) as total 
@@ -40,7 +40,7 @@ class InstitutionController extends BaseController
             $stmt->execute();
             $totalInstitutions = $stmt->fetch(\PDO::FETCH_ASSOC)['total'];
             $totalPages = ceil($totalInstitutions / $limit);
-    
+
             // Busca instituições com paginação
             $stmt = $this->db->prepare("
                 SELECT *
@@ -49,18 +49,17 @@ class InstitutionController extends BaseController
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
             ");
-            
+
             // Corrige a ordem dos parâmetros para corresponder à query
             $stmt->execute([$limit, $offset]);
             $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    
+
             return $this->render('institution/index', [
                 'institutions' => $institutions,
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
                 'pageTitle' => 'Gerenciar Instituições'
             ]);
-    
         } catch (\PDOException $e) {
             error_log("Erro na paginação de instituições: " . $e->getMessage());
             header('Location: /institution?error=' . urlencode('Erro ao carregar as instituições'));
