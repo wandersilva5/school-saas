@@ -32,8 +32,9 @@ class ResponsavelController extends BaseController
         $this->render('responsaveis/index', [
             'pageTitle' => 'Gerenciar Responsáveis',
             'responsaveis' => $responsaveis,
-            'currentPage' => $page,
-            'totalPages' => $totalPages
+            'currentPage' => 'responsaveis', 
+            'totalPages' => $totalPages,
+            'paginaAtual' => $page 
         ]);
     }
 
@@ -75,7 +76,8 @@ class ResponsavelController extends BaseController
         $this->render('responsaveis/show', [
             'pageTitle' => 'Detalhes do Responsável',
             'responsavel' => $responsavel,
-            'alunos' => $alunos
+            'alunos' => $alunos,
+            'currentPage' => 'responsaveis' 
         ]);
     }
 
