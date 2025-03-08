@@ -72,6 +72,20 @@ $routes = [
     'users/store' => ['controller' => 'UserController', 'action' => 'store'],
     'users/update' => ['controller' => 'UserController', 'action' => 'update'],
 
+    // Rotas para responsáveis
+    'responsaveis' => ['controller' => 'ResponsavelController', 'action' => 'index'],
+    'responsaveis/get/{id}' => ['controller' => 'ResponsavelController', 'action' => 'get'],
+    'responsaveis/store' => ['controller' => 'ResponsavelController', 'action' => 'store'],
+    'responsaveis/update' => ['controller' => 'ResponsavelController', 'action' => 'update'],
+    'responsaveis/delete' => ['controller' => 'ResponsavelController', 'action' => 'delete'],
+
+    // Rotas para alunos
+    'alunos' => ['controller' => 'AlunoController', 'action' => 'index'],
+    'alunos/get/{id}' => ['controller' => 'AlunoController', 'action' => 'get'],
+    'alunos/store' => ['controller' => 'AlunoController', 'action' => 'store'],
+    'alunos/update' => ['controller' => 'AlunoController', 'action' => 'update'],
+    'alunos/delete' => ['controller' => 'AlunoController', 'action' => 'delete'],
+
 ];
 
 // Parse da URL
