@@ -65,7 +65,9 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editUser(<?= $user['id'] ?>)">
+                                        <button class="btn btn-sm btn-primary"  
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#userEditModal" onclick="editUser(<?= $user['id'] ?>)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteUser(<?= $user['id'] ?>)">
@@ -103,8 +105,6 @@
     </div>
 </div>
 
-<?php var_dump($roles); ?>
-
 <!-- Modal de Cadastro -->
 <div class="modal fade" id="userModal" tabindex="-1">
     <div class="modal-dialog">
@@ -136,8 +136,8 @@
                         <label for="role_id" class="form-label">Perfil</label>
                         <select class="form-select" id="role_id" name="role_id" required>
                             <option value="">Selecione um perfil</option>
-                            <?php if (!empty($roles) && is_array($roles)): ?>
-                                <?php foreach ($roles as $role): ?>
+                            <?php if (!empty($availableRoles) && is_array($roles)): ?>
+                                <?php foreach ($availableRoles as $role): ?>
                                     <?php if (isset($role['id']) && isset($role['name'])): ?>
                                         <option value="<?= $role['id'] ?>">
                                             <?= htmlspecialchars($role['name']) ?>
@@ -149,7 +149,7 @@
                         <div class="invalid-feedback">
                             Por favor, selecione um perfil.
                         </div>
-                    </div>  
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -160,10 +160,91 @@
     </div>
 </div>
 
+<!-- Modal de Edição -->
+<div class="modal fade" id="userEditModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userEditForm" action="/users/update" method="POST">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_password" class="form-label">Senha (deixe em branco para manter)</label>
+                        <input type="password" class="form-control" id="edit_password" name="password">
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="edit_active" name="active" value="1">
+                        <label class="form-check-label" for="edit_active">Ativo</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_role_id" class="form-label">Perfil</label>
+                        <select class="form-select" id="edit_role_id" name="role_id" required>
+                            <option value="">Selecione um perfil</option>
+                            <?php if (!empty($availableRoles) && is_array($availableRoles)): ?>
+                                <?php foreach ($availableRoles as $role): ?>
+                                    <?php if (isset($role['id']) && isset($role['name'])): ?>
+                                        <option value="<?= $role['id'] ?>">
+                                            <?= htmlspecialchars($role['name']) ?>
+                                        </option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="userEditForm" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php push('scripts') ?>
 <script>
+
     function editUser(userId) {
-        // TODO: Implement edit user functionality
+        // Resetar o formulário antes de preencher com novos dados
+        document.getElementById('userEditForm').reset();
+
+        // Fazer uma requisição AJAX para obter os dados do usuário
+        fetch(`/users/get/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Preencher o formulário com os dados do usuário
+                document.getElementById('edit_id').value = data.id;
+                document.getElementById('edit_name').value = data.name;
+                document.getElementById('edit_email').value = data.email;
+
+                // Marcar o checkbox de ativo de acordo com o status do usuário
+                document.getElementById('edit_active').checked = data.active == 1;
+
+                // Selecionar o perfil do usuário (assumindo que role_id está no primeiro elemento do array)
+                if (data.user_roles && data.user_roles.length > 0) {
+                    document.getElementById('edit_role_id').value = data.user_roles[0].role_id;
+                }
+
+                // Abrir o modal
+                const editModal = new bootstrap.Modal(document.getElementById('userEditModal'));
+                editModal.show();
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados do usuário:', error);
+                alert('Erro ao carregar dados do usuário. Por favor, tente novamente.');
+            });
     }
 
     function deleteUser(userId) {
@@ -171,5 +252,29 @@
             window.location.href = `/users/delete/${userId}`;
         }
     }
+
+    // Corrigir problema de modal travado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Garantir que os backdrops sejam removidos ao fechar modais
+        const modals = ['userModal', 'userEditModal'];
+        
+        modals.forEach(modalId => {
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function () {
+                    // Remover qualquer backdrop que possa ter ficado
+                    const backdrops = document.getElementsByClassName('modal-backdrop');
+                    while(backdrops.length > 0) {
+                        backdrops[0].parentNode.removeChild(backdrops[0]);
+                    }
+                    // Remover a classe modal-open do body
+                    document.body.classList.remove('modal-open');
+                    // Remover o estilo inline do body
+                    document.body.style.removeProperty('padding-right');
+                    document.body.style.removeProperty('overflow');
+                });
+            }
+        });
+    });
 </script>
 <?php endpush() ?>

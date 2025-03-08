@@ -72,8 +72,8 @@ class User
             $this->db->beginTransaction();
 
             $stmt = $this->db->prepare("
-                INSERT INTO users (name, email, password, institution_id, created_at) 
-                VALUES (?, ?, ?, ?, NOW())
+                INSERT INTO users (name, email, password, institution_id, created_at, active) 
+                VALUES (?, ?, ?, ?, NOW(), 1)
             ");
 
             $stmt->execute([
@@ -92,9 +92,8 @@ class User
                     VALUES (?, ?)
                 ");
 
-                foreach ($userData['roles'] as $roleId) {
-                    $stmt->execute([$userId, $roleId]);
-                }
+                $roleId = $userData['roles'];
+                $stmt->execute([$userId, $roleId]);
             }
 
             $this->db->commit();
@@ -103,7 +102,7 @@ class User
         } catch (\PDOException $e) {
             $this->db->rollBack();
             error_log($e->getMessage());
-            return false;
+            throw new \Exception('Erro ao criar usuário: ' . $e->getMessage());
         }
     }
 

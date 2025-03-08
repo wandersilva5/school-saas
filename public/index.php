@@ -66,25 +66,65 @@ $routes = [
     'institution/store' => ['controller' => 'InstitutionController', 'action' => 'store'],
     'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
     
-    // otas para usuários das instituições
+    // Rotas para usuários das instituições
     'users' => ['controller' => 'UserController', 'action' => 'index'],
+    'users/get/{id}' => ['controller' => 'UserController', 'action' => 'get'],
     'users/store' => ['controller' => 'UserController', 'action' => 'store'],
-    'users/update/{id}' => ['controller' => 'UserController', 'action' => 'update'],
+    'users/update' => ['controller' => 'UserController', 'action' => 'update'],
 
 ];
 
 // Parse da URL
 if ($url) {
     $urlParts = explode('/', $url);
-
+    $routeFound = false;
+    
     // Primeiro tente a URL completa
     if (array_key_exists($url, $routes)) {
         $routeKey = $url;
+        $routeFound = true;
     }
-    // Se não encontrar, tente apenas o primeiro segmento
-    else if (array_key_exists($urlParts[0], $routes)) {
-        $routeKey = $urlParts[0];
-    } else {
+    // Se não encontrar, tente verificar rotas com parâmetros
+    else {
+        foreach ($routes as $pattern => $route) {
+            $patternParts = explode('/', $pattern);
+            
+            // Verifica se o número de segmentos é o mesmo
+            if (count($patternParts) == count($urlParts)) {
+                $matches = true;
+                $params = [];
+                
+                // Compara cada segmento
+                for ($i = 0; $i < count($patternParts); $i++) {
+                    // Verifica se é um parâmetro {id}
+                    if (preg_match('/^\{([a-z0-9_]+)\}$/', $patternParts[$i], $paramMatches)) {
+                        // Extrai o nome do parâmetro (ex: 'id')
+                        $paramName = $paramMatches[1];
+                        $params[$paramName] = $urlParts[$i];
+                    }
+                    // Caso contrário, verifica se o segmento é igual
+                    else if ($patternParts[$i] !== $urlParts[$i]) {
+                        $matches = false;
+                        break;
+                    }
+                }
+                
+                if ($matches) {
+                    $routeKey = $pattern;
+                    $routeFound = true;
+                    break;
+                }
+            }
+        }
+        
+        // Se ainda não encontrou, tente apenas o primeiro segmento
+        if (!$routeFound && array_key_exists($urlParts[0], $routes)) {
+            $routeKey = $urlParts[0];
+            $routeFound = true;
+        }
+    }
+    
+    if (!$routeFound) {
         $routeKey = null;
     }
 } else {
@@ -99,7 +139,21 @@ if ($routeKey !== null && array_key_exists($routeKey, $routes)) {
     if (class_exists($controllerName)) {
         $controller = new $controllerName();
         if (method_exists($controller, $actionName)) {
-            call_user_func([$controller, $actionName]);
+            // Extrai parâmetros da URL se existirem
+            $params = [];
+            $patternParts = explode('/', $routeKey);
+            $urlParts = explode('/', $url);
+            
+            for ($i = 0; $i < count($patternParts); $i++) {
+                if (isset($patternParts[$i]) && preg_match('/^\{([a-z0-9_]+)\}$/', $patternParts[$i], $matches)) {
+                    if (isset($urlParts[$i])) {
+                        $params[] = $urlParts[$i];
+                    }
+                }
+            }
+            
+            // Chama o método do controller com os parâmetros
+            call_user_func_array([$controller, $actionName], $params);
             exit;
         }
     }
