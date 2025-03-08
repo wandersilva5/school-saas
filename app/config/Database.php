@@ -7,10 +7,11 @@ class Database {
     private $connection;
 
     private function __construct() {
-        $host = getenv('DB_HOST') ?: 'localhost';
-        $dbname = getenv('DB_NAME') ?: 'portal_escolar';
-        $username = getenv('DB_USER') ?: 'root';
-        $password = getenv('DB_PASS') ?: '';
+        // Em ambiente Docker, o host deve ser o nome do serviço, não 'localhost'
+        $host = 'mysql';
+        $dbname = getenv('DB_NAME') ?: 'app_db'; // Alterado para o nome definido no docker-compose.yml
+        $username = getenv('DB_USER') ?: 'app_user'; // Alterado para o usuário definido no docker-compose.yml
+        $password = getenv('DB_PASS') ?: 'app_pass'; // Alterado para a senha definida no docker-compose.yml
 
         try {
             $this->connection = new \PDO(
