@@ -54,17 +54,26 @@ $routes = [
     'users' => ['controller' => 'UserController', 'action' => 'index'],
     'users/get/{id}' => ['controller' => 'UserController', 'action' => 'get'],
     'users/store' => ['controller' => 'UserController', 'action' => 'store'],
-    'users/update' => ['controller' => 'UserController', 'action' => 'update'],
+    'users/update/{id}' => ['controller' => 'UserController', 'action' => 'update'],
+
 ];
 
-// Verifica se a rota atual precisa de verificação
-if (!in_array($requestUri, $publicRoutes)) {
-    if (!isset($_SESSION['user'])) {
-        header('Location: /login');
-        exit;
+// Parse da URL
+if ($url) {
+    $urlParts = explode('/', $url);
+
+    // Primeiro tente a URL completa
+    if (array_key_exists($url, $routes)) {
+        $routeKey = $url;
     }
-    $institutionCheck = new \App\Middleware\InstitutionCheck();
-    $institutionCheck->handle();
+    // Se não encontrar, tente apenas o primeiro segmento
+    else if (array_key_exists($urlParts[0], $routes)) {
+        $routeKey = $urlParts[0];
+    } else {
+        $routeKey = null;
+    }
+} else {
+    $routeKey = '';
 }
 
 // Verifica se a rota existe
@@ -75,7 +84,21 @@ if (array_key_exists($url, $routes)) {
     if (class_exists($controllerName)) {
         $controller = new $controllerName();
         if (method_exists($controller, $actionName)) {
-            call_user_func([$controller, $actionName]);
+            // Extrai parâmetros da URL se existirem
+            $params = [];
+            $patternParts = explode('/', $routeKey);
+            $urlParts = explode('/', $url);
+            
+            for ($i = 0; $i < count($patternParts); $i++) {
+                if (isset($patternParts[$i]) && preg_match('/^\{([a-z0-9_]+)\}$/', $patternParts[$i], $matches)) {
+                    if (isset($urlParts[$i])) {
+                        $params[] = $urlParts[$i];
+                    }
+                }
+            }
+            
+            // Chama o método do controller com os parâmetros
+            call_user_func_array([$controller, $actionName], $params);
             exit;
         }
     }

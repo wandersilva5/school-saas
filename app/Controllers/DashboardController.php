@@ -21,9 +21,6 @@ class DashboardController extends BaseController
         $user = $_SESSION['user'];
         error_log("DashboardController: Usuário encontrado: " . print_r($user, true));
 
-        $pageTitle = "Dashboard";
-        $currentPage = 'dashboard';
-
         // Dados para os cards do dashboard
         $dashboardData = [
             'total_users' => 150,
@@ -34,8 +31,8 @@ class DashboardController extends BaseController
 
         return $this->render('dashboard/index', [
             'user' => $user,
-            'pageTitle' => $pageTitle,
-            'currentPage' => $currentPage,
+            'pageTitle' => 'Dashboard',
+            'currentPage' => 'dashboard',
             'dashboardData' => $dashboardData
         ]);
     }

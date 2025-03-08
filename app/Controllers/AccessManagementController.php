@@ -81,7 +81,7 @@ class AccessManagementController extends BaseController
                 'users' => $users,
                 'roles' => $roles,
                 'institutions' => $institutions,
-                'currentPage' => $page,
+                'currentPage' => 'access-management',
                 'totalPages' => $totalPages,
                 'pageTitle' => 'Gerenciar Acessos'
             ]);

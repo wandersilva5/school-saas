@@ -63,10 +63,10 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                 <li class="sidebar-header">
                     Acadêmico
                 </li>
-                <li class="sidebar-item <?= $currentPage === 'courses' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/courses">
+                <li class="sidebar-item <?= $currentPage === 'materias' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/materias">
                         <i class="bi bi-book"></i>
-                        <span>Cursos</span>
+                        <span>Matérias</span>
                     </a>
                 </li>
                 <li class="sidebar-item <?= $currentPage === 'classes' ? 'active' : '' ?>">
@@ -75,10 +75,16 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         <span>Turmas</span>
                     </a>
                 </li>
-                <li class="sidebar-item <?= $currentPage === 'students' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/students">
+                <li class="sidebar-item <?= $currentPage === 'alunos' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/alunos">
                         <i class="bi bi-person-badge"></i>
                         <span>Alunos</span>
+                    </a>
+                </li>
+                <li class="sidebar-item <?= $currentPage === 'responsaveis' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/responsaveis">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Responsáveis</span>
                     </a>
                 </li>
 

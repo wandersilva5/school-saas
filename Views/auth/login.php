@@ -41,6 +41,14 @@
             background-color: #1e6ddf;
             border-color: #1e6ddf;
         }
+
+        .hero-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0.1;
+}
     </style>
 </head>
 
@@ -48,7 +56,7 @@
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<!-- Debug: POST recebido -->\n";
-        echo "<!-- Email: " . htmlspecialchars($_POST['email'] ?? '') . " -->\n";
+        echo '<!-- Email: ' . htmlspecialchars($_POST['email'] ?? '') . " -->\n";
     }
     ?>
     <div class="container">
@@ -78,6 +86,9 @@
             </form>
         </div>
     </div>
+    <svg class="hero-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+        <path fill="#ffffff" d="M0,96L48,112C96,128,192,160,288,165.3C384,171,480,149,576,128C672,107,768,85,864,96C960,107,1056,149,1152,154.7C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
 </body>
 
 </html>
