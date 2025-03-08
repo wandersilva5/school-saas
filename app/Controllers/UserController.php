@@ -41,7 +41,7 @@ class UserController extends BaseController
             return $this->render('users/index', [
                 'users' => $users,
                 'availableRoles' => $availableRoles,
-                'currentPage' => $page,
+                'currentPage' => 'users',
                 'totalPages' => $totalPages,
                 'pageTitle' => 'Gerenciar Usuários',
             ]);

@@ -34,9 +34,9 @@ class AlunoController extends BaseController
             'pageTitle' => 'Gerenciar Alunos',
             'alunos' => $alunos,
             'responsaveis' => $responsaveis,
-            'currentPage' => $page,
+            'currentPage' => 'alunos', // Alterado para marcar o item ativo no sidebar
             'totalPages' => $totalPages,
-            'currentSection' => 'alunos' // Adicionado para marcar o item ativo no sidebar
+            'paginaAtual' => $page // Renomeado para evitar conflito com o currentPage do sidebar
         ]);
     }
 
@@ -77,7 +77,7 @@ class AlunoController extends BaseController
         $this->render('alunos/show', [
             'pageTitle' => 'Detalhes do Aluno',
             'aluno' => $aluno,
-            'currentSection' => 'alunos' // Adicionado para marcar o item ativo no sidebar
+            'currentPage' => 'alunos' // Alterado para marcar o item ativo no sidebar
         ]);
     }
 

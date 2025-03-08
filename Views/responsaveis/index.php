@@ -76,18 +76,18 @@
                 <?php if ($totalPages > 1): ?>
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
-                            <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>">Anterior</a>
+                            <li class="page-item <?= ($paginaAtual <= 1) ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?page=<?= $paginaAtual - 1 ?>">Anterior</a>
                             </li>
 
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?= ($currentPage == $i) ? 'active' : '' ?>">
+                                <li class="page-item <?= ($paginaAtual == $i) ? 'active' : '' ?>">
                                     <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
 
-                            <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage + 1 ?>">Próximo</a>
+                            <li class="page-item <?= ($paginaAtual >= $totalPages) ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?page=<?= $paginaAtual + 1 ?>">Próximo</a>
                             </li>
                         </ul>
                     </nav>
