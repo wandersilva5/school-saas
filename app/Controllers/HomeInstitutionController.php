@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\CarouselSlide;
+
 class HomeInstitutionController extends BaseController
 {
     public function index()
@@ -28,11 +30,16 @@ class HomeInstitutionController extends BaseController
             'new_students' => 45
         ];
 
+        // Carregando os slides do carrossel para a instituição do usuário
+        $carouselSlideModel = new CarouselSlide();
+        $slides = $carouselSlideModel->getByInstitutionId($user['institution_id']);
+
         return $this->render('home-institution/index', [
             'user' => $user,
             'pageTitle' => 'Dashboard',
             'currentPage' => 'dashboard-institution',
-            'dashboardData' => $dashboardData
+            'dashboardData' => $dashboardData,
+            'slides' => $slides
         ]);
     }
-} 
+}

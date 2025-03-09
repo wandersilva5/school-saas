@@ -88,6 +88,13 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                     </a>
                 </li>
 
+                <li class="sidebar-item <?= $currentPage === 'settings' ? 'active' : '' ?>">
+                    <a class="sidebar-link" href="/settings">
+                        <i class="bi bi-gear"></i>
+                        <span>Configurações</span>
+                    </a>
+                </li>
+
                 <?php if (in_array('TI', $userRoles)): ?>
                     <li class="sidebar-header">
                         Administração
@@ -96,12 +103,6 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                         <a class="sidebar-link" href="/users">
                             <i class="bi bi-people-fill"></i>
                             <span>Usuários</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item <?= $currentPage === 'settings' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/settings">
-                            <i class="bi bi-gear"></i>
-                            <span>Configurações</span>
                         </a>
                     </li>
 

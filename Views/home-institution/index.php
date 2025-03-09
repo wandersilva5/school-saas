@@ -1,24 +1,22 @@
 <!-- Carrossel de Imagens -->
 <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-indicators">
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="3" aria-label="Slide 4"></button>
+        <?php foreach ($slides as $index => $slide): ?>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="<?= $index ?>" class="<?= $index === 0 ? 'active' : '' ?>" aria-current="<?= $index === 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $index + 1 ?>"></button>
+        <?php endforeach; ?>
     </div>
     <div class="carousel-inner" style="width: 100%; max-height: 680px; position: relative; ">
-        <div class="carousel-item active">
-            <img src="https://img.freepik.com/fotos-gratis/menino-de-copia-espaco-com-livros-mostrando-sinal-ok_23-2148469950.jpg" class="d-block w-100" alt="Imagem 1">
-        </div>
-        <div class="carousel-item">
-            <img src="https://img.freepik.com/fotos-gratis/alunos-sabendo-a-resposta-certa_329181-14271.jpg" class="d-block w-100" alt="Imagem 2">
-        </div>
-        <div class="carousel-item">
-            <img src="https://img.freepik.com/fotos-gratis/estudante-feliz-com-sua-mochila-e-livros_1098-3454.jpg" class="d-block w-100" alt="Imagem 3">
-        </div>
-        <div class="carousel-item">
-            <img src="https://img.freepik.com/fotos-gratis/livro-com-fundo-de-placa-verde_1150-3837.jpg" class="d-block w-100" alt="Imagem 4">
-        </div>
+        <?php if (empty($slides)): ?>
+            <div class="carousel-item active">
+                <img src="https://img.freepik.com/fotos-gratis/menino-de-copia-espaco-com-livros-mostrando-sinal-ok_23-2148469950.jpg" class="d-block w-100" alt="Imagem Padrão">
+            </div>
+        <?php else: ?>
+            <?php foreach ($slides as $index => $slide): ?>
+                <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                    <img src="<?= $slide['image_url'] ?>" class="d-block w-100" alt="Slide <?= $index + 1 ?>">
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>

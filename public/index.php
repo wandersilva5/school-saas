@@ -85,6 +85,12 @@ $routes = [
     'alunos/store' => ['controller' => 'AlunoController', 'action' => 'store'],
     'alunos/update' => ['controller' => 'AlunoController', 'action' => 'update'],
     'alunos/delete' => ['controller' => 'AlunoController', 'action' => 'delete'],
+    
+    // Rotas para carrossel
+    'carousel' => ['controller' => 'CarouselSlideController', 'action' => 'index'],
+    'carousel/create' => ['controller' => 'CarouselSlideController', 'action' => 'create'],
+    'carousel/store' => ['controller' => 'CarouselSlideController', 'action' => 'store'],
+
 
 ];
 
