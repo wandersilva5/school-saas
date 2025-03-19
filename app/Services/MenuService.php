@@ -15,12 +15,39 @@ class MenuService
 
     public function getUserMenu($userRoles)
     {
-        return $this->menuModel->getMenusByRole($userRoles);
+        $allMenus = $this->menuModel->getAll();
+        $accessibleMenus = [];
+        
+        foreach ($allMenus as $menu) {
+            if ($this->hasAccess($menu, $userRoles)) {
+                $accessibleMenus[] = $menu;
+            }
+        }
+        
+        return $accessibleMenus;
     }
 
     public function hasAccess($menu, $userRoles)
     {
-        $requiredRoles = explode(',', $menu['required_roles']);
-        return count(array_intersect($requiredRoles, $userRoles)) > 0;
+        if (empty($menu['required_roles'])) {
+            return true; // No roles required, everyone can access
+        }
+        
+        // Handle different format possibilities
+        $requiredRoles = $menu['required_roles'];
+        if (is_string($requiredRoles)) {
+            $requiredRoles = explode(',', $requiredRoles);
+            // Clean up any spaces
+            $requiredRoles = array_map('trim', $requiredRoles);
+        }
+        
+        // Check if the user has any of the required roles
+        foreach ($requiredRoles as $role) {
+            if (in_array($role, $userRoles)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

@@ -1,18 +1,76 @@
 <?php
+use App\Services\MenuService;
+use App\Helpers\AuthRoleHelper;
 
-use App\Helpers\AuthHelper; ?>
-<?php
-// No início do arquivo, após o uso do AuthHelper
+// Get current user roles
 $userRoles = $_SESSION['user']['roles'] ?? [];
-error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
+
+// Initialize menu service
+$menuService = new MenuService();
+
+// Get menus for the user's roles
+$userMenus = $menuService->getUserMenu($userRoles);
+
+// Determine current page from URL
+$currentPage = $currentPage ?? '';
+if (empty($currentPage)) {
+    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $currentPage = trim($requestUri, '/');
+    // Handle homepage
+    if (empty($currentPage)) {
+        $currentPage = 'dashboard';
+    }
+}
+
+// Group menus by header
+$menusByHeader = [];
+foreach ($userMenus as $menu) {
+    if (!isset($menu['active']) || $menu['active'] == 1) { // Only include active menus
+        $menusByHeader[$menu['header']][] = $menu;
+    }
+}
+
+// Sort each header group by order_index
+foreach ($menusByHeader as &$headerMenus) {
+    usort($headerMenus, function($a, $b) {
+        return $a['order_index'] - $b['order_index'];
+    });
+}
+
+// Define the header order
+$headerOrder = [
+    'Principal',
+    'Acadêmico',
+    'Administração'
+];
+
+// Create a new ordered array based on the defined order
+$orderedMenus = [];
+// First add headers in the specified order
+foreach ($headerOrder as $header) {
+    if (isset($menusByHeader[$header])) {
+        $orderedMenus[$header] = $menusByHeader[$header];
+    }
+}
+// Then add any remaining headers
+foreach ($menusByHeader as $header => $menus) {
+    if (!in_array($header, $headerOrder)) {
+        $orderedMenus[$header] = $menus;
+    }
+}
+
+// Replace the original array with the ordered one
+$menusByHeader = $orderedMenus;
 ?>
+
 <div class="d-flex flex-column flex-shrink-0 text-white">
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-content">
+            <!-- Institution logo/branding -->
             <div class="sidebar-brand">
                 <div class="brand-content">
                     <?php
-                    // Busca os dados da instituição
+                    // Institution data
                     $institutionId = $_SESSION['user']['institution_id'] ?? null;
                     $db = \App\Config\Database::getInstance()->getConnection();
                     $stmt = $db->prepare("SELECT name, logo_url FROM institutions WHERE id = ?");
@@ -21,7 +79,7 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
                     ?>
 
                     <div class="institution-logo">
-                        <?php if ($institution['logo_url']): ?>
+                        <?php if (isset($institution['logo_url']) && $institution['logo_url']): ?>
                             <img src="<?= htmlspecialchars($institution['logo_url']) ?>" alt="Logo" class="img-fluid">
                         <?php else: ?>
                             <i class="bi bi-building"></i>
@@ -34,118 +92,25 @@ error_log("Roles do usuário no sidebar: " . print_r($userRoles, true));
             </div>
 
             <ul class="sidebar-nav">
-                <li class="sidebar-header">
-                    Principal
-                </li>
-                <?php if (in_array('Master', $userRoles)): ?>
-                    <li class="sidebar-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/dashboard">
-                            <i class="bi bi-house-door"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-                <?php if (!in_array('Master', $userRoles)): ?>
-                    <li class="sidebar-item <?= $currentPage === 'dashboard-institution' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/dashboard-institution">
-                            <i class="bi bi-house-door"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-                <li class="sidebar-item <?= $currentPage === 'calendar' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/calendar">
-                        <i class="bi bi-calendar3"></i>
-                        <span>Calendário</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-header">
-                    Acadêmico
-                </li>
-                <li class="sidebar-item <?= $currentPage === 'materias' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/materias">
-                        <i class="bi bi-book"></i>
-                        <span>Matérias</span>
-                    </a>
-                </li>
-                <li class="sidebar-item <?= $currentPage === 'classes' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/classes">
-                        <i class="bi bi-people"></i>
-                        <span>Turmas</span>
-                    </a>
-                </li>
-                <li class="sidebar-item <?= $currentPage === 'alunos' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/alunos">
-                        <i class="bi bi-person-badge"></i>
-                        <span>Alunos</span>
-                    </a>
-                </li>
-                <li class="sidebar-item <?= $currentPage === 'responsaveis' ? 'active' : '' ?>">
-                    <a class="sidebar-link" href="/responsaveis">
-                        <i class="bi bi-person-badge"></i>
-                        <span>Responsáveis</span>
-                    </a>
-                </li>
-
-                <?php if (in_array('TI', $userRoles)): ?>
+                <?php foreach ($menusByHeader as $header => $menus): ?>
                     <li class="sidebar-header">
-                        Administração
-                    </li>
-                    <li class="sidebar-item <?= $currentPage === 'users' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/users">
-                            <i class="bi bi-people-fill"></i>
-                            <span>Usuários</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item <?= $currentPage === 'settings' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/settings">
-                            <i class="bi bi-gear"></i>
-                            <span>Configurações</span>
-                        </a>
-                    </li>
-
-                <?php endif;
-                ?>
-                <?php if (in_array('Master', $userRoles)):
-                ?>
-                    <li class="sidebar-header">
-                        Configurações do Sistema
-                    </li>
-                    <li class="sidebar-item <?= $currentPage === 'access-management' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/access-management">
-                            <i class="bi bi-shield-lock"></i>
-                            <span>Gerenciar Acessos</span>
-                        </a>
+                        <?= htmlspecialchars($header) ?>
                     </li>
                     
-                <?php endif; ?>
-                <?php if (in_array('Master', $_SESSION['user']['roles'])): ?>
-                    <li class="sidebar-item <?= $currentPage === 'institution' ? 'active' : '' ?>">
-                        <a class="sidebar-link" href="/institution">
-                            <i class="bi bi-building"></i>
-                            <span>Instituições</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-
+                    <?php foreach ($menus as $menu): ?>
+                        <?php 
+                        // Check if current page matches this menu's route
+                        $isActive = (strpos($currentPage, $menu['route']) === 0) ? 'active' : '';
+                        ?>
+                        <li class="sidebar-item <?= $isActive ?>">
+                            <a class="sidebar-link" href="<?= htmlspecialchars($menu['url']) ?>">
+                                <i class="bi <?= htmlspecialchars($menu['icon']) ?>"></i>
+                                <span><?= htmlspecialchars($menu['name']) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
             </ul>
         </div>
     </nav>
 </div>
-
-
-<?php push('scripts') ?>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Adiciona classe active ao clicar no item do menu
-        const sidebarLinks = document.querySelectorAll('.sidebar-link');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                document.querySelector('.sidebar-item.active')?.classList.remove('active');
-                this.closest('.sidebar-item').classList.add('active');
-            });
-        });
-    });
-</script>
-<?php endpush() ?>
