@@ -56,7 +56,7 @@ class InstitutionController extends BaseController
 
             return $this->render('institution/index', [
                 'institutions' => $institutions,
-                'currentPage' => $page,
+                'currentPage' => 'institution',
                 'totalPages' => $totalPages,
                 'pageTitle' => 'Gerenciar Instituições'
             ]);

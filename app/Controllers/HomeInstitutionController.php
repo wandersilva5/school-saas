@@ -37,7 +37,7 @@ class HomeInstitutionController extends BaseController
         return $this->render('dashboard/home-institution', [
             'user' => $user,
             'pageTitle' => "Dashboard",
-            'currentPage' => 'dashboard',
+            'currentPage' => 'dashboard-institution',
             'dashboardData' => $dashboardData,
             'sliderImages' => $sliderImages
         ]);
