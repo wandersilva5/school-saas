@@ -49,7 +49,7 @@ class User
             ORDER BY u.created_at DESC
             LIMIT ? OFFSET ?
         ");
-        
+
         $stmt->execute([$institutionId, $limit, $offset]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -71,40 +71,59 @@ class User
         try {
             $this->db->beginTransaction();
 
+            // Check for existing user with same email in this institution
             $stmt = $this->db->prepare("
-                INSERT INTO users (name, email, password, phone, institution_id, created_at) 
-                VALUES (?, ?, ?, ?, NOW())
-            ");
+            SELECT COUNT(*) FROM users 
+            WHERE email = ? AND institution_id = ? AND deleted_at IS NULL
+        ");
+            $stmt->execute([$userData['email'], $userData['institution_id']]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new \Exception('Email já está em uso nesta instituição');
+            }
 
-            $stmt->execute([
+            // Insert user
+            $stmt = $this->db->prepare("
+            INSERT INTO users (name, email, password, institution_id, created_at) 
+            VALUES (?, ?, ?, ?, NOW())
+        ");
+
+            $result = $stmt->execute([
                 $userData['name'],
                 $userData['email'],
-                $userData['phone'],
                 password_hash($userData['password'], PASSWORD_DEFAULT),
                 $userData['institution_id']
             ]);
 
+            if (!$result) {
+                throw new \Exception('Erro ao inserir usuário no banco de dados');
+            }
+
             $userId = $this->db->lastInsertId();
 
-            // Inserir roles do usuário
+            // Insert user roles if any
             if (!empty($userData['roles'])) {
                 $stmt = $this->db->prepare("
-                    INSERT INTO user_roles (user_id, role_id) 
-                    VALUES (?, ?)
-                ");
+                INSERT INTO user_roles (user_id, role_id) 
+                VALUES (?, ?)
+            ");
 
                 foreach ($userData['roles'] as $roleId) {
-                    $stmt->execute([$userId, $roleId]);
+                    $result = $stmt->execute([$userId, $roleId]);
+                    if (!$result) {
+                        throw new \Exception('Erro ao associar perfil ao usuário');
+                    }
                 }
             }
 
             $this->db->commit();
             return true;
-
         } catch (\PDOException $e) {
             $this->db->rollBack();
-            error_log($e->getMessage());
-            return false;
+            error_log("Database error creating user: " . $e->getMessage());
+            throw new \Exception('Erro do banco de dados: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
         }
     }
 
@@ -121,17 +140,17 @@ class User
                 WHERE u.id = ? AND u.deleted_at IS NULL
                 GROUP BY u.id
             ");
-            
+
             $stmt->execute([$id]);
             $user = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
+
             if ($user) {
                 // Convert role_ids string to array
                 $user['roles'] = $user['role_ids'] ? explode(',', $user['role_ids']) : [];
                 unset($user['role_ids']);
                 unset($user['password']); // Remove senha por segurança
             }
-            
+
             return $user;
         } catch (\PDOException $e) {
             error_log("Erro ao buscar usuário: " . $e->getMessage());
@@ -155,22 +174,24 @@ class User
             $params[] = $userData['id'];
             $params[] = $userData['institution_id'];
 
-            $sql = "UPDATE users SET " . implode(', ', $updateFields) . 
-                   " WHERE id = ? AND institution_id = ?";
-            
+            $sql = "UPDATE users SET " . implode(', ', $updateFields) .
+                " WHERE id = ? AND institution_id = ?";
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
 
             // Atualizar roles
             $stmt = $this->db->prepare(
                 "DELETE FROM user_roles 
-                WHERE user_id = ?");
+                WHERE user_id = ?"
+            );
             $stmt->execute([$userData['id']]);
 
             if (!empty($userData['roles'])) {
                 $stmt = $this->db->prepare(
                     "INSERT INTO user_roles (user_id, role_id) 
-                    VALUES (?, ?)");
+                    VALUES (?, ?)"
+                );
                 foreach ($userData['roles'] as $roleId) {
                     $stmt->execute([$userData['id'], $roleId]);
                 }
@@ -178,7 +199,6 @@ class User
 
             $this->db->commit();
             return true;
-
         } catch (\PDOException $e) {
             $this->db->rollBack();
             error_log($e->getMessage());
@@ -201,5 +221,4 @@ class User
             return false;
         }
     }
-
 }

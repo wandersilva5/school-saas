@@ -125,21 +125,21 @@
                         <label for="password" class="form-label">Senha</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
-
-                    <div class="mb-3 form-check">
+                    <!-- Make sure roles checkboxes are properly named with array notation -->
+                    <div class="mb-3">
                         <label class="form-label">Perfis</label>
-                        <?php if (!empty($allRoles) && is_array($allRoles)): ?>:
+                        <?php if (!empty($allRoles) && is_array($allRoles)): ?>
                             <?php foreach ($allRoles as $role): ?>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="roles[]" 
-                                           value="<?= $role['id'] ?>" id="role_<?= $role['id'] ?>">
+                                    <input class="form-check-input" type="checkbox" name="roles[]"
+                                        value="<?= $role['id'] ?>" id="role_<?= $role['id'] ?>">
                                     <label class="form-check-label" for="role_<?= $role['id'] ?>">
                                         <?= htmlspecialchars($role['name']) ?>
                                     </label>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                    </div>  
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -182,8 +182,8 @@
                         <?php if (!empty($allRoles) && is_array($allRoles)): ?>
                             <?php foreach ($allRoles as $role): ?>
                                 <div class="form-check">
-                                    <input class="form-check-input edit-role" type="checkbox" name="roles[]" 
-                                           value="<?= $role['id'] ?>" id="edit_role_<?= $role['id'] ?>">
+                                    <input class="form-check-input edit-role" type="checkbox" name="roles[]"
+                                        value="<?= $role['id'] ?>" id="edit_role_<?= $role['id'] ?>">
                                     <label class="form-check-label" for="edit_role_<?= $role['id'] ?>">
                                         <?= htmlspecialchars($role['name']) ?>
                                     </label>
@@ -210,27 +210,30 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error(await response.text());
             }
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(data.error);
             }
 
-            // Atualiza a action do formulário
+            // Update form action with correct ID
             document.getElementById('editUserForm').action = `/users/update/${data.id}`;
-            
-            // Preenche os campos
+
+            // Fill form fields
             document.getElementById('edit_user_id').value = data.id;
             document.getElementById('edit_name').value = data.name;
             document.getElementById('edit_email').value = data.email;
             document.getElementById('edit_active').checked = Boolean(parseInt(data.active));
-            
-            // Limpa e marca os roles
+
+            // Clear password field - it should be empty for editing
+            document.getElementById('edit_password').value = '';
+
+            // Handle roles
             document.querySelectorAll('.edit-role').forEach(cb => cb.checked = false);
             if (data.roles) {
                 data.roles.forEach(roleId => {
@@ -238,21 +241,21 @@
                     if (cb) cb.checked = true;
                 });
             }
-            
-            // Abre o modal
+
+            // Open modal
             const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
             modal.show();
-            
+
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao carregar dados do usuário: ' + error.message);
+            console.error('Error:', error);
+            alert('Error loading user data: ' + error.message);
         }
     }
 
     async function deleteUser(userId) {
         if (confirm('Tem certeza que deseja excluir este usuário?')) {
-            window.location.href = `/users/delete/${userId}`;       
-        }        
+            window.location.href = `/users/delete/${userId}`;
+        }
     }
 </script>
 <?php endpush() ?>

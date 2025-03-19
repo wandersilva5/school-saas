@@ -74,11 +74,10 @@ class UserController extends BaseController
 
             // Remove sensitive data
             unset($user['password']);
-            
+
             header('Content-Type: application/json');
             echo json_encode($user);
             exit;
-
         } catch (\Exception $e) {
             http_response_code(400);
             header('Content-Type: application/json');
@@ -88,31 +87,47 @@ class UserController extends BaseController
     }
 
     public function store()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('HTTP/1.1 405 Method Not Allowed');
-            exit;
-        }
-
-        try {
-            $userData = [
-                'name' => $_POST['name'],
-                'email' => $_POST['email'],
-                'password' => $_POST['password'],
-                'institution_id' => $_SESSION['user']['institution_id'],
-                'roles' => $_POST['roles'] ?? []
-            ];
-
-            if ($this->userModel->create($userData)) {
-                header('Location: /users?success=1');
-            } else {
-                throw new \Exception('Erro ao criar usuário');
-            }
-        } catch (\Exception $e) {
-            header('Location: /users?error=' . urlencode($e->getMessage()));
-        }
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('HTTP/1.1 405 Method Not Allowed');
         exit;
     }
+
+    try {
+        // Validate required fields
+        if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['password'])) {
+            throw new \Exception('Nome, email e senha são obrigatórios');
+        }
+        
+        // Check email format
+        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception('Formato de email inválido');
+        }
+        
+        // Create user data array
+        $userData = [
+            'name' => $_POST['name'],
+            'email' => $_POST['email'],
+            'password' => $_POST['password'],
+            'institution_id' => $_SESSION['user']['institution_id'],
+            'roles' => $_POST['roles'] ?? []
+        ];
+
+        // Add logging for debugging
+        error_log("Creating user with data: " . print_r($userData, true));
+        
+        // Try to create the user
+        if ($this->userModel->create($userData)) {
+            header('Location: /users?success=1');
+        } else {
+            throw new \Exception('Erro ao criar usuário - possível duplicidade de email');
+        }
+    } catch (\Exception $e) {
+        error_log("User creation error: " . $e->getMessage());
+        header('Location: /users?error=' . urlencode($e->getMessage()));
+    }
+    exit;
+}
 
     public function update($id)
     {
@@ -135,7 +150,7 @@ class UserController extends BaseController
             if ($this->userModel->update($userData)) {
                 header('Location: /users?success=1');
             } else {
-                throw new \Exception('Erro ao atualizar usuário');
+                throw new \Exception('Erro ao atualizar usuário'); // Make sure this is "atualizar", not "criar"
             }
         } catch (\Exception $e) {
             header('Location: /users?error=' . urlencode($e->getMessage()));
@@ -147,7 +162,7 @@ class UserController extends BaseController
     {
         try {
             $user = $this->userModel->get($id);
-            
+
             if (!$user || $user['institution_id'] != $_SESSION['user']['institution_id']) {
                 throw new \Exception('Usuário não encontrado ou acesso negado');
             }
