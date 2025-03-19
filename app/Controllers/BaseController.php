@@ -11,7 +11,7 @@ class BaseController
             extract($data);
         }
         
-        require __DIR__ . '/../../Views/' . $path . '.php';
+        require __DIR__ . '/../Views/' . $path . '.php';
     }
 
     protected function redirect($path)
@@ -28,7 +28,7 @@ class BaseController
         }
 
         // Em renderView(), mude para:
-        $viewPath = __DIR__ . '/../../Views/';
+        $viewPath = __DIR__ . '/../Views/';
 
         // Verifica se o arquivo existe
         if (file_exists($viewPath . $view . '.php')) {
@@ -56,7 +56,7 @@ class BaseController
         ob_start();
 
         // Inclui a view específica
-        require_once __DIR__ . '/../../Views/' . $view . '.php';
+        require_once __DIR__ . '/../Views/' . $view . '.php';
 
         // Captura o conteúdo da view
         $content = ob_get_clean();
@@ -67,7 +67,7 @@ class BaseController
             echo $content;
         } else {
             // Renderiza com o layout principal
-            require_once __DIR__ . '/../../Views/layouts/main.php';
+            require_once __DIR__ . '/../Views/layouts/main.php';
         }
     }
 }
