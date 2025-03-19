@@ -1,0 +1,335 @@
+:root {
+    /* Cores principais */
+    --bs-primary: #0d6efd;
+    --bs-primary-rgb: 13, 110, 253;
+    --bs-primary-bg-subtle: #e8f5fe;
+
+    --bs-success: #2e7d32;
+    --bs-success-rgb: 46, 125, 50;
+    --bs-success-bg-subtle: #e8f5e9;
+
+    --bs-warning: #ef6c00;
+    --bs-warning-rgb: 239, 108, 0;
+    --bs-warning-bg-subtle: #fff3e0;
+
+    --bs-danger: #c62828;
+    --bs-danger-rgb: 198, 40, 40;
+    --bs-danger-bg-subtle: #ffebee;
+
+    --bs-info: #0288d1;
+    --bs-info-rgb: 2, 136, 209;
+    --bs-info-bg-subtle: #e3f2fd;
+
+    /* Cores para badges e cards */
+    --badge-regular-bg: var(--bs-info-bg-subtle);
+    --badge-regular-color: var(--bs-info);
+
+    --badge-autorizado-bg: var(--bs-success-bg-subtle);
+    --badge-autorizado-color: var(--bs-success);
+
+    --badge-visitante-bg: var(--bs-warning-bg-subtle);
+    --badge-visitante-color: var(--bs-warning);
+
+    /* Cores para ações */
+    --action-approve-bg: var(--bs-success-bg-subtle);
+    --action-approve-color: var(--bs-success);
+    --action-approve-hover-bg: var(--bs-success);
+    --action-approve-hover-color: #ffffff;
+
+    --action-reject-bg: var(--bs-danger-bg-subtle);
+    --action-reject-color: var(--bs-danger);
+    --action-reject-hover-bg: var(--bs-danger);
+    --action-reject-hover-color: #ffffff;
+
+    /* Calendar specific colors */
+    --bs-primary-dark: #0056b3;
+    --calendar-event-bg: var(--bs-primary-bg-subtle);
+    --calendar-event-border: var(--bs-primary);
+    --calendar-event-text: var(--bs-primary);
+    --calendar-highlight: var(--bs-primary-bg-subtle);
+}
+
+.fc-header-toolbar {
+    padding: 1rem;
+}
+
+.fc-view-harness {
+    background-color: #fff;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    color: var(--bs-primary);
+}
+
+.fc .fc-button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+}
+
+.fc .fc-button-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: var(--bs-primary-dark, #0056b3);
+    border-color: var(--bs-primary-dark, #0056b3);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background-color: var(--bs-primary-dark, #0056b3);
+    border-color: var(--bs-primary-dark, #0056b3);
+}
+
+/* Estilo para eventos */
+.fc-event {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+/* Estilo para hoje */
+.fc-day-today {
+    background-color: var(--bs-primary-bg-subtle) !important;
+}
+
+/* Estilo para dias selecionados */
+.fc-highlight {
+    background-color: var(--bs-primary-bg-subtle) !important;
+}
+
+/* Cabeçalho da tabela */
+.fc th {
+    background-color: var(--bs-light, #f8f9fa);
+    color: var(--bs-primary);
+    padding: 0.75rem;
+}
+
+/* Eventos do dia */
+.list-group-item {
+    border-left: 3px solid var(--bs-primary);
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+.list-group-item small {
+    color: var(--bs-primary);
+}
+
+/* Content Sections */
+.content-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+/* Table Styling */
+.custom-table {
+    margin: 0;
+}
+
+.custom-table thead th {
+    border-top: none;
+    border-bottom: 2px solid #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    padding: 1rem;
+}
+
+.custom-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+/* Badges */
+.time-badge,
+.status-badge,
+.type-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.time-badge {
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary);
+}
+
+.status-badge.autorizado {
+    background: var(--badge-autorizado-bg);
+    color: var(--badge-autorizado-color);
+}
+
+.status-badge.regular {
+    background: var(--badge-regular-bg);
+    color: var(--badge-regular-color);
+}
+
+.status-badge.visitante {
+    background: var(--badge-visitante-bg);
+    color: var(--badge-visitante-color);
+}
+
+.type-badge {
+    background: var(--bs-info-bg-subtle);
+    color: var(--bs-info);
+}
+
+/* Authorization Cards */
+.auth-cards {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(1, 1fr);
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.auth-card {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+}
+
+.auth-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.auth-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.auth-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.auth-name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.auth-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.auth-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.detail-value {
+    color: #2d3748;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-action.approve {
+    background: var(--action-approve-bg);
+    color: var(--action-approve-color);
+}
+
+.btn-action.reject {
+    background: var(--action-reject-bg);
+    color: var(--action-reject-color);
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+}
+
+.btn-action.approve:hover {
+    background: var(--action-approve-hover-bg);
+    color: var(--action-approve-hover-color);
+}
+
+.btn-action.reject:hover {
+    background: var(--action-reject-hover-bg);
+    color: var(--action-reject-hover-color);
+}
+
+/* Scrollbar Customization */
+.auth-cards::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-cards::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+}
+
+.auth-cards::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .auth-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .auth-cards {
+        max-height: 500px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .auth-card {
+        margin-bottom: 0.5rem;
+    }
+}
