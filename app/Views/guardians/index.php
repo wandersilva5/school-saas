@@ -24,7 +24,7 @@
                                     <tr>
                                         <td><?= htmlspecialchars($guardian['name']) ?></td>
                                         <td><?= htmlspecialchars($guardian['email']) ?></td>
-                                        <td><?= htmlspecialchars($guardian['phone']) ?></td>
+                                        <td><?= $guardian['phone'] ?></td>
                                         <td>
                                             <a href="/users/edit/<?= $guardian['id'] ?>" class="btn btn-sm btn-primary">
                                                 <i class="bi bi-pencil"></i>

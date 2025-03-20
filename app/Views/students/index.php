@@ -15,6 +15,7 @@
                                 <tr>
                                     <th>Nome</th>
                                     <th>Email</th>
+                                    <th>Nsc/Idade</th>
                                     <th>Responsável</th>
                                     <th>Status</th>
                                     <th>Ações</th>
@@ -25,6 +26,7 @@
                                     <tr>
                                         <td><?= htmlspecialchars($student['student_name']) ?></td>
                                         <td><?= htmlspecialchars($student['student_email']) ?></td>
+                                        <td></td>
                                         <td><?= htmlspecialchars($student['guardian_name'] ?? 'Não definido') ?></td>
                                         <td>
                                             <?php if ($student['active']): ?>
@@ -34,6 +36,12 @@
                                             <?php endif; ?>
                                         </td>
                                         <td>
+                                        <button class="btn btn-sm btn-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#alunoInfoModal" 
+                                                onclick="viewAlunoDetails(<?= $aluno['id'] ?>)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-primary" onclick="editStudent(<?= htmlspecialchars(json_encode($student)) ?>)">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
@@ -147,6 +155,8 @@
     </div>
 </div>
 
+<?php include '_detalhes.php'; ?>
+
 <?php push('scripts') ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -237,6 +247,139 @@ function deleteStudent(id) {
         window.location.href = `/students/delete/${id}`;
     }
 }
+
+function viewAlunoDetails(alunoId) {
+        // Resetar áreas de exibição
+        document.getElementById('infoDisplay').style.display = 'none';
+        document.getElementById('infoForm').style.display = 'none';
+        document.getElementById('infoLoading').style.display = 'block';
+        document.getElementById('saveInfoBtn').style.display = 'none';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        
+        // Atualizar ID do aluno no formulário
+        document.getElementById('edit_aluno_id').value = alunoId;
+        
+        // Buscar informações do aluno via AJAX
+        fetch(`/alunos/get-info?aluno_id=${alunoId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('infoLoading').style.display = 'none';
+                
+                if (data.success && data.info) {
+                    // Preencher os campos de exibição
+                    document.getElementById('info_matricula').textContent = data.info.registration_number || '-';
+                    document.getElementById('info_data_nascimento').textContent = formatDate(data.info.birth_date) || '-';
+                    document.getElementById('info_genero').textContent = formatGender(data.info.gender) || '-';
+                    document.getElementById('info_tipo_sanguineo').textContent = data.info.blood_type || '-';
+                    
+                    // Formatar endereço completo
+                    const endereco = formatAddress(data.info);
+                    document.getElementById('info_endereco').textContent = endereco || '-';
+                    
+                    document.getElementById('info_contato_emergencia').textContent = data.info.emergency_contact || '-';
+                    document.getElementById('info_telefone_emergencia').textContent = data.info.emergency_phone || '-';
+                    document.getElementById('info_plano_saude').textContent = data.info.health_insurance || '-';
+                    document.getElementById('info_obs_saude').textContent = data.info.health_observations || '-';
+                    document.getElementById('info_escola_anterior').textContent = data.info.previous_school || '-';
+                    document.getElementById('info_observacoes').textContent = data.info.observation || '-';
+                    
+                    // Preencher os campos do formulário para edição posterior
+                    document.getElementById('edit_info_id').value = data.info.id;
+                    document.getElementById('edit_matricula').value = data.info.registration_number || '';
+                    document.getElementById('edit_data_nascimento').value = data.info.birth_date || '';
+                    document.getElementById('edit_genero').value = data.info.gender || 'M';
+                    document.getElementById('edit_tipo_sanguineo').value = data.info.blood_type || '';
+                    document.getElementById('edit_rua').value = data.info.address_street || '';
+                    document.getElementById('edit_numero').value = data.info.address_number || '';
+                    document.getElementById('edit_complemento').value = data.info.address_complement || '';
+                    document.getElementById('edit_bairro').value = data.info.address_district || '';
+                    document.getElementById('edit_cidade').value = data.info.address_city || '';
+                    document.getElementById('edit_estado').value = data.info.address_state || '';
+                    document.getElementById('edit_cep').value = data.info.address_zipcode || '';
+                    document.getElementById('edit_contato_emergencia').value = data.info.emergency_contact || '';
+                    document.getElementById('edit_telefone_emergencia').value = data.info.emergency_phone || '';
+                    document.getElementById('edit_plano_saude').value = data.info.health_insurance || '';
+                    document.getElementById('edit_obs_saude').value = data.info.health_observations || '';
+                    document.getElementById('edit_escola_anterior').value = data.info.previous_school || '';
+                    document.getElementById('edit_observacoes').value = data.info.observation || '';
+                    
+                    // Mostrar área de exibição
+                    document.getElementById('infoDisplay').style.display = 'block';
+                } else {
+                    // Se não há informações, mostrar formulário para cadastro
+                    document.getElementById('infoForm').style.display = 'block';
+                    document.getElementById('saveInfoBtn').style.display = 'inline-block';
+                    document.getElementById('cancelEditBtn').style.display = 'none'; // Não precisa mostrar cancelar na criação
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('infoLoading').style.display = 'none';
+                alert('Erro ao carregar informações do aluno');
+            });
+    }
+
+    // Função para mostrar formulário de edição
+    function showEditForm() {
+        document.getElementById('infoDisplay').style.display = 'none';
+        document.getElementById('infoForm').style.display = 'block';
+        document.getElementById('saveInfoBtn').style.display = 'inline-block';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    }
+
+    // Função para cancelar edição
+    function cancelEdit() {
+        document.getElementById('infoForm').style.display = 'none';
+        document.getElementById('infoDisplay').style.display = 'block';
+        document.getElementById('saveInfoBtn').style.display = 'none';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    // Função para formatar data (YYYY-MM-DD para DD/MM/YYYY)
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return dateString;
+        
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    // Função para formatar gênero
+    function formatGender(gender) {
+        if (!gender) return '-';
+        
+        const genders = {
+            'M': 'Masculino',
+            'F': 'Feminino',
+            'O': 'Outro'
+        };
+        
+        return genders[gender] || gender;
+    }
+
+    // Função para formatar endereço completo
+    function formatAddress(info) {
+        if (!info.address_street) return '-';
+        
+        let address = `${info.address_street}`;
+        if (info.address_number) address += `, ${info.address_number}`;
+        if (info.address_complement) address += ` - ${info.address_complement}`;
+        if (info.address_district) address += `, ${info.address_district}`;
+        if (info.address_city) address += `, ${info.address_city}`;
+        if (info.address_state) address += `/${info.address_state}`;
+        if (info.address_zipcode) address += ` - CEP: ${info.address_zipcode}`;
+        
+        return address;
+    }
+
+    // Inicializar máscaras para os campos
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof $().mask === 'function') {
+            $('.telefone').mask('(00) 00000-0000');
+            $('#edit_cep').mask('00000-000');
+        }
+    });
 </script>
 
 <style>

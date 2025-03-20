@@ -10,7 +10,7 @@ class BaseController
         if (!empty($data) && is_array($data)) {
             extract($data);
         }
-        
+
         require __DIR__ . '/../Views/' . $path . '.php';
     }
 
@@ -47,6 +47,10 @@ class BaseController
 
     protected function render($view, array $data = [])
     {
+        error_log("Rendering view: $view");
+        error_log("SESSION user: " . (isset($_SESSION['user']) ? 'YES' : 'NO'));
+        error_log("Public page check: " . (in_array($view, ['auth/login', 'auth/register']) ? 'YES' : 'NO'));
+
         // Extract data into variables
         if (!empty($data) && is_array($data)) {
             extract($data);
@@ -67,6 +71,16 @@ class BaseController
             echo $content;
         } else {
             // Renderiza com o layout principal
+            require_once __DIR__ . '/../Views/layouts/main.php';
+        }
+
+        error_log("About to check layout condition");
+
+        if (!isset($_SESSION['user']) && in_array($view, ['auth/login', 'auth/register'])) {
+            error_log("Using direct rendering (no layout)");
+            echo $content;
+        } else {
+            error_log("Using main layout");
             require_once __DIR__ . '/../Views/layouts/main.php';
         }
     }

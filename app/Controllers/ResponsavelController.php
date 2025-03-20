@@ -15,7 +15,6 @@ class ResponsavelController extends BaseController
 
     public function index()
     {
-        // Verificar se o usuário está logado
         if (!isset($_SESSION['user'])) {
             $this->redirect('/login');
         }
@@ -39,7 +38,6 @@ class ResponsavelController extends BaseController
 
     public function store()
     {
-        // Verificar se o usuário está logado
         if (!isset($_SESSION['user'])) {
             $this->redirect('/login');
         }
@@ -55,16 +53,23 @@ class ResponsavelController extends BaseController
                 ];
 
                 $this->responsavelModel->create($data);
-                $this->redirect('/responsaveis?success=1');
+                $_SESSION['toast'] = [
+                    'type' => 'success',
+                    'message' => 'Responsável cadastrado com sucesso!'
+                ];
+                $this->redirect('/responsaveis');
             } catch (\Exception $e) {
-                $this->redirect('/responsaveis?error=' . urlencode($e->getMessage()));
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'Erro ao cadastrar responsável: ' . $e->getMessage()
+                ];
+                $this->redirect('/responsaveis');
             }
         }
     }
 
     public function show($id)
     {
-        // Verificar se o usuário está logado
         if (!isset($_SESSION['user'])) {
             $this->redirect('/login');
         }
@@ -81,53 +86,57 @@ class ResponsavelController extends BaseController
 
     public function update()
     {
-        // Verificar se o usuário está logado
-        if (!isset($_SESSION['user'])) {
+        if (!isset($_SESSION['user']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/login');
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            try {
-                $id = $_POST['id'];
-                $data = [
-                    'nome' => $_POST['nome'],
-                    'email' => $_POST['email'],
-                    'telefone' => $_POST['telefone'],
-                    'cpf' => $_POST['cpf'],
-                    'active' => isset($_POST['active']) ? 1 : 0
-                ];
+        try {
+            $id = $_POST['id'];
+            $data = [
+                'nome' => $_POST['nome'],
+                'email' => $_POST['email'],
+                'telefone' => $_POST['telefone'],
+                'cpf' => $_POST['cpf'],
+                'active' => isset($_POST['active']) ? 1 : 0
+            ];
 
-                $this->responsavelModel->update($id, $data);
-                $this->redirect('/responsaveis?success=1');
-            } catch (\Exception $e) {
-                $this->redirect('/responsaveis?error=' . urlencode($e->getMessage()));
-            }
+            $this->responsavelModel->update($id, $data);
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Responsável atualizado com sucesso!'
+            ];
+            $this->redirect('/responsaveis');
+        } catch (\Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao atualizar responsável: ' . $e->getMessage()
+            ];
+            $this->redirect('/responsaveis');
         }
     }
 
     public function delete()
     {
-        // Verificar se o usuário está logado
-        if (!isset($_SESSION['user'])) {
+        if (!isset($_SESSION['user']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/login');
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            try {
-                $id = $_POST['id'];
-                $this->responsavelModel->delete($id);
-                echo json_encode(['success' => true]);
-            } catch (\Exception $e) {
-                http_response_code(500);
-                echo json_encode(['error' => $e->getMessage()]);
-            }
-            exit;
+        try {
+            $id = $_POST['id'];
+            $this->responsavelModel->delete($id);
+            
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => $e->getMessage()]);
         }
+        exit;
     }
 
     public function getById()
     {
-        // Verificar se o usuário está logado
         if (!isset($_SESSION['user'])) {
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Unauthorized']);

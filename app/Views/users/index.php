@@ -1,17 +1,4 @@
 <div class="row">
-    <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Operação realizada com sucesso!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['error'])): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($_GET['error']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
     <div class="col-12">
         <div class="card">
             <div class="card-body">
@@ -83,7 +70,7 @@
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
                             <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>">Anterior</a>
+                                <a class="page-link" href="?page=<?= (int)$currentPage - 1 ?>">Anterior</a>
                             </li>
 
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>

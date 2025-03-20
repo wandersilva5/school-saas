@@ -12,13 +12,13 @@ $menuService = new MenuService();
 $userMenus = $menuService->getUserMenu($userRoles);
 
 // Determine current page from URL
-$currentPage = $currentPage ?? '';
-if (empty($currentPage)) {
+$currentRoute = $currentRoute ?? '';
+if (empty($currentRoute)) {
     $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $currentPage = trim($requestUri, '/');
+    $currentRoute = trim($requestUri, '/');
     // Handle homepage
-    if (empty($currentPage)) {
-        $currentPage = 'dashboard';
+    if (empty($currentRoute)) {
+        $currentRoute = 'dashboard';
     }
 }
 
@@ -100,7 +100,7 @@ $menusByHeader = $orderedMenus;
                     <?php foreach ($menus as $menu): ?>
                         <?php 
                         // Check if current page matches this menu's route
-                        $isActive = (strpos($currentPage, $menu['route']) === 0) ? 'active' : '';
+                        $isActive = (strpos($currentRoute, $menu['route']) === 0) ? 'active' : '';
                         ?>
                         <li class="sidebar-item <?= $isActive ?>">
                             <a class="sidebar-link" href="<?= htmlspecialchars($menu['url']) ?>">

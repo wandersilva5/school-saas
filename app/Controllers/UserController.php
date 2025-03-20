@@ -3,18 +3,21 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use \Exception;
 use \PDO;
 
 class UserController extends BaseController
 {
     private User $userModel;
+    private Role $roleModel;
     private $db;
 
     public function __construct()
     {
         $this->db = \App\Config\Database::getInstance()->getConnection();
         $this->userModel = new User();
+        $this->roleModel = new Role();
     }
 
     public function index()
@@ -38,17 +41,20 @@ class UserController extends BaseController
 
             $roles = $this->getRoles();
 
-            return $this->render('users/index', [
+            $this->render('users/index', [
                 'users' => $users,
                 'allRoles' => $roles, // Alterado de 'roles' para 'allRoles'
-                'currentPage' => 'users',
+                'currentPage' => $page,
+                'currentRoute' => 'users',
                 'totalPages' => $totalPages,
                 'pageTitle' => 'Gerenciar Usuários',
             ]);
+            error_log("After render in UserController::index - Should not see this if render exits");
         } catch (\PDOException $e) {
-            error_log("Erro na paginação dos usuários: " . $e->getMessage());
-            header('Location: /users?error=' . urlencode('Erro ao carregar os usuários'));
-            exit;
+            $_SESSION['toast'] = [
+                'type' => 'error',  // or 'error', 'warning', 'info'
+                'message' => 'Erro ao carregar os usuários ' . $e->getMessage()
+            ];
         }
     }
 
@@ -118,13 +124,18 @@ class UserController extends BaseController
         
         // Try to create the user
         if ($this->userModel->create($userData)) {
-            header('Location: /users?success=1');
+            $_SESSION['toast'] = [
+                'type' => 'success',  // or 'error', 'warning', 'info'
+                'message' => 'Operação realizada com sucesso!'
+            ];
         } else {
             throw new \Exception('Erro ao criar usuário - possível duplicidade de email');
         }
     } catch (\Exception $e) {
-        error_log("User creation error: " . $e->getMessage());
-        header('Location: /users?error=' . urlencode($e->getMessage()));
+        $_SESSION['toast'] = [
+            'type' => 'error',  // or 'error', 'warning', 'info'
+            'message' => 'Erro ao carregar os usuários ' . $e->getMessage()
+        ];
     }
     exit;
 }
@@ -148,12 +159,18 @@ class UserController extends BaseController
             ];
 
             if ($this->userModel->update($userData)) {
-                header('Location: /users?success=1');
+                $_SESSION['toast'] = [
+                    'type' => 'success',  // or 'error', 'warning', 'info'
+                    'message' => 'Operação realizada com sucesso! O usuário foi atualizado.'
+                ];
             } else {
                 throw new \Exception('Erro ao atualizar usuário'); // Make sure this is "atualizar", not "criar"
             }
         } catch (\Exception $e) {
-            header('Location: /users?error=' . urlencode($e->getMessage()));
+            $_SESSION['toast'] = [
+                'type' => 'error',  // or 'error', 'warning', 'info'
+                'message' => 'Erro ao atualizar usuário ' . $e->getMessage()
+            ];
         }
         exit;
     }
@@ -168,12 +185,18 @@ class UserController extends BaseController
             }
 
             if ($this->userModel->delete($id)) {
-                header('Location: /users?success=1');
+                $_SESSION['toast'] = [
+                    'type' => 'success',  // or 'error', 'warning', 'info'
+                    'message' => 'Operação realizada com sucesso! O usuário foi deletado.'
+                ];
             } else {
                 throw new \Exception('Erro ao excluir usuário');
             }
         } catch (\Exception $e) {
-            header('Location: /users?error=' . urlencode($e->getMessage()));
+            $_SESSION['toast'] = [
+                'type' => 'error',  // or 'error', 'warning', 'info'
+                'message' => 'Erro ao excluir ou desativar usuário ' . $e->getMessage()
+            ];
         }
         exit;
     }
