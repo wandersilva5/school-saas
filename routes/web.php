@@ -41,12 +41,14 @@ return [
     'slider-images/update-order' => ['controller' => 'SliderImageController', 'action' => 'updateOrder'],
 
     // Rotas para Alunos
-    'students'             => ['controller' => 'StudentController', 'action' => 'index'],
-    'students/show/{id}'   => ['controller' => 'StudentController', 'action' => 'show'],
-    'students/store'       => ['controller' => 'StudentController', 'action' => 'store'],
-    'students/edit/{id}'   => ['controller' => 'StudentController', 'action' => 'edit'],
-    'students/update/{id}' => ['controller' => 'StudentController', 'action' => 'update'],
-    'students/delete/{id}' => ['controller' => 'StudentController', 'action' => 'delete'],
+    'students'              => ['controller' => 'StudentController', 'action' => 'index'],
+    'students/show/{id}'    => ['controller' => 'StudentController', 'action' => 'show'],
+    'students/get-info/{id}'=> ['controller' => 'StudentController', 'action' => 'getInfo'],
+    'students/edit/{id}'    => ['controller' => 'StudentController', 'action' => 'show'],
+    'students/store'        => ['controller' => 'StudentController', 'action' => 'store'],
+    'students/edit/{id}'    => ['controller' => 'StudentController', 'action' => 'edit'],
+    'students/update/{id}'  => ['controller' => 'StudentController', 'action' => 'update'],
+    'students/delete/{id}'  => ['controller' => 'StudentController', 'action' => 'delete'],
 
     // Rotas para Responsáveis
     'guardians'             => ['controller' => 'GuardianController', 'action' => 'index'],

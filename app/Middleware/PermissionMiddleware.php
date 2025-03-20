@@ -7,9 +7,19 @@ class PermissionMiddleware {
     public function handle($requiredRoles = []) {
         // Check if user is logged in
         if (!isset($_SESSION['user'])) {
-            // Not logged in, redirect to login
-            $this->redirectWithToast('/login', 'error', 'Você precisa fazer login para acessar esta página.');
+            // Only set the warning message if we're not already on the login page
+            $currentUrl = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            if ($currentUrl !== '/login') {
+                $this->redirectWithToast('/login', 'warning', 'Você precisa fazer login para acessar esta página.');
+                return false;
+            }
             return false;
+        }
+        
+        // If the user just logged in, don't show unnecessary messages
+        if (isset($_SESSION['just_logged_in'])) {
+            unset($_SESSION['just_logged_in']);
+            return true;
         }
         
         // If no specific roles required, just being logged in is enough

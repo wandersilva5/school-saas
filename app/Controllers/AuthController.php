@@ -21,7 +21,7 @@ class AuthController extends BaseController
     public function login()
     {
         // Debug inicial
-        error_log('Método login chamado. Método: ' . $_SERVER['REQUEST_METHOD']);
+        error_log("LOGIN METHOD CALLED: " . $_SERVER['REQUEST_METHOD']);
 
         // Redirect if already logged in
         if (isset($_SESSION['user'])) {
@@ -61,11 +61,10 @@ class AuthController extends BaseController
                         'institution_id' => $user['institution_id'],
                         'roles' => $user['roles'] ? explode(',', $user['roles']) : []
                     ];
-
-                    error_log("Sessão configurada: " . print_r($_SESSION['user'], true));
-                    error_log("Redirecionando para dashboard");
-
+                    
+                    $_SESSION['just_logged_in'] = true;
                     $roles = $_SESSION['user']['roles'];
+
                     switch (true) {
                         case in_array('Master', $roles):
                             header('Location: /dashboard');
@@ -83,9 +82,12 @@ class AuthController extends BaseController
                 }
 
                 error_log("Login falhou - retornando erro");
-                return $this->render('auth/login', [
+                    $this->render('auth/login', [
                     'error' => 'Email ou senha inválidos'
                 ]);
+
+                return;
+
             } catch (\Exception $e) {
                 error_log("Erro no login: " . $e->getMessage());
                 error_log("Stack trace: " . $e->getTraceAsString());
@@ -96,7 +98,7 @@ class AuthController extends BaseController
             }
         }
 
-        return $this->render('auth/login');
+        $this->render('auth/login');
     }
 
     public function logout()
@@ -178,19 +180,19 @@ class AuthController extends BaseController
 
                 $this->db->commit();
 
-                return $this->render('auth/register', [
+                $this->render('auth/register', [
                     'success' => 'Cadastro realizado com sucesso! Você já pode fazer login.',
                     'redirect' => '/login'
                 ]);
             } catch (\PDOException $e) {
                 $this->db->rollBack();
                 error_log($e->getMessage());
-                return $this->render('auth/register', [
+                $this->render('auth/register', [
                     'error' => 'Erro ao processar o registro: ' . $e->getMessage()
                 ]);
             }
         }
 
-        return $this->render('auth/register');
+        $this->render('auth/register');
     }
 }

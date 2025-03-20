@@ -112,4 +112,31 @@ class UserInfo
             throw new \Exception('Erro ao atualizar informações do aluno: ' . $e->getMessage());
         }
     }
+
+    public function getStudentInfo($studentId, $institutionId) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    u.id, u.name, u.email, u.phone, u.active,
+                    si.registration_number, si.birth_date, 
+                    si.address_street, si.address_number, si.address_district,
+                    si.address_city, si.address_state, si.address_zipcode,
+                    si.health_insurance, si.health_observations,
+                    gs.guardian_user_id,
+                    gu.name as guardian_name
+                FROM users u
+                LEFT JOIN user_roles ur ON u.id = ur.user_id
+                LEFT JOIN roles r ON ur.role_id = r.id
+                LEFT JOIN student_info si ON u.id = si.user_id
+                LEFT JOIN guardians_students gs ON u.id = gs.student_user_id
+                LEFT JOIN users gu ON gs.guardian_user_id = gu.id
+                WHERE u.id = ? AND u.institution_id = ?
+            ");
+            
+            $stmt->execute([$studentId, $institutionId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \Exception("Error fetching student info: " . $e->getMessage());
+        }
+    }
 }

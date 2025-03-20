@@ -75,6 +75,7 @@ class Student
             LEFT JOIN user_roles ur ON u.id = ur.user_id
             LEFT JOIN roles r ON ur.role_id = r.id
             LEFT JOIN guardians_students gs ON u.id = gs.student_user_id
+            LEFT JOIN user_info si ON u.id = si.user_id /* Add this JOIN */
             WHERE u.id = ? 
             AND u.institution_id = ?
             AND r.name = 'Aluno'

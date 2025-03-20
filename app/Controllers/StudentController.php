@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Student;
 use App\Models\UserInfo;
+use PDO;
 
 class StudentController extends BaseController
 {
@@ -23,7 +24,7 @@ class StudentController extends BaseController
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 5;
         $offset = ($page - 1) * $limit;
-        
+
         $students = $this->studentModel->getAllStudents($institutionId);
         $guardians = $this->studentModel->getAllGuardians($institutionId);
         $user_info = $this->userInfoModel->getAlunoInfoById($institutionId);
@@ -45,7 +46,7 @@ class StudentController extends BaseController
         try {
             $institutionId = $_SESSION['user']['institution_id'];
             $student = $this->studentModel->getStudentById($id, $institutionId);
-            
+
             if (!$student) {
                 throw new \Exception('Aluno não encontrado');
             }
@@ -131,5 +132,27 @@ class StudentController extends BaseController
             ];
             $this->redirect('/students');
         }
+    }
+
+    public function getInfo($id) {
+        try {
+            $userInfoModel = new \App\Models\UserInfo();
+            $student = $userInfoModel->getStudentInfo($id, $_SESSION['user']['institution_id']);
+            
+            if (!$student) {
+                header('Content-Type: application/json');
+                http_response_code(404);
+                echo json_encode(['error' => 'Aluno não encontrado']);
+                exit;
+            }
+            
+            header('Content-Type: application/json');
+            echo json_encode($student);
+        } catch (\Exception $e) {
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        exit;
     }
 }
