@@ -1,11 +1,11 @@
 <!-- Content Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0"><?= $pageTitle ?></h1>
 </div>
 <div class="row">
-    <div class="col-xl-8 col-md-12 mb-4">
+    <div class="col-md-12 col-xl-8 mb-4">
         <div class="content-section">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex card-header align-items-center justify-content-between">
                 <h5 class="section-title"><i class="bi bi-calendar"></i></h5>
                 <?php if (current_user_can('Secretaria')): ?>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModal">
@@ -20,9 +20,9 @@
     </div>
 
     <!-- Eventos do dia -->
-    <div class="col-xl-4 col-md-12 mb-4">
+    <div class="col-md-12 col-xl-4 mb-4">
         <div class="content-section">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex card-header align-items-center justify-content-between">
                 <h5 class="section-title">Eventos do dia <span id="selectedDate"></span></h5>
             </div>
             <div class="card-body">
@@ -55,7 +55,7 @@
                             <label for="date" class="form-label">Data</label>
                             <input type="date" class="form-control" id="date" name="date" required>
                         </div>
-                        <div class="row g-3">
+                        <div class="g-3 row">
                             <div class="col-md-6">
                                 <label for="start_time" class="form-label">Hora Início</label>
                                 <input type="time" class="form-control" id="start_time" name="start_time" required>
@@ -147,7 +147,7 @@
         });
 
         function loadDayEvents(date) {
-            document.getElementById('dayEvents').innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+            document.getElementById('dayEvents').innerHTML = '<div class="text-center"><div class="text-primary spinner-border" role="status"></div></div>';
             
             // Ensure we have a proper date format YYYY-MM-DD
             const formattedDate = date.split('T')[0];
@@ -177,7 +177,7 @@
                 console.error('Erro:', error);
                 document.getElementById('dayEvents').innerHTML = `
                     <div class="text-center text-muted py-4">
-                        <i class="bi bi-calendar-x fs-2 d-block mb-3"></i>
+                        <i class="d-block bi bi-calendar-x fs-2 mb-3"></i>
                         <p class="mb-1">Não existe evento para o dia selecionado,</p>
                         <p>consulte a instituição.</p>
                     </div>`;
@@ -201,7 +201,7 @@
             if (!events || events.length === 0) {
                 container.innerHTML = `
             <div class="text-center text-muted py-4">
-                <i class="bi bi-calendar-x fs-2 d-block mb-3"></i>
+                <i class="d-block bi bi-calendar-x fs-2 mb-3"></i>
                 <p class="mb-1">Não existe evento para o dia selecionado,</p>
                 <p>consulte a instituição.</p>
             </div>`;
@@ -212,11 +212,11 @@
             events.forEach(event => {
                 html += `
             <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center justify-content-between">
                     <h6 class="mb-1">${event.title}</h6>
                     <small class="text-muted">${event.start_time} - ${event.end_time}</small>
                 </div>
-                ${event.description ? `<p class="mb-1 text-muted small">${event.description}</p>` : ''}
+                ${event.description ? `<p class="text-muted mb-1 small">${event.description}</p>` : ''}
             </div>
         `;
             });
