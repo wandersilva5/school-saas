@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS classes (
     year YEAR NOT NULL COMMENT 'Ano letivo',
     capacity INT NOT NULL DEFAULT 30 COMMENT 'Capacidade máxima de alunos',
     institution_id INT NOT NULL COMMENT 'ID da instituição',
+    active TINYINT(1) DEFAULT 1 COMMENT 'Indica se a turma está ativa',
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at DATETIME DEFAULT NULL,
@@ -88,8 +89,8 @@ CREATE TABLE IF NOT EXISTS classes (
 CREATE TABLE IF NOT EXISTS class_students (
     id INT NOT NULL AUTO_INCREMENT,
     class_id INT NOT NULL,
-    student_id INT NOT NULL COMMENT 'ID do usuário (aluno)',
-    status ENUM('Ativo', 'Transferido', 'Desistente', 'Concluído') DEFAULT 'Ativo',
+    user_id INT NOT NULL COMMENT 'ID do usuário (aluno)',
+    student_status ENUM('Ativo', 'Transferido', 'Desistente', 'Concluído') DEFAULT 'Ativo',
     joined_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de entrada na turma',
     left_at DATETIME DEFAULT NULL COMMENT 'Data de saída da turma',
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
@@ -97,14 +98,14 @@ CREATE TABLE IF NOT EXISTS class_students (
     deleted_at DATETIME DEFAULT NULL,
     PRIMARY KEY (id),
     CONSTRAINT class_students_class_fk FOREIGN KEY (class_id) REFERENCES classes(id),
-    CONSTRAINT class_students_student_fk FOREIGN KEY (student_id) REFERENCES users(id),
-    UNIQUE KEY unique_class_student (class_id, student_id, status)
+    CONSTRAINT class_students_student_fk FOREIGN KEY (user_id) REFERENCES users(id),
+    UNIQUE KEY unique_class_student (class_id, user_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Índices para otimização de consultas
 CREATE INDEX idx_classes_institution ON classes(institution_id);
 CREATE INDEX idx_classes_year ON classes(year);
-CREATE INDEX idx_class_students_student ON class_students(student_id);
+CREATE INDEX idx_class_students_student ON class_students(user_id);
 CREATE INDEX idx_class_students_status ON class_students(status);
 
 CREATE TABLE `slider_images` (

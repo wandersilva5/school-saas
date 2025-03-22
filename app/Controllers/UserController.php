@@ -93,52 +93,52 @@ class UserController extends BaseController
     }
 
     public function store()
-{
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        header('HTTP/1.1 405 Method Not Allowed');
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            exit;
+        }
+
+        try {
+            // Validate required fields
+            if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['password'])) {
+                throw new \Exception('Nome, email e senha são obrigatórios');
+            }
+
+            // Check email format
+            if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                throw new \Exception('Formato de email inválido');
+            }
+
+            // Create user data array
+            $userData = [
+                'name' => $_POST['name'],
+                'email' => $_POST['email'],
+                'password' => $_POST['password'],
+                'institution_id' => $_SESSION['user']['institution_id'],
+                'roles' => $_POST['roles'] ?? []
+            ];
+
+            // Add logging for debugging
+            error_log("Creating user with data: " . print_r($userData, true));
+
+            // Try to create the user
+            if ($this->userModel->create($userData)) {
+                $_SESSION['toast'] = [
+                    'type' => 'success',  // or 'error', 'warning', 'info'
+                    'message' => 'Operação realizada com sucesso!'
+                ];
+            } else {
+                throw new \Exception('Erro ao criar usuário - possível duplicidade de email');
+            }
+        } catch (\Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',  // or 'error', 'warning', 'info'
+                'message' => 'Erro ao carregar os usuários ' . $e->getMessage()
+            ];
+        }
         exit;
     }
-
-    try {
-        // Validate required fields
-        if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['password'])) {
-            throw new \Exception('Nome, email e senha são obrigatórios');
-        }
-        
-        // Check email format
-        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new \Exception('Formato de email inválido');
-        }
-        
-        // Create user data array
-        $userData = [
-            'name' => $_POST['name'],
-            'email' => $_POST['email'],
-            'password' => $_POST['password'],
-            'institution_id' => $_SESSION['user']['institution_id'],
-            'roles' => $_POST['roles'] ?? []
-        ];
-
-        // Add logging for debugging
-        error_log("Creating user with data: " . print_r($userData, true));
-        
-        // Try to create the user
-        if ($this->userModel->create($userData)) {
-            $_SESSION['toast'] = [
-                'type' => 'success',  // or 'error', 'warning', 'info'
-                'message' => 'Operação realizada com sucesso!'
-            ];
-        } else {
-            throw new \Exception('Erro ao criar usuário - possível duplicidade de email');
-        }
-    } catch (\Exception $e) {
-        $_SESSION['toast'] = [
-            'type' => 'error',  // or 'error', 'warning', 'info'
-            'message' => 'Erro ao carregar os usuários ' . $e->getMessage()
-        ];
-    }
-    exit;
-}
 
     public function update($id)
     {

@@ -78,5 +78,22 @@ return [
     'menus/delete/{id}' => ['controller' => 'MenuController', 'action' => 'delete'],
     'menus/reorder'     => ['controller' => 'MenuController', 'action' => 'reorder'],
 
-    // Rotas para agent
+    // Rotas para classe
+'classes'                    => ['controller' => 'ClassController', 'action' => 'index'],
+'classes/store'              => ['controller' => 'ClassController', 'action' => 'store'],
+'classes/getById'            => ['controller' => 'ClassController', 'action' => 'getById'],
+'classes/update'             => ['controller' => 'ClassController', 'action' => 'update'],
+'classes/delete'             => ['controller' => 'ClassController', 'action' => 'delete'],
+'classes/show/{id}'          => ['controller' => 'ClassController', 'action' => 'show'],
+'classes/add-student'        => ['controller' => 'ClassController', 'action' => 'addStudent'],
+'classes/remove-student'     => ['controller' => 'ClassController', 'action' => 'removeStudent'],
+'classes/update-status'      => ['controller' => 'ClassController', 'action' => 'updateStatus'],
+'classes/available-students' => ['controller' => 'ClassController', 'action' => 'getAvailableStudents'],
+
+    // Rotas para classe aluno
+    'class-students'             => ['controller' => 'ClassStudentController', 'action' => 'index'],
+    'class-students/store'       => ['controller' => 'ClassStudentController', 'action' => 'store'],
+    'class-students/edit/{id}'   => ['controller' => 'ClassStudentController', 'action' => 'edit'],
+    'class-students/update/{id}' => ['controller' => 'ClassStudentController', 'action' => 'update'],
+    'class-students/delete/{id}' => ['controller' => 'ClassStudentController', 'action' => 'delete'],
 ];
