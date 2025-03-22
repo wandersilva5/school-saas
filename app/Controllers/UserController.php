@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\UserInfo;
 use \Exception;
 use \PDO;
 
@@ -11,6 +12,7 @@ class UserController extends BaseController
 {
     private User $userModel;
     private Role $roleModel;
+    private UserInfo $userInfoModel;
     private $db;
 
     public function __construct()
@@ -18,6 +20,7 @@ class UserController extends BaseController
         $this->db = \App\Config\Database::getInstance()->getConnection();
         $this->userModel = new User();
         $this->roleModel = new Role();
+        $this->userInfoModel = new UserInfo();
     }
 
     public function index()
@@ -61,34 +64,55 @@ class UserController extends BaseController
     public function show($id)
     {
         try {
-            if (!$id || !is_numeric($id)) {
-                throw new \Exception('ID inválido');
+            // Verifica permissão
+            if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
+                header('Location: /dashboard');
+                exit;
             }
 
-            if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
-                throw new \Exception('Requisição inválida');
-            }
-
+            // Busca o usuário pelo ID
             $user = $this->userModel->get($id);
             if (!$user) {
-                throw new \Exception('Usuário não encontrado');
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'Usuário não encontrado'
+                ];
+                $this->redirect('/users');
+            }
+            
+            // Obter os nomes dos perfis do usuário, não apenas IDs
+            if (isset($user['roles']) && is_array($user['roles'])) {
+                $roleIds = $user['roles'];
+                $roleNames = [];
+                foreach ($roleIds as $roleId) {
+                    $role = $this->roleModel->getRoleById($roleId);
+                    if ($role) {
+                        $roleNames[] = $role['name'];
+                    }
+                }
+                $user['role_names'] = $roleNames;
             }
 
-            if ($user['institution_id'] != $_SESSION['user']['institution_id']) {
-                throw new \Exception('Acesso negado');
-            }
+            // Busca informações adicionais do usuário
+            $userInfoModel = new UserInfo();
+            $user_info = $userInfoModel->getUserInfoById($id);
 
-            // Remove sensitive data
-            unset($user['password']);
+            // Busca todos os perfis para o formulário de edição
+            $roles = $this->getRoles();
 
-            header('Content-Type: application/json');
-            echo json_encode($user);
-            exit;
-        } catch (\Exception $e) {
-            http_response_code(400);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
+            $this->render('users/show', [
+                'pageTitle' => 'Detalhes do Usuário',
+                'currentRoute' => 'users',
+                'user' => $user,
+                'user_info' => $user_info,
+                'allRoles' => $roles
+            ]);
+        } catch (\PDOException $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao carregar detalhes do usuário: ' . $e->getMessage()
+            ];
+            $this->redirect('/users');
         }
     }
 
@@ -199,6 +223,78 @@ class UserController extends BaseController
             ];
         }
         exit;
+    }
+
+    public function updateInfo()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            exit;
+        }
+
+        try {
+            $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : null;
+            $infoId = isset($_POST['info_id']) ? (int)$_POST['info_id'] : null;
+            
+            if (!$userId) {
+                throw new \Exception('ID do usuário inválido');
+            }
+
+            // Verificar permissão e propriedade
+            $user = $this->userModel->get($userId);
+            if (!$user || $user['institution_id'] != $_SESSION['user']['institution_id']) {
+                throw new \Exception('Usuário não encontrado ou acesso negado');
+            }
+
+            // Preparar dados
+            $data = [
+                'user_id' => $userId,
+                'phone' => $_POST['phone'] ?? null,
+                'cpf' => $_POST['cpf'] ?? null,
+                'birth_date' => $_POST['birth_date'] ?? null,
+                'gender' => $_POST['gender'] ?? null,
+                'address_street' => $_POST['address_street'] ?? null,
+                'address_number' => $_POST['address_number'] ?? null,
+                'address_complement' => $_POST['address_complement'] ?? null,
+                'address_district' => $_POST['address_district'] ?? null,
+                'address_city' => $_POST['address_city'] ?? null,
+                'address_state' => $_POST['address_state'] ?? null,
+                'address_zipcode' => $_POST['address_zipcode'] ?? null,
+                'observation' => $_POST['observation'] ?? null,
+                'institution_id' => $_SESSION['user']['institution_id']
+            ];
+
+            // Instanciar modelo de informações
+            $userInfoModel = new UserInfo();
+
+            // Criar ou atualizar informações
+            if ($infoId) {
+                $userInfoModel->updateUserInfo($infoId, $data);
+                $message = 'Informações atualizadas com sucesso';
+            } else {
+                $userInfoModel->createUserInfo($data);
+                $message = 'Informações adicionadas com sucesso';
+            }
+
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => $message
+            ];
+            
+            $this->redirect('/users/show/' . $userId);
+
+        } catch (\Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao atualizar informações: ' . $e->getMessage()
+            ];
+            
+            if (isset($userId)) {
+                $this->redirect('/users/show/' . $userId);
+            } else {
+                $this->redirect('/users');
+            }
+        }
     }
 
     private function getRoles()

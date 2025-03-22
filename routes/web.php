@@ -30,6 +30,7 @@ return [
     // Rotas para usuários das instituições
     'users'             => ['controller' => 'UserController', 'action' => 'index'],
     'users/show/{id}'   => ['controller' => 'UserController', 'action' => 'show'],
+    'users/update-info' => ['controller' => 'UserController', 'action' => 'updateInfo'],
     'users/store'       => ['controller' => 'UserController', 'action' => 'store'],
     'users/update/{id}' => ['controller' => 'UserController', 'action' => 'update'],
     'users/delete/{id}' => ['controller' => 'UserController', 'action' => 'delete'],
@@ -79,16 +80,16 @@ return [
     'menus/reorder'     => ['controller' => 'MenuController', 'action' => 'reorder'],
 
     // Rotas para classe
-'classes'                    => ['controller' => 'ClassController', 'action' => 'index'],
-'classes/store'              => ['controller' => 'ClassController', 'action' => 'store'],
-'classes/getById'            => ['controller' => 'ClassController', 'action' => 'getById'],
-'classes/update'             => ['controller' => 'ClassController', 'action' => 'update'],
-'classes/delete'             => ['controller' => 'ClassController', 'action' => 'delete'],
-'classes/show/{id}'          => ['controller' => 'ClassController', 'action' => 'show'],
-'classes/add-student'        => ['controller' => 'ClassController', 'action' => 'addStudent'],
-'classes/remove-student'     => ['controller' => 'ClassController', 'action' => 'removeStudent'],
-'classes/update-status'      => ['controller' => 'ClassController', 'action' => 'updateStatus'],
-'classes/available-students' => ['controller' => 'ClassController', 'action' => 'getAvailableStudents'],
+    'classes'                    => ['controller' => 'ClassController', 'action' => 'index'],
+    'classes/store'              => ['controller' => 'ClassController', 'action' => 'store'],
+    'classes/getById'            => ['controller' => 'ClassController', 'action' => 'getById'],
+    'classes/update'             => ['controller' => 'ClassController', 'action' => 'update'],
+    'classes/delete'             => ['controller' => 'ClassController', 'action' => 'delete'],
+    'classes/show/{id}'          => ['controller' => 'ClassController', 'action' => 'show'],
+    'classes/add-student'        => ['controller' => 'ClassController', 'action' => 'addStudent'],
+    'classes/remove-student'     => ['controller' => 'ClassController', 'action' => 'removeStudent'],
+    'classes/update-status'      => ['controller' => 'ClassController', 'action' => 'updateStatus'],
+    'classes/available-students' => ['controller' => 'ClassController', 'action' => 'getAvailableStudents'],
 
     // Rotas para classe aluno
     'class-students'             => ['controller' => 'ClassStudentController', 'action' => 'index'],

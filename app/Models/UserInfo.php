@@ -19,7 +19,7 @@ class UserInfo
     /**
      * Get student info from user_info table
      */
-    public function getAlunoInfoById($alunoId)
+    public function getUserInfoById($alunoId)
     {
         try {
             $stmt = $this->db->prepare("
@@ -37,7 +37,7 @@ class UserInfo
     /**
      * Create new student info
      */
-    public function createAlunoInfo($data)
+    public function createUserInfo($data)
     {
         try {
             $this->db->beginTransaction();
@@ -75,7 +75,7 @@ class UserInfo
     /**
      * Update student info
      */
-    public function updateAlunoInfo($infoId, $data)
+    public function updateUserInfo($infoId, $data)
     {
         try {
             $this->db->beginTransaction();
@@ -127,7 +127,7 @@ class UserInfo
                 FROM users u
                 LEFT JOIN user_roles ur ON u.id = ur.user_id
                 LEFT JOIN roles r ON ur.role_id = r.id
-                LEFT JOIN student_info si ON u.id = si.user_id
+                LEFT JOIN user_info si ON u.id = si.user_id
                 LEFT JOIN guardians_students gs ON u.id = gs.student_user_id
                 LEFT JOIN users gu ON gs.guardian_user_id = gu.id
                 WHERE u.id = ? AND u.institution_id = ?
