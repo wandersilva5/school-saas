@@ -70,8 +70,9 @@
                                 <tr>
                                     <th>Nome</th>
                                     <th>Idade</th>
+                                    <th>Aniversário</th>
                                     <th>Status</th>
-                                    <th>Data de Entrada</th>
+                                    <th>Data de Cadastro</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -79,7 +80,8 @@
                                 <?php foreach ($students as $student): ?>
                                     <tr>
                                         <td><?= htmlspecialchars($student['name']) ?></td>
-                                        <td><?= htmlspecialchars($student['email']) ?></td>
+                                        <td><?= calculate_age($student['birth_date']) ?> anos</td>
+                                        <td><?= format_date($student['birth_date']) ?></td>
                                         <td>
                                             <span class="badge <?= $student['status'] === 'Ativo' ? 'bg-success' : 'bg-secondary' ?>">
                                                 <?= htmlspecialchars($student['status']) ?>

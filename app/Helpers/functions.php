@@ -4,6 +4,7 @@ use App\Helpers\UrlHelper;
 use App\Helpers\TemplateHelper;
 use App\Helpers\AuthHelper;
 use App\Helpers\AuthRoleHelper;
+use App\Helpers\DateHelper;
 
 if (!function_exists('base_url')) {
     function base_url($path = '')
@@ -58,5 +59,23 @@ if (!function_exists('current_user_can')) {
     function current_user_can($role)
     {
         return AuthRoleHelper::checkUserCan($role);
+    }
+}
+
+if (!function_exists('calculate_age')) {
+    /**
+     * Calcula a idade a partir da data de nascimento
+     */
+    function calculate_age($birthDate) {
+        return DateHelper::calculateAge($birthDate);
+    }
+}
+
+if (!function_exists('format_date')) {
+    /**
+     * Formata a data para o formato brasileiro
+     */
+    function format_date($date) {
+        return DateHelper::formatDate($date);
     }
 }

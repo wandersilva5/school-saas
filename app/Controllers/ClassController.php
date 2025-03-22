@@ -3,14 +3,17 @@
 namespace App\Controllers;
 
 use App\Models\ClassModel;
+use App\Models\Student;
 
 class ClassController extends BaseController
 {
     private $classModel;
+    private $Student;
 
     public function __construct()
     {
         $this->classModel = new ClassModel();
+        $this->Student = new Student();
     }
 
     public function index()

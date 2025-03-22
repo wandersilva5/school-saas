@@ -20,20 +20,44 @@ class Student
         $stmt = $this->db->prepare("
         SELECT 
             u.id,
-            u.name as student_name,
-            u.email as student_email,
+            u.name,
+            u.email,
             u.active,
-            gu.name as guardian_name,
-            gs.guardian_user_id as guardian_id
+            u.created_at,
+            u.institution_id,
+            r.name AS role_name,
+            ui.registration_number,
+            ui.birth_date,
+            ui.gender,
+            ui.blood_type,
+            ui.address_street,
+            ui.address_number,
+            ui.address_complement,
+            ui.address_district,
+            ui.address_city,
+            ui.address_state,
+            ui.address_zipcode,
+            ui.emergency_contact,
+            ui.emergency_phone,
+            ui.health_insurance,
+            ui.health_observations,
+            ui.previous_school,
+            ui.observation,
+            gu.id AS guardian_id,
+            gu.name AS guardian_name
         FROM users u
         JOIN user_roles ur ON u.id = ur.user_id
         JOIN roles r ON ur.role_id = r.id
+        LEFT JOIN user_info ui ON u.id = ui.user_id
         LEFT JOIN guardians_students gs ON u.id = gs.student_user_id
         LEFT JOIN users gu ON gs.guardian_user_id = gu.id
-        WHERE u.institution_id = ? 
-        AND r.name = 'Aluno'
+        LEFT JOIN user_roles gur ON gu.id = gur.user_id
+        LEFT JOIN roles gr ON gur.role_id = gr.id AND gr.name = 'Responsavel'
+        WHERE r.name = 'Aluno'
         AND u.deleted_at IS NULL
-        ORDER BY u.name
+        AND u.institution_id = ? 
+        ORDER BY 
+        u.name ASC;
     ");
 
         $stmt->execute([$institutionId]);

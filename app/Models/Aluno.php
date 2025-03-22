@@ -18,20 +18,46 @@ class Aluno
     {
         $stmt = $this->db->prepare("
             SELECT 
-                a.id, 
-                a.nome, 
-                a.data_nascimento, 
-                a.matricula,
-                a.created_at,
-                a.active,
-                r.nome as responsavel_nome,
-                r.id as responsavel_id
-            FROM alunos a
-            LEFT JOIN responsaveis r ON a.responsavel_id = r.id
-            WHERE a.institution_id = ? 
-            AND a.deleted_at IS NULL
-            ORDER BY a.created_at DESC
-            LIMIT ? OFFSET ?
+            u.id,
+            u.name,
+            u.email,
+            u.active,
+            u.created_at,
+            u.institution_id,
+            r.name AS role_name,
+            ui.registration_number,
+            ui.birth_date,
+            ui.gender,
+            ui.blood_type,
+            ui.address_street,
+            ui.address_number,
+            ui.address_complement,
+            ui.address_district,
+            ui.address_city,
+            ui.address_state,
+            ui.address_zipcode,
+            ui.emergency_contact,
+            ui.emergency_phone,
+            ui.health_insurance,
+            ui.health_observations,
+            ui.previous_school,
+            ui.observation,
+            gu.id AS guardian_id,
+            gu.name AS guardian_name
+        FROM users u
+        JOIN user_roles ur ON u.id = ur.user_id
+        JOIN roles r ON ur.role_id = r.id
+        LEFT JOIN user_info ui ON u.id = ui.user_id
+        LEFT JOIN guardians_students gs ON u.id = gs.student_user_id
+        LEFT JOIN users gu ON gs.guardian_user_id = gu.id
+        LEFT JOIN user_roles gur ON gu.id = gur.user_id
+        LEFT JOIN roles gr ON gur.role_id = gr.id AND gr.name = 'Responsavel'
+        WHERE r.name = 'Aluno'
+        AND u.deleted_at IS NULL
+        AND u.institution_id = ? 
+        LIMIT ? OFFSET ?
+        ORDER BY 
+        u.name ASC;
         ");
         
         $stmt->execute([$institutionId, $limit, $offset]);
