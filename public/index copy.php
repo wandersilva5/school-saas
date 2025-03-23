@@ -1,12 +1,22 @@
 <?php
-// Inicia a sessão
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+require_once __DIR__ . '/../app/config/Env.php';
+// Carrega as variáveis de ambiente
+App\Config\Env::load(__DIR__ . '/../.env');
+
+// Inicia a sessão no topo do arquivo
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// Carrega as variáveis de ambiente (usando apenas uma implementação)
+// Carrega as variáveis de ambiente
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
@@ -17,6 +27,29 @@ function cleanUrl($url)
     $url = filter_var($url, FILTER_SANITIZE_URL);
     return $url;
 }
+
+// // Obtém a URL atual
+// $url = isset($_GET['url']) ? cleanUrl($_GET['url']) : '';
+
+// // Definição das rotas
+// $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Middleware global para verificar instituição
+$institutionCheck = new \App\Middleware\InstitutionCheck();
+
+// // Rotas que não precisam de verificação de instituição
+// $publicRoutes = ['/', '/login', '/register', '/forgot-password'];
+
+// // Verifica se a rota atual precisa de verificação
+// if (!in_array($uri, $publicRoutes)) {
+//     error_log("Verificando middleware para rota: " . $uri);
+//     if (!isset($_SESSION['user'])) {
+//         error_log("Usuário não está logado, redirecionando para login");
+//         header('Location: /login');
+//         exit;
+//     }
+//     $institutionCheck->handle();
+// }
 
 // Obtém a URL atual
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -33,21 +66,6 @@ $publicRoutes = [
     'assets'       // Public assets
 ];
 
-// Verifica se a rota atual é pública
-$baseRoute = explode('/', $url)[0] ?? '';
-$isPublicRoute = in_array($baseRoute, $publicRoutes);
-
-// Middleware para verificar autenticação apenas para rotas privadas
-if (!$isPublicRoute && !isset($_SESSION['user'])) {
-    $_SESSION['toast'] = [
-        'type' => 'warning',
-        'message' => 'Você precisa fazer login para acessar esta página.'
-    ];
-    header('Location: /login');
-    exit;
-}
-
-// Carrega permissões de rotas
 function getRoutePermissions() {
     static $permissionsCache = null;
     
@@ -80,22 +98,32 @@ function getRoutePermissions() {
 
 $routePermissions = getRoutePermissions();
 
-// Se o usuário está logado, verifica a instituição
-if (!$isPublicRoute && isset($_SESSION['user'])) {
-    try {
-        $institutionCheck = new \App\Middleware\InstitutionCheck();
-        $institutionCheck->handle();
-    } catch (\Exception $e) {
-        $_SESSION['toast'] = [
-            'type' => 'error',
-            'message' => 'Erro na validação da instituição: ' . $e->getMessage()
-        ];
-        header('Location: /login');
-        exit;
+
+
+// Get the current URL
+$url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+
+// Check if the current route is public
+$isPublicRoute = false;
+foreach ($publicRoutes as $publicRoute) {
+    if ($url === $publicRoute || strpos($url, $publicRoute . '/') === 0) {
+        $isPublicRoute = true;
+        break;
     }
 }
 
-// PROCESSAMENTO DE ROTAS
+// If it's not a public route and user isn't logged in, redirect to login
+if (!$isPublicRoute && !isset($_SESSION['user'])) {
+    // Store toast message
+    $_SESSION['toast'] = [
+        'type' => 'warning',
+        'message' => 'Você precisa fazer login para acessar esta página.'
+    ];
+    header('Location: /login');
+    exit;
+}
+
+
 $routeFound = false;
 $routeKey = null;
 $params = [];
@@ -136,28 +164,44 @@ if (isset($routes[$url])) {
 
 // If route exists, check permissions and execute
 if ($routeFound) {
-    // Check role permissions if this route has specific permissions
-    if (!$isPublicRoute && isset($routePermissions[$baseRoute])) {
-        $requiredRoles = $routePermissions[$baseRoute];
-        $userRoles = $_SESSION['user']['roles'] ?? [];
-        $hasPermission = false;
+    $baseRoute = explode('/', $routeKey)[0]; // First segment
+    $isPublicRoute = in_array($baseRoute, $publicRoutes);
 
-        // Check if user has any of the required roles
-        foreach ($requiredRoles as $role) {
-            if (in_array($role, $userRoles)) {
-                $hasPermission = true;
-                break;
-            }
+    // Check permissions only for non-public routes
+    if (!$isPublicRoute) {
+        // Check if user is logged in
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['toast'] = [
+                'type' => 'warning',
+                'message' => 'Você precisa fazer login para acessar esta página.'
+            ];
+            header('Location: /login');
+            exit;
         }
 
-        // If no permission, redirect with toast
-        if (!$hasPermission) {
-            $_SESSION['toast'] = [
-                'type' => 'error',
-                'message' => 'Você não tem permissão para acessar esta página.'
-            ];
-            header('Location: /dashboard');
-            exit;
+        // Check role permissions if this route has specific permissions
+        if (isset($routePermissions[$baseRoute])) {
+            $requiredRoles = $routePermissions[$baseRoute];
+            $userRoles = $_SESSION['user']['roles'] ?? [];
+            $hasPermission = false;
+
+            // Check if user has any of the required roles
+            foreach ($requiredRoles as $role) {
+                if (in_array($role, $userRoles)) {
+                    $hasPermission = true;
+                    break;
+                }
+            }
+
+            // If no permission, redirect with toast
+            if (!$hasPermission) {
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'Você não tem permissão para acessar esta página.'
+                ];
+                header('Location: /dashboard');
+                exit;
+            }
         }
     }
 
@@ -175,7 +219,6 @@ if ($routeFound) {
     }
 }
 
-// Se a rota não foi encontrada ou se houve algum erro, exibe a página de erro
 $controller = new \App\Controllers\HomeController();
 $controller->error();
 exit;

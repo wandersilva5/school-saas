@@ -2,15 +2,17 @@
 
 namespace App\Config;
 
-class Database {
+class Database
+{
     private static $instance = null;
     private $connection;
 
-    private function __construct() {
-        $host = getenv('DB_HOST') ?: 'localhost';
-        $dbname = getenv('DB_NAME') ?: 'portal_escolar';
-        $username = getenv('DB_USER') ?: 'root';
-        $password = getenv('DB_PASS') ?: '';
+    private function __construct()
+    {
+        $host = $_ENV['DB_HOST'] ?? 'localhost';
+        $dbname = $_ENV['DB_NAME'] ?? 'portal_escolar';
+        $username = $_ENV['DB_USER'] ?? 'root';
+        $password = $_ENV['DB_PASS'] ?? '';
 
         try {
             $dsn = sprintf("mysql:host=%s;dbname=%s;charset=utf8mb4", $host, $dbname);
@@ -25,18 +27,21 @@ class Database {
         }
     }
 
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->connection;
     }
 
-    public function query($sql, $params = []) {
+    public function query($sql, $params = [])
+    {
         $stmt = $this->connection->prepare($sql);
         $stmt->execute($params);
         return $stmt;
