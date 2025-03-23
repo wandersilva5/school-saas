@@ -289,7 +289,7 @@ class ClassModel
                 cs.joined_at
             FROM class_students cs
             JOIN classes c ON cs.class_id = c.id
-            WHERE cs.user_id = ? 
+            WHERE cs.student_id = ? /* Verifique se é student_id ou user_id */
             AND cs.deleted_at IS NULL
             ORDER BY c.year DESC, c.name ASC
         ");
@@ -297,10 +297,8 @@ class ClassModel
             $stmt->execute([$studentId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log($e->getMessage());
+            error_log("Erro ao buscar turmas do aluno: " . $e->getMessage());
             return [];
         }
     }
-
-    
 }

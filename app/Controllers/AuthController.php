@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Config\Database;
-use App\Models\User;
 
 class AuthController extends BaseController
 {
@@ -69,14 +68,12 @@ class AuthController extends BaseController
                         case in_array('Master', $roles):
                             header('Location: /dashboard');
                             break;
-                        case in_array('Responsavel', $roles):
-                            header('Location: /dashboard-responsavel');
-                            break;
                         case in_array('Agente de controle', $roles):
                             header('Location: /home-agent');
                             break;
                         default:
                             header('Location: /dashboard-institution');
+                            break;
                     }
                     exit;
                 }

@@ -1,42 +1,3 @@
-    <!-- Carousel -->
-    <?php if (!empty($sliderImages)): ?>
-        <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-                <?php foreach ($sliderImages as $index => $image): ?>
-                    <button type="button"
-                        data-bs-target="#carouselExampleCaptions"
-                        data-bs-slide-to="<?= $index ?>"
-                        class="<?= $index === 0 ? 'active' : '' ?>"
-                        aria-current="<?= $index === 0 ? 'true' : 'false' ?>"
-                        aria-label="Slide <?= $index + 1 ?>">
-                    </button>
-                <?php endforeach; ?>
-            </div>
-            <div class="carousel-inner rounded">
-                <?php foreach ($sliderImages as $index => $image): ?>
-                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                        <img src="<?= base_url('uploads/slider/' . $image['image_url']) ?>" class="d-block w-100" alt="Slide <?= $index + 1 ?>">
-                        <?php if (!empty($image['caption'])): ?>
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5><?= $image['caption'] ?></h5>
-                                <?php if (!empty($image['description'])): ?>
-                                    <p><?= $image['description'] ?></p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
-    <?php endif; ?>
     <!-- Content Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
         <div>
@@ -45,12 +6,7 @@
         </div>
     </div>
 
-    <?php if (isset($error)): ?>
-        <div class="alert alert-warning" role="alert">
-            <?= $error ?>
-        </div>
-    <?php endif; ?>
-
+ 
     <?php if (!empty($alunos)): ?>
         <!-- Navegação entre os filhos -->
         <ul class="nav nav-pills mb-4" id="childrenTab" role="tablist">
