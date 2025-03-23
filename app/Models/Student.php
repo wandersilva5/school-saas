@@ -226,4 +226,25 @@ class Student
 
         return true;
     }
+
+    public function getGuardianById($guardianId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+            SELECT u.id, u.name, u.email, u.phone, u.active
+            FROM users u
+            JOIN user_roles ur ON u.id = ur.user_id
+            JOIN roles r ON ur.role_id = r.id
+            WHERE u.id = ?
+            AND r.name = 'Responsavel'
+            AND u.deleted_at IS NULL
+        ");
+
+            $stmt->execute([$guardianId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erro ao buscar responsável: " . $e->getMessage());
+            return null;
+        }
+    }
 }

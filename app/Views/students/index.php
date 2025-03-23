@@ -2,15 +2,15 @@
     <div class="row">
         <div class="col-12">
             <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h4 class="card-title"><?= $pageTitle ?></h4>
-                    </div>
-                    <div class="col-md-6 text-end">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStudentModal">
-                    <i class="bi bi-plus"></i> Novo Aluno
-                </button>
-                    </div>
+                <div class="col-md-6">
+                    <h4 class="card-title"><?= $pageTitle ?></h4>
                 </div>
+                <div class="col-md-6 text-end">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+                        <i class="bi bi-plus"></i> Novo Aluno
+                    </button>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -39,12 +39,9 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn btn-info btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#alunoInfoModal"
-                                            onclick="viewAlunoDetails(<?= $aluno['id'] ?>)">
+                                        <a href="/students/show/<?= $student['id'] ?>" class="btn btn-info btn-sm">
                                             <i class="bi bi-eye"></i>
-                                        </button>
+                                        </a>
                                         <button type="button" class="btn btn-primary btn-sm" onclick="editStudent(<?= htmlspecialchars(json_encode($student)) ?>)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
@@ -157,7 +154,6 @@
     </div>
 </div>
 
-<?php include '_detalhes.php'; ?>
 
 <?php push('scripts') ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

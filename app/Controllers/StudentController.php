@@ -43,22 +43,54 @@ class StudentController extends BaseController
 
     public function show($id)
     {
+        // Verificar se o usuário está logado
+        if (!isset($_SESSION['user'])) {
+            $this->redirect('/login');
+        }
+
         try {
             $institutionId = $_SESSION['user']['institution_id'];
+
+            // Buscar dados do aluno
             $student = $this->studentModel->getStudentById($id, $institutionId);
 
             if (!$student) {
                 throw new \Exception('Aluno não encontrado');
             }
 
-            header('Content-Type: application/json');
-            echo json_encode($student);
-            exit;
+            // Buscar informações adicionais do aluno
+            $userInfoModel = new \App\Models\UserInfo();
+            $student_info = $userInfoModel->getUserInfoById($id);
+
+            // Buscar responsável do aluno
+            $guardian = null;
+            if (isset($student['guardian_id']) && !empty($student['guardian_id'])) {
+                $guardian = $this->studentModel->getGuardianById($student['guardian_id']);
+            }
+
+            // Buscar turmas do aluno
+            $classeModel = new \App\Models\ClassModel();
+            $classes = $classeModel->getStudentClasses($id);
+
+            // Buscar todos os responsáveis para o select de edição
+            $guardians = $this->studentModel->getAllGuardians($institutionId);
+
+            // Renderiza a view
+            $this->render('students/show', [
+                'pageTitle' => 'Detalhes do Aluno',
+                'student' => $student,
+                'student_info' => $student_info,
+                'guardian' => $guardian,
+                'guardians' => $guardians,
+                'classes' => $classes,
+                'currentSection' => 'students'
+            ]);
         } catch (\Exception $e) {
-            http_response_code(400);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ];
+            $this->redirect('/students');
         }
     }
 
@@ -134,18 +166,19 @@ class StudentController extends BaseController
         }
     }
 
-    public function getInfo($id) {
+    public function getInfo($id)
+    {
         try {
             $userInfoModel = new \App\Models\UserInfo();
             $student = $userInfoModel->getStudentInfo($id, $_SESSION['user']['institution_id']);
-            
+
             if (!$student) {
                 header('Content-Type: application/json');
                 http_response_code(404);
                 echo json_encode(['error' => 'Aluno não encontrado']);
                 exit;
             }
-            
+
             header('Content-Type: application/json');
             echo json_encode($student);
         } catch (\Exception $e) {

@@ -32,7 +32,7 @@ class ClassModel
             ORDER BY c.year DESC, c.name ASC
             LIMIT ? OFFSET ?
         ");
-        
+
         $stmt->execute([$institutionId, $limit, $offset]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -82,7 +82,6 @@ class ClassModel
             $id = $this->db->lastInsertId();
             $this->db->commit();
             return $id;
-
         } catch (\PDOException $e) {
             $this->db->rollBack();
             error_log($e->getMessage());
@@ -112,7 +111,6 @@ class ClassModel
 
             $this->db->commit();
             return true;
-
         } catch (\PDOException $e) {
             $this->db->rollBack();
             error_log($e->getMessage());
@@ -180,7 +178,7 @@ class ClassModel
             WHERE cs.class_id = ? 
             ORDER BY u.name ASC
         ");
-        
+
         $stmt->execute([$classId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -194,11 +192,11 @@ class ClassModel
                 WHERE class_id = ? AND user_id = ? AND deleted_at IS NULL
             ");
             $check->execute([$classId, $studentId]);
-            
+
             if ($check->fetchColumn() > 0) {
                 throw new \Exception('Este aluno já está matriculado nesta turma');
             }
-            
+
             // Verificar se a turma tem capacidade
             $checkCapacity = $this->db->prepare("
                 SELECT 
@@ -212,23 +210,22 @@ class ClassModel
             ");
             $checkCapacity->execute([$classId]);
             $classInfo = $checkCapacity->fetch(PDO::FETCH_ASSOC);
-            
+
             if ($classInfo['student_count'] >= $classInfo['capacity']) {
                 throw new \Exception('A turma atingiu sua capacidade máxima');
             }
-            
+
             // Adicionar aluno à turma
             $this->db->beginTransaction();
-            
+
             $stmt = $this->db->prepare("
                 INSERT INTO class_students (class_id, user_id, status, joined_at) 
                 VALUES (?, ?, 'Ativo', NOW())
             ");
             $stmt->execute([$classId, $studentId]);
-            
+
             $this->db->commit();
             return true;
-            
         } catch (\PDOException $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
@@ -274,8 +271,36 @@ class ClassModel
             )
             ORDER BY u.name ASC
         ");
-        
+
         $stmt->execute([$institutionId, $classId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getStudentClasses($studentId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+            SELECT 
+                c.id,
+                c.name,
+                c.shift,
+                c.year,
+                cs.student_status as status,
+                cs.joined_at
+            FROM class_students cs
+            JOIN classes c ON cs.class_id = c.id
+            WHERE cs.user_id = ? 
+            AND cs.deleted_at IS NULL
+            ORDER BY c.year DESC, c.name ASC
+        ");
+
+            $stmt->execute([$studentId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log($e->getMessage());
+            return [];
+        }
+    }
+
+    
 }
