@@ -31,7 +31,9 @@ class GuardianController extends BaseController
         $stmt->execute([$institutionId]);
         $guardians = $stmt->fetchAll();
 
-        $this->render('guardians/index', ['guardians' => $guardians]);
+        $this->render('guardians/index', [
+            'pageTitle' => 'Listagem de Responsáveis',
+            'guardians' => $guardians]);
     }
 
     public function update($id)

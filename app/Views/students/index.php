@@ -1,59 +1,61 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="d-flex card-header align-items-center justify-content-between">
-                    <h5 class="mb-0">Alunos</h5>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStudentModal">
-                        <i class="bi bi-plus"></i> Novo Aluno
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Nsc/Idade</th>
-                                    <th>Responsável</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($students as $student): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($student['student_name']) ?></td>
-                                        <td><?= htmlspecialchars($student['student_email']) ?></td>
-                                        <td></td>
-                                        <td><?= htmlspecialchars($student['guardian_name'] ?? 'Não definido') ?></td>
-                                        <td>
-                                            <?php if ($student['active']): ?>
-                                                <span class="badge bg-success">Ativo</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-danger">Inativo</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-info btn-sm"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#alunoInfoModal"
-                                                onclick="viewAlunoDetails(<?= $aluno['id'] ?>)">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-primary btn-sm" onclick="editStudent(<?= htmlspecialchars(json_encode($student)) ?>)">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" onclick="deleteStudent(<?= $student['id'] ?>)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+            <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h4 class="card-title"><?= $pageTitle ?></h4>
                     </div>
+                    <div class="col-md-6 text-end">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+                    <i class="bi bi-plus"></i> Novo Aluno
+                </button>
+                    </div>
+                </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Nsc/Idade</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($students as $student): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($student['student_name']) ?></td>
+                                    <td><?= htmlspecialchars($student['student_email']) ?></td>
+                                    <td></td>
+                                    <td><?= htmlspecialchars($student['guardian_name'] ?? 'Não definido') ?></td>
+                                    <td>
+                                        <?php if ($student['active']): ?>
+                                            <span class="badge bg-success">Ativo</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger">Inativo</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#alunoInfoModal"
+                                            onclick="viewAlunoDetails(<?= $aluno['id'] ?>)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="editStudent(<?= htmlspecialchars(json_encode($student)) ?>)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteStudent(<?= $student['id'] ?>)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

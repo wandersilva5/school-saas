@@ -20,8 +20,8 @@ class Student
         $stmt = $this->db->prepare("
         SELECT 
             u.id,
-            u.name,
-            u.email,
+            u.name as student_name,
+            u.email as student_email,
             u.active,
             u.created_at,
             u.institution_id,

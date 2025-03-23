@@ -27,7 +27,7 @@ class StudentController extends BaseController
 
         $students = $this->studentModel->getAllStudents($institutionId);
         $guardians = $this->studentModel->getAllGuardians($institutionId);
-        $user_info = $this->userInfoModel->getAlunoInfoById($institutionId);
+        $user_info = $this->userInfoModel->getUserInfoById($institutionId);
 
 
         $this->render('students/index', [
@@ -37,7 +37,7 @@ class StudentController extends BaseController
             'user' => $_SESSION['user'],
             'currentPage' => $page,
             'currentRoute' => 'students',
-            'title' => 'Listagem de Alunos'
+            'pageTitle' => 'Listagem de Alunos'
         ]);
     }
 
