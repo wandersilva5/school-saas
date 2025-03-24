@@ -71,6 +71,9 @@ class AuthController extends BaseController
                         case in_array('Agente de controle', $roles):
                             header('Location: /home-agent');
                             break;
+                        case in_array('Responsavel', $roles):
+                            header('Location: /institution/home');
+                            break;
                         default:
                             header('Location: /dashboard-institution');
                             break;

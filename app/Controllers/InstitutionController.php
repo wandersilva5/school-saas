@@ -10,11 +10,13 @@ class InstitutionController extends BaseController
 {
     private $db;
     private Institution $roleModel;
+    private $institutionModel;
 
     public function __construct()
     {
         $this->db = \App\Config\Database::getInstance()->getConnection();
         $this->roleModel = new Institution();
+        $this->institutionModel = new Institution();
     }
 
     public function index()
@@ -184,6 +186,45 @@ class InstitutionController extends BaseController
             }
         } else {
             throw new Exception('Nenhum arquivo carregado ou ocorreu um erro de carregamento');
+        }
+    }
+
+    public function list()
+    {
+        // Obtenha o ID do usuário logado
+        $userId = $_SESSION['user']['id'];
+
+        var_dump($userId); die;
+
+        try {
+            // Buscar instituições vinculadas ao usuário
+            $stmt = $this->db->prepare("
+            SELECT i.*, 
+                (SELECT COUNT(*) FROM users WHERE institution_id = i.id AND deleted_at IS NULL) as students_count,
+            FROM institutions i
+            JOIN users u ON i.id = u.institution_id
+            WHERE u.id = ? 
+            ORDER BY i.name ASC
+        ");
+            $stmt->execute([$userId]);
+            $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            var_dump($institutions); die;
+
+            // Renderize a view com os dados obtidos
+            return $this->render('institutions/list', [
+                'institutions' => $institutions,
+                'pageTitle' => 'Minhas Instituições'
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erro ao listar instituições do usuário: " . $e->getMessage());
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao carregar instituições.'
+            ];
+
+            header('Location: /dashboard');
+            exit;
         }
     }
 }

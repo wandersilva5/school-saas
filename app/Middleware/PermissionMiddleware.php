@@ -9,12 +9,20 @@ class PermissionMiddleware {
         if (!isset($_SESSION['user'])) {
             // Only set the warning message if we're not already on the login page
             $currentUrl = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            $currentRoute = trim($currentUrl, '/');
+            if ($currentRoute === 'institutions/list') {
+                return true; // Permite acesso
+            }
+            
+
             if ($currentUrl !== '/login') {
                 $this->redirectWithToast('/login', 'warning', 'Você precisa fazer login para acessar esta página.');
                 return false;
             }
+            
             return false;
         }
+        
         
         // If the user just logged in, don't show unnecessary messages
         if (isset($_SESSION['just_logged_in'])) {

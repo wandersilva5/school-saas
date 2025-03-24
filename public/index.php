@@ -48,14 +48,17 @@ if (!$isPublicRoute && !isset($_SESSION['user'])) {
 }
 
 // Carrega permissões de rotas
-function getRoutePermissions() {
+function getRoutePermissions()
+{
     static $permissionsCache = null;
-    
+
     if ($permissionsCache === null) {
         try {
             $menuModel = new \App\Models\Menu();
             $permissionsCache = $menuModel->getRoutePermissions();
-            
+
+            $permissionsCache['institutions/list'] = ['TI', 'Master', 'Responsavel']; // Apenas estes perfis
+
             // If permissions are empty, set a toast warning
             if (empty($permissionsCache)) {
                 $_SESSION['toast'] = [
@@ -69,12 +72,12 @@ function getRoutePermissions() {
                 'type' => 'error',
                 'message' => 'Erro ao carregar permissões: ' . $e->getMessage()
             ];
-            
+
             // Return empty array if there's an error
             $permissionsCache = [];
         }
     }
-    
+
     return $permissionsCache;
 }
 
@@ -136,28 +139,44 @@ if (isset($routes[$url])) {
 
 // If route exists, check permissions and execute
 if ($routeFound) {
-    // Check role permissions if this route has specific permissions
-    if (!$isPublicRoute && isset($routePermissions[$baseRoute])) {
-        $requiredRoles = $routePermissions[$baseRoute];
-        $userRoles = $_SESSION['user']['roles'] ?? [];
-        $hasPermission = false;
+    $baseRoute = explode('/', $routeKey)[0]; // First segment
+    $isPublicRoute = in_array($baseRoute, $publicRoutes);
 
-        // Check if user has any of the required roles
-        foreach ($requiredRoles as $role) {
-            if (in_array($role, $userRoles)) {
-                $hasPermission = true;
-                break;
-            }
+    // Check permissions only for non-public routes
+    if (!$isPublicRoute) {
+        // Check if user is logged in
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['toast'] = [
+                'type' => 'warning',
+                'message' => 'Você precisa fazer login para acessar esta página.'
+            ];
+            header('Location: /login');
+            exit;
         }
 
-        // If no permission, redirect with toast
-        if (!$hasPermission) {
-            $_SESSION['toast'] = [
-                'type' => 'error',
-                'message' => 'Você não tem permissão para acessar esta página.'
-            ];
-            header('Location: /dashboard');
-            exit;
+        // Check role permissions if this route has specific permissions
+        if (isset($routePermissions[$baseRoute])) {
+            $requiredRoles = $routePermissions[$baseRoute];
+            $userRoles = $_SESSION['user']['roles'] ?? [];
+            $hasPermission = false;
+
+            // Check if user has any of the required roles
+            foreach ($requiredRoles as $role) {
+                if (in_array($role, $userRoles)) {
+                    $hasPermission = true;
+                    break;
+                }
+            }
+
+            // If no permission, redirect with toast
+            if (!$hasPermission) {
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'Você não tem permissão para acessar esta página.'
+                ];
+                header('Location: /dashboard');
+                exit;
+            }
         }
     }
 
