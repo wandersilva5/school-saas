@@ -54,7 +54,7 @@ class InstitutionController extends BaseController
                     $stmt->execute([$responsavelId]);
                     $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-                    return $this->render('dashboard/select-institution', [
+                    return $this->render('home-institution/index', [
                         'pageTitle' => 'Selecione uma Instituição',
                         'institutions' => $institutions
                     ]);
@@ -72,8 +72,8 @@ class InstitutionController extends BaseController
                     $_SESSION['user']['institution_id'] = $institutionId;
                 } else {
                     // No institutions at all
-                    return $this->render('dashboard/responsavel', [
-                        'pageTitle' => 'Área do Responsável',
+                    return $this->render('home-institution/index', [
+                        'pageTitle' => 'Home institution',
                         'error' => 'Nenhuma instituição encontrada. Entre em contato com o suporte.',
                         'alunos' => [],
                         'financeiro' => [],
@@ -215,8 +215,8 @@ class InstitutionController extends BaseController
 
     public function list()
     {
-        // Skip role validation - all authenticated users with Responsavel role should access this
-        if (!isset($_SESSION['user']) || !in_array('Responsavel', $_SESSION['user']['roles'])) {
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
             header('Location: /login');
             exit;
         }
@@ -236,12 +236,12 @@ class InstitutionController extends BaseController
             $stmt->execute([$userId]);
             $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // If only one institution, select it automatically
-            if (count($institutions) === 1) {
-                $_SESSION['user']['institution_id'] = $institutions[0]['id'];
-                header('Location: /dashboard-responsavel');
-                exit;
-            }
+            // // If only one institution, select it automatically
+            // if (count($institutions) > 1) {
+            //     $_SESSION['user']['institution_id'] = $institutions[0]['id'];
+            //     header('Location: /dashboard-responsavel');
+            //     exit;
+            // }
 
             // Otherwise render the selection page
             return $this->render('institution/list', [
@@ -292,7 +292,7 @@ class InstitutionController extends BaseController
         $_SESSION['user']['institution_id'] = $id;
 
         // Redirect to dashboard
-        header('Location: /dashboard-responsavel');
+        header('Location: /dashboard-institution');
         exit;
     }
 }
