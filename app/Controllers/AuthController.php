@@ -72,7 +72,7 @@ class AuthController extends BaseController
                             header('Location: /home-agent');
                             break;
                         case in_array('Responsavel', $roles):
-                            header('Location: /institution/home');
+                            header('Location: /institution/list');
                             break;
                         default:
                             header('Location: /dashboard-institution');
