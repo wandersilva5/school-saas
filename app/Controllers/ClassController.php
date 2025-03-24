@@ -18,9 +18,10 @@ class ClassController extends BaseController
 
     public function index()
     {
-        // Verificar se o usuário está logado
         if (!isset($_SESSION['user'])) {
-            $this->redirect('/login');
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
         }
 
         $institutionId = $_SESSION['user']['institution_id'];

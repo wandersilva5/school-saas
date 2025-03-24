@@ -4,15 +4,17 @@ namespace App\Models;
 
 use App\Config\Database;
 
-class PendingAuthorization 
+class PendingAuthorization
 {
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = Database::getInstance();
     }
 
-    public function getPendingAuthorizations($institution_id) 
+    // app/Models/PendingAuthorization.php
+    public function getPendingAuthorizations($institution_id)
     {
         $sql = "SELECT 
                     person_name as name,
@@ -21,7 +23,6 @@ class PendingAuthorization
                     requested_by
                 FROM pending_authorizations 
                 WHERE institution_id = ? 
-                AND status = 'pendente'
                 ORDER BY created_at DESC";
         return $this->db->query($sql, [$institution_id])->fetchAll();
     }

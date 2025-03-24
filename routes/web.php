@@ -12,6 +12,7 @@ return [
     'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
     'dashboard-responsavel' => ['controller' => 'DashboardResponsavelController', 'action' => 'index'],
     'home-agent'            => ['controller' => 'HomeAgentController', 'action' => 'index'],
+    'home-institution'      => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
 
 
     // Rotas para gerenciamento de acesso

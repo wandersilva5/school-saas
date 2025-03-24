@@ -8,56 +8,14 @@ class HomeInstitutionController extends BaseController
 {
     public function index()
     {
-        // Debug
-        error_log("DashboardController: Verificando autenticação");
-        error_log("DashboardController: Sessão atual: " . print_r($_SESSION, true));
-
         if (!isset($_SESSION['user'])) {
-            error_log("DashboardController: Usuário não está na sessão");
+            error_log("Alerta: Usuário não está na sessão");
             header('Location: /login');
             exit;
         }
 
         $user = $_SESSION['user'];
         $institutionId = $user['institution_id'];
-        error_log("DashboardController: Usuário encontrado: " . print_r($user, true));
-
-        // Dados para os cards do dashboard - informações fictícias relevantes
-        $dashboardData = [
-            'total_students' => 428,
-            'active_students' => 412,
-            'total_teachers' => 38,
-            'total_classes' => 25,
-            'avg_attendance' => 94.2, // Percentual de frequência média
-            'upcoming_events' => 3,
-            'recent_absences' => 15,
-            'pending_payments' => 28
-        ];
-
-        // Dados de performance acadêmica para gráfico
-        $academicPerformance = [
-            'labels' => ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
-            'datasets' => [
-                [
-                    'label' => 'Média Geral',
-                    'data' => [7.2, 7.5, 7.8, 7.6, 8.0, 8.2]
-                ],
-                [
-                    'label' => 'Meta',
-                    'data' => [7.0, 7.0, 7.0, 7.0, 7.0, 7.0]
-                ]
-            ]
-        ];
-
-        // Dados de distribuição de alunos por turma
-        $classDistribution = [
-            ['turma' => '1º Ano A', 'alunos' => 32],
-            ['turma' => '1º Ano B', 'alunos' => 30],
-            ['turma' => '2º Ano A', 'alunos' => 28],
-            ['turma' => '2º Ano B', 'alunos' => 26],
-            ['turma' => '3º Ano A', 'alunos' => 25],
-            ['turma' => '3º Ano B', 'alunos' => 24]
-        ];
 
         // Últimos comunicados enviados
         $recentAnnouncements = [
@@ -76,23 +34,6 @@ class HomeInstitutionController extends BaseController
                 'data' => '2025-04-22',
                 'conteudo' => 'Inscrições abertas para a Feira de Ciências anual.'
             ]
-        ];
-
-        // Dados financeiros (recebimentos mensais)
-        $financialData = [
-            'labels' => ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
-            'expected' => [42000, 42000, 42000, 42000, 42000, 42000],
-            'received' => [40800, 41200, 41500, 41000, 39600, 38200]
-        ];
-
-        // Indicadores de desempenho (KPIs)
-        $performanceKPIs = [
-            'attendance_rate' => 94.2, // Taxa de frequência
-            'approval_rate' => 91.5,   // Taxa de aprovação
-            'dropout_rate' => 2.8,     // Taxa de evasão
-            'teacher_satisfaction' => 86.3, // Satisfação dos professores
-            'parent_satisfaction' => 82.7,  // Satisfação dos pais
-            'academic_growth' => 8.4        // Crescimento acadêmico (%)
         ];
 
         // Próximos eventos
@@ -114,28 +55,18 @@ class HomeInstitutionController extends BaseController
             ]
         ];
 
-        // Dados de frequência por dia da semana
-        $attendanceByWeekday = [
-            'labels' => ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
-            'data' => [96.2, 95.8, 94.1, 93.4, 91.5]
-        ];
+     
 
         // Fetch slider images for the current institution
         $sliderModel = new SliderImage();
         $sliderImages = $sliderModel->getSliderImagesByInstitution($user['institution_id']);
 
-        return $this->render('dashboard/home-institution', [
+        return $this->render('home-institution/index', [
             'user' => $user,
             'pageTitle' => "Dashboard Institucional",
             'currentPage' => 'dashboard-institution',
-            'dashboardData' => $dashboardData,
-            'academicPerformance' => $academicPerformance,
-            'classDistribution' => $classDistribution,
             'recentAnnouncements' => $recentAnnouncements,
-            'financialData' => $financialData,
-            'performanceKPIs' => $performanceKPIs,
             'upcomingEvents' => $upcomingEvents,
-            'attendanceByWeekday' => $attendanceByWeekday,
             'sliderImages' => $sliderImages
         ]);
     }

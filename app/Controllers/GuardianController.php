@@ -18,6 +18,12 @@ class GuardianController extends BaseController
 
     public function index()
     {
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
+        }
+        
         $institutionId = $_SESSION['user']['institution_id'];
         $stmt = $this->db->prepare("
             SELECT u.*, GROUP_CONCAT(r.name) as roles

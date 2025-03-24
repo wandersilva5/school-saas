@@ -152,32 +152,11 @@ if ($routeFound) {
             exit;
         }
 
-        // Check role permissions if this route has specific permissions
+        // Check permissions using helper function
         if (isset($routePermissions[$baseRoute])) {
-            $requiredRoles = $routePermissions[$baseRoute];
-            $userRoles = $_SESSION['user']['roles'] ?? [];
-            $hasPermission = false;
-
-            // Check if user has any of the required roles
-            foreach ($requiredRoles as $role) {
-                if (in_array($role, $userRoles)) {
-                    $hasPermission = true;
-                    break;
-                }
-            }
-
-            // If no permission, redirect with toast
-            if (!$hasPermission) {
-                $_SESSION['toast'] = [
-                    'type' => 'error',
-                    'message' => 'Você não tem permissão para acessar esta página.'
-                ];
-                header('Location: /dashboard');
-                exit;
-            }
+            check_menu_permissions($baseRoute);
         }
     }
-
     // If we reach here, user has permission to access the route
     // Instantiate and execute controller
     $controllerName = "\\App\\Controllers\\" . $routes[$routeKey]['controller'];

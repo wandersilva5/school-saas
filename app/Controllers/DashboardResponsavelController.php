@@ -18,6 +18,12 @@ class DashboardResponsavelController extends BaseController
 
     public function index()
     {
+
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
+        }
         try {
             // Inicializa variáveis com valores padrão
             $alunos = [];

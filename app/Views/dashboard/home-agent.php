@@ -1,35 +1,3 @@
-<!-- Carrossel de Imagens -->
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        <?php foreach ($sliderImages as $index => $image): ?>
-            <button type="button"
-                data-bs-target="#carouselExampleIndicators"
-                data-bs-slide-to="<?= $index ?>"
-                class="<?= $index === 0 ? 'active' : '' ?>"
-                aria-current="<?= $index === 0 ? 'true' : 'false' ?>"
-                aria-label="Slide <?= $index + 1 ?>">
-            </button>
-        <?php endforeach; ?>
-    </div>
-    <div class="carousel-inner">
-        <?php foreach ($sliderImages as $index => $image): ?>
-            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                <img src="<?= base_url('uploads/slider/' . $image['image_url']) ?>"
-                    class="d-block w-100"
-                    alt="<?= htmlspecialchars($image['title'] ?? 'Slide ' . ($index + 1)) ?>">
-            </div>
-        <?php endforeach; ?>
-    </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
-</div>
-<!-- Fim do Carrossel de Imagens -->
 <div class="row mt-4">
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card card-stats">
@@ -169,38 +137,3 @@
         </div>
     </div>
 </div>
-
-<?php push('styles') ?>
-<style>
-    /* Carousel section */
-    #carouselExampleIndicators {
-        margin-top: -45px;
-        margin-left: -45px;
-        margin-right: -45px;
-        width: calc(100% + 90px);
-        position: relative;
-        height: 444px;
-    }
-
-    #carouselExampleIndicators .carousel-item img {
-        width: 100%;
-        height: 444px;
-        object-fit: cover;
-    }
-
-    .carousel-control-prev,
-    .carousel-control-next {
-        z-index: 100;
-    }
-
-    .carousel-inner {
-        width: 100%;
-        height: 444px;
-    }
-
-    /* Layout adjustments */
-    .container-fluid {
-        padding: 1.5rem;
-    }
-</style>
-<?php endpush() ?>

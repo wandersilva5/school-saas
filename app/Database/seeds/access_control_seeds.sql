@@ -4,16 +4,16 @@ TRUNCATE TABLE people;
 
 -- Inserindo pessoas de teste para a instituição específica
 INSERT INTO people (name, document, type, institution_id) VALUES
-('João Silva', '123.456.789-00', 'funcionario', 3),
-('Maria Santos', '987.654.321-00', 'funcionario', 3),
-('Pedro Oliveira', '111.222.333-44', 'prestador', 3),
-('Ana Costa', '444.555.666-77', 'funcionario', 3),
-('Lucas Mendes', '777.888.999-00', 'visitante', 3),
-('Julia Pereira', '222.333.444-55', 'prestador', 3),
-('Carlos Eduardo', '555.666.777-88', 'visitante', 3),
-('Amanda Lima', '888.999.000-11', 'funcionario', 3),
-('Roberto Alves', '333.444.555-66', 'visitante', 3),
-('Fernanda Santos', '666.777.888-99', 'funcionario', 3);
+('João Silva', '123.456.789-00', 'funcionario', 2),
+('Maria Santos', '987.654.321-00', 'funcionario', 2),
+('Pedro Oliveira', '111.222.333-44', 'prestador', 2),
+('Ana Costa', '444.555.666-77', 'funcionario', 2),
+('Lucas Mendes', '777.888.999-00', 'visitante', 2),
+('Julia Pereira', '222.333.444-55', 'prestador', 2),
+('Carlos Eduardo', '555.666.777-88', 'visitante', 2),
+('Amanda Lima', '888.999.000-11', 'funcionario', 2),
+('Roberto Alves', '333.444.555-66', 'visitante', 2),
+('Fernanda Santos', '666.777.888-99', 'funcionario', 2);
 
 -- Inserindo registros de acesso mais recentes
 INSERT INTO access_logs (person_id, institution_id, type, status, created_at) VALUES
@@ -40,3 +40,7 @@ INSERT INTO alerts (institution_id, type, message, status, created_at) VALUES
 (1, 'Sistema', 'Atualização de segurança pendente', 'ativo', NOW()),
 (1, 'Segurança', 'Câmera 3 offline', 'resolvido', NOW() - INTERVAL 3 HOUR),
 (1, 'Acesso', 'Cartão de acesso bloqueado - ID 1234', 'resolvido', NOW() - INTERVAL 4 HOUR);
+
+
+
+

@@ -1,7 +1,6 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">

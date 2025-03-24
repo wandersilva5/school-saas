@@ -19,6 +19,12 @@ class StudentController extends BaseController
 
     public function index()
     {
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
+        }
+        
         $institutionId = $_SESSION['user']['institution_id'];
 
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;

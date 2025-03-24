@@ -15,6 +15,12 @@ class SliderImageController extends BaseController
 
     public function index()
     {
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
+        }
+        
         $images = $this->model->getAll($_SESSION['user']['institution_id']);
         return $this->render('slider-images/index', ['images' => $images]);
     }

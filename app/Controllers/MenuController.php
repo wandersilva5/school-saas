@@ -11,6 +11,12 @@ class MenuController extends BaseController {
     }
 
     public function index() {
+        if (!isset($_SESSION['user'])) {
+            error_log("Alerta: Usuário não está na sessão");
+            header('Location: /login');
+            exit;
+        }
+        
         $menus = $this->menuModel->getAll();
         $roles = $this->menuModel->getAllRoles();
         $headers = $this->menuModel->getAllHeaders();
