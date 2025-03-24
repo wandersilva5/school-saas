@@ -60,7 +60,7 @@ class AuthController extends BaseController
                         'institution_id' => $user['institution_id'],
                         'roles' => $user['roles'] ? explode(',', $user['roles']) : []
                     ];
-                    
+
                     $_SESSION['just_logged_in'] = true;
                     $roles = $_SESSION['user']['roles'];
 
@@ -72,6 +72,13 @@ class AuthController extends BaseController
                             header('Location: /home-agent');
                             break;
                         case in_array('Responsavel', $roles):
+                            // Log details for debugging
+                            error_log("Logging in Responsavel user: " . print_r($_SESSION['user'], true));
+
+                            // Set a specific session flag for Responsavel users
+                            $_SESSION['is_responsavel'] = true;
+
+                            // Direct redirect to dashboard
                             header('Location: /institution/list');
                             break;
                         default:
@@ -82,12 +89,11 @@ class AuthController extends BaseController
                 }
 
                 error_log("Login falhou - retornando erro");
-                    $this->render('auth/login', [
+                $this->render('auth/login', [
                     'error' => 'Email ou senha inválidos'
                 ]);
 
                 return;
-
             } catch (\Exception $e) {
                 error_log("Erro no login: " . $e->getMessage());
                 error_log("Stack trace: " . $e->getTraceAsString());

@@ -79,3 +79,12 @@ if (!function_exists('format_date')) {
         return DateHelper::formatDate($date);
     }
 }
+
+if (!function_exists('check_menu_permissions')) {
+    /**
+     * Checks if user has permission to access a route, redirects if not
+     */
+    function check_menu_permissions($route) {
+        \App\Helpers\MenuPermissionHelper::verifyAccess($route);
+    }
+}

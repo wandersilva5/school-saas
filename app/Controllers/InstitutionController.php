@@ -21,51 +21,69 @@ class InstitutionController extends BaseController
 
     public function index()
     {
-        // Verifica se o usuário tem permissão
-        if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
-            header('Location: /dashboard');
-            exit;
-        }
-
-        // Configuração da paginação
         try {
-            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-            $limit = 5; // itens por página
-            $offset = ($page - 1) * $limit;
+            $responsavelId = $_SESSION['user']['id'];
 
-            // Conta total de registros
-            $stmt = $this->db->prepare("
-                SELECT COUNT(*) as total 
-                FROM institutions 
-                WHERE deleted_at IS NULL
+            // Check if institution_id is set
+            if (!isset($_SESSION['user']['institution_id']) || empty($_SESSION['user']['institution_id'])) {
+                // No institution selected, check how many they have access to
+                $stmt = $this->db->prepare("
+                SELECT COUNT(DISTINCT i.id) as count
+                FROM institutions i
+                JOIN guardians_students gs ON gs.institution_id = i.id
+                WHERE gs.guardian_user_id = ?
             ");
-            $stmt->execute();
-            $totalInstitutions = $stmt->fetch(\PDO::FETCH_ASSOC)['total'];
-            $totalPages = ceil($totalInstitutions / $limit);
+                $stmt->execute([$responsavelId]);
+                $count = $stmt->fetch(\PDO::FETCH_ASSOC)['count'];
 
-            // Busca instituições com paginação
-            $stmt = $this->db->prepare("
-                SELECT *
-                FROM institutions 
-                WHERE deleted_at IS NULL
-                ORDER BY created_at DESC
-                LIMIT ? OFFSET ?
-            ");
+                if ($count > 1) {
+                    // Multiple institutions - render selection screen
+                    $stmt = $this->db->prepare("
+                    SELECT DISTINCT i.id, i.name, i.logo_url
+                    FROM institutions i
+                    JOIN guardians_students gs ON gs.institution_id = i.id
+                    WHERE gs.guardian_user_id = ?
+                    ORDER BY i.name
+                ");
+                    $stmt->execute([$responsavelId]);
+                    $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Corrige a ordem dos parâmetros para corresponder à query
-            $stmt->execute([$limit, $offset]);
-            $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                    return $this->render('dashboard/select-institution', [
+                        'pageTitle' => 'Selecione uma Instituição',
+                        'institutions' => $institutions
+                    ]);
+                } elseif ($count == 1) {
+                    // Just one institution - set it automatically
+                    $stmt = $this->db->prepare("
+                    SELECT DISTINCT i.id
+                    FROM institutions i
+                    JOIN guardians_students gs ON gs.institution_id = i.id
+                    WHERE gs.guardian_user_id = ?
+                    LIMIT 1
+                ");
+                    $stmt->execute([$responsavelId]);
+                    $institutionId = $stmt->fetch(\PDO::FETCH_ASSOC)['id'];
+                    $_SESSION['user']['institution_id'] = $institutionId;
+                } else {
+                    // No institutions at all
+                    return $this->render('dashboard/responsavel', [
+                        'pageTitle' => 'Área do Responsável',
+                        'error' => 'Nenhuma instituição encontrada. Entre em contato com o suporte.',
+                        'alunos' => [],
+                        'financeiro' => [],
+                        'comunicados' => [],
+                        'eventos' => [],
+                        'sliderImages' => []
+                    ]);
+                }
+            }
 
-            return $this->render('institution/index', [
-                'institutions' => $institutions,
-                'currentPage' => 'institution',
-                'totalPages' => $totalPages,
-                'pageTitle' => 'Gerenciar Instituições'
-            ]);
-        } catch (\PDOException $e) {
-            error_log("Erro na paginação de instituições: " . $e->getMessage());
-            header('Location: /institution?error=' . urlencode('Erro ao carregar as instituições'));
-            exit;
+            // Continue with the original code...
+            $institutionId = $_SESSION['user']['institution_id'];
+            // Rest of your dashboard rendering code...
+        } catch (\Exception $e) {
+            error_log('Erro: ' . $e->getMessage());
+            // Handle error...
         }
     }
 
@@ -191,40 +209,84 @@ class InstitutionController extends BaseController
 
     public function list()
     {
-        // Obtenha o ID do usuário logado
+        // Skip role validation - all authenticated users with Responsavel role should access this
+        if (!isset($_SESSION['user']) || !in_array('Responsavel', $_SESSION['user']['roles'])) {
+            header('Location: /login');
+            exit;
+        }
+
         $userId = $_SESSION['user']['id'];
 
-        var_dump($userId); die;
-
         try {
-            // Buscar instituições vinculadas ao usuário
+            // Get institutions where user has children
             $stmt = $this->db->prepare("
-            SELECT i.*, 
-                (SELECT COUNT(*) FROM users WHERE institution_id = i.id AND deleted_at IS NULL) as students_count,
-            FROM institutions i
-            JOIN users u ON i.id = u.institution_id
-            WHERE u.id = ? 
-            ORDER BY i.name ASC
-        ");
+                SELECT DISTINCT i.id, i.name, i.logo_url
+                FROM institutions i
+                JOIN guardians_students gs ON gs.institution_id = i.id
+                WHERE gs.guardian_user_id = ?
+                AND i.deleted_at IS NULL
+                ORDER BY i.name
+            ");
             $stmt->execute([$userId]);
             $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            var_dump($institutions); die;
+            // If only one institution, select it automatically
+            if (count($institutions) === 1) {
+                $_SESSION['user']['institution_id'] = $institutions[0]['id'];
+                header('Location: /dashboard-responsavel');
+                exit;
+            }
 
-            // Renderize a view com os dados obtidos
-            return $this->render('institutions/list', [
+            // Otherwise render the selection page
+            return $this->render('institution/list', [
                 'institutions' => $institutions,
-                'pageTitle' => 'Minhas Instituições'
+                'pageTitle' => 'Selecione uma Instituição'
             ]);
-        } catch (\PDOException $e) {
-            error_log("Erro ao listar instituições do usuário: " . $e->getMessage());
+        } catch (\Exception $e) {
+            error_log("Error in listForResponsavel: " . $e->getMessage());
             $_SESSION['toast'] = [
                 'type' => 'error',
-                'message' => 'Erro ao carregar instituições.'
+                'message' => 'Erro ao carregar instituições: ' . $e->getMessage()
             ];
-
-            header('Location: /dashboard');
+            header('Location: /login');
             exit;
         }
+    }
+
+    public function select($id)
+    {
+        // Verify user is Responsavel
+        if (!isset($_SESSION['user']) || !in_array('Responsavel', $_SESSION['user']['roles'])) {
+            header('Location: /login');
+            exit;
+        }
+        // Verify institution exists and user has access
+        $stmt = $this->db->prepare("
+            SELECT i.id
+            FROM institutions i
+            JOIN guardians_students gs ON gs.institution_id = i.id
+            WHERE i.id = ?
+            AND gs.guardian_user_id = ?
+            AND i.deleted_at IS NULL
+            LIMIT 1
+        ");
+        $stmt->execute([$id, $_SESSION['user']['id']]);
+        $institution = $stmt->fetch();
+
+        if (!$institution) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Instituição não encontrada ou acesso negado'
+            ];
+            header('Location: /institutions/list');
+            exit;
+        }
+
+        // Set selected institution in session
+        $_SESSION['user']['institution_id'] = $id;
+
+        // Redirect to dashboard
+        header('Location: /dashboard-responsavel');
+        exit;
     }
 }

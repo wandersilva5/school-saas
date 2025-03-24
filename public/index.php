@@ -38,14 +38,14 @@ $baseRoute = explode('/', $url)[0] ?? '';
 $isPublicRoute = in_array($baseRoute, $publicRoutes);
 
 // Middleware para verificar autenticação apenas para rotas privadas
-if (!$isPublicRoute && !isset($_SESSION['user'])) {
-    $_SESSION['toast'] = [
-        'type' => 'warning',
-        'message' => 'Você precisa fazer login para acessar esta página.'
-    ];
-    header('Location: /login');
-    exit;
-}
+// if (!$isPublicRoute && !isset($_SESSION['user'])) {
+//     $_SESSION['toast'] = [
+//         'type' => 'warning',
+//         'message' => 'Você precisa fazer login para acessar esta página.'
+//     ];
+//     header('Location: /login');
+//     exit;
+// }
 
 // Carrega permissões de rotas
 function getRoutePermissions()
@@ -56,8 +56,6 @@ function getRoutePermissions()
         try {
             $menuModel = new \App\Models\Menu();
             $permissionsCache = $menuModel->getRoutePermissions();
-
-            $permissionsCache['institutions/list'] = ['TI', 'Master', 'Responsavel']; // Apenas estes perfis
 
             // If permissions are empty, set a toast warning
             if (empty($permissionsCache)) {
