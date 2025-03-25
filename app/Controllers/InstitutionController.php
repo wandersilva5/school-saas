@@ -4,18 +4,13 @@ namespace App\Controllers;
 
 use App\Models\Institution;
 use \Exception;
-use \PDO;
 
 class InstitutionController extends BaseController
 {
-    private $db;
-    private Institution $roleModel;
     private $institutionModel;
 
     public function __construct()
     {
-        $this->db = \App\Config\Database::getInstance()->getConnection();
-        $this->roleModel = new Institution();
         $this->institutionModel = new Institution();
     }
 
@@ -31,68 +26,35 @@ class InstitutionController extends BaseController
         check_responsavel_institution();
 
         try {
-            $responsavelId = $_SESSION['user']['id'];
+            // Configuração da paginação
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $limit = 10; // itens por página
+            $offset = ($page - 1) * $limit;
 
-            // Check if institution_id is set
-            if (!isset($_SESSION['user']['institution_id']) || empty($_SESSION['user']['institution_id'])) {
-                // No institution selected, check how many they have access to
-                $stmt = $this->db->prepare("
-                SELECT COUNT(DISTINCT i.id) as count
-                FROM institutions i
-                JOIN guardians_students gs ON gs.institution_id = i.id
-                WHERE gs.guardian_user_id = ?
-            ");
-                $stmt->execute([$responsavelId]);
-                $count = $stmt->fetch(\PDO::FETCH_ASSOC)['count'];
+            // Buscar instituições com paginação
+            $institutions = $this->institutionModel->getInstitutions($limit, $offset);
+            $totalInstitutions = $this->institutionModel->getTotalInstitutions();
+            $totalPages = ceil($totalInstitutions / $limit);
 
-                if ($count > 1) {
-                    // Multiple institutions - render selection screen
-                    $stmt = $this->db->prepare("
-                    SELECT DISTINCT i.id, i.name, i.logo_url
-                    FROM institutions i
-                    JOIN guardians_students gs ON gs.institution_id = i.id
-                    WHERE gs.guardian_user_id = ?
-                    ORDER BY i.name
-                ");
-                    $stmt->execute([$responsavelId]);
-                    $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-                    return $this->render('home-institution/index', [
-                        'pageTitle' => 'Selecione uma Instituição',
-                        'institutions' => $institutions
-                    ]);
-                } elseif ($count == 1) {
-                    // Just one institution - set it automatically
-                    $stmt = $this->db->prepare("
-                    SELECT DISTINCT i.id
-                    FROM institutions i
-                    JOIN guardians_students gs ON gs.institution_id = i.id
-                    WHERE gs.guardian_user_id = ?
-                    LIMIT 1
-                ");
-                    $stmt->execute([$responsavelId]);
-                    $institutionId = $stmt->fetch(\PDO::FETCH_ASSOC)['id'];
-                    $_SESSION['user']['institution_id'] = $institutionId;
-                } else {
-                    // No institutions at all
-                    return $this->render('home-institution/index', [
-                        'pageTitle' => 'Home institution',
-                        'error' => 'Nenhuma instituição encontrada. Entre em contato com o suporte.',
-                        'alunos' => [],
-                        'financeiro' => [],
-                        'comunicados' => [],
-                        'eventos' => [],
-                        'sliderImages' => []
-                    ]);
-                }
-            }
-
-            // Continue with the original code...
-            $institutionId = $_SESSION['user']['institution_id'];
-            // Rest of your dashboard rendering code...
-        } catch (\Exception $e) {
-            error_log('Erro: ' . $e->getMessage());
-            // Handle error...
+            return $this->render('institution/index', [
+                'institutions' => $institutions,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'pageTitle' => 'Gerenciar Instituições'
+            ]);
+            
+        } catch (Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao carregar instituições: ' . $e->getMessage()
+            ];
+            
+            return $this->render('institution/index', [
+                'institutions' => [],
+                'currentPage' => 1,
+                'totalPages' => 1,
+                'pageTitle' => 'Gerenciar Instituições'
+            ]);
         }
     }
 
@@ -103,46 +65,50 @@ class InstitutionController extends BaseController
             exit;
         }
 
-        $transactionStarted = false;
-
         try {
+            // Validação dos campos
             $name = $_POST['name'];
             $domain = $_POST['domain'];
-            $email = $_POST['email'];
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $phone = $_POST['phone'];
             $nameContact = $_POST['name_contact'];
-            $logo_url = $this->uploadImage($_FILES['logo_url']);
-
-            $this->db->beginTransaction();
-            $transactionStarted = true;
-
-            // Insere a instituição
-            $stmt = $this->db->prepare(
-                "INSERT INTO institutions (name, domain, logo_url, email, phone, name_contact, created_at) 
-             VALUES (?, ?, ?, ?, ?, ?, NOW())"
-            );
-
-            $stmt->execute([
-                $name,
-                $domain,
-                $logo_url,
-                $email,
-                $phone,
-                $nameContact
-            ]);
-
-            $this->db->commit();
-            header('Location: /institution?success=1');
-            exit;
-        } catch (\Exception $e) {
-            if ($transactionStarted) {
-                $this->db->rollBack();
+            
+            // Process logo upload if provided
+            $logoUrl = '';
+            if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
+                $logoUrl = $this->institutionModel->uploadLogo($_FILES['logo_url']);
             }
-            header('Location: /institution?error=' . urlencode($e->getMessage()));
+
+            // Prepare data for model
+            $data = [
+                'name' => $name,
+                'domain' => $domain,
+                'logo_url' => $logoUrl,
+                'email' => $email,
+                'phone' => $phone,
+                'name_contact' => $nameContact
+            ];
+
+            // Create institution using model
+            $this->institutionModel->create($data);
+            
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Instituição criada com sucesso'
+            ];
+            
+            header('Location: /institution');
+            exit;
+        } catch (Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao criar instituição: ' . $e->getMessage()
+            ];
+            
+            header('Location: /institution');
             exit;
         }
     }
-
 
     public function update($id)
     {
@@ -152,67 +118,70 @@ class InstitutionController extends BaseController
         }
 
         try {
+            // Validação dos campos
             $name = $_POST['name'];
             $domain = $_POST['domain'];
-            $email = $_POST['email'];
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $phone = $_POST['phone'];
             $nameContact = $_POST['name_contact'];
-            $logo_url = isset($_FILES['logo_url']) ? $this->uploadImage($_FILES['logo_url']) : $_POST['existing_logo_url'];
+            
+            // Process logo - use existing or upload new
+            $logoUrl = $_POST['existing_logo_url'];
+            if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
+                $logoUrl = $this->institutionModel->uploadLogo($_FILES['logo_url']);
+            }
+            
+            // Prepare data for model
+            $data = [
+                'name' => $name,
+                'domain' => $domain,
+                'logo_url' => $logoUrl,
+                'email' => $email,
+                'phone' => $phone,
+                'name_contact' => $nameContact
+            ];
 
-            $this->db->beginTransaction();
-
-            // Atualiza a instituição
-            $stmt = $this->db->prepare(
-                "UPDATE institutions 
-             SET name = ?, domain = ?, logo_url = ?, email = ?, phone = ?, name_contact = ?, updated_at = NOW() 
-             WHERE id = ?"
-            );
-
-            $stmt->execute([
-                $name,
-                $domain,
-                $logo_url,
-                $email,
-                $phone,
-                $nameContact,
-                $id
-            ]);
-
-            $this->db->commit();
-            header('Location: /institution?success=1');
+            // Update institution using model
+            $this->institutionModel->update($id, $data);
+            
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Instituição atualizada com sucesso'
+            ];
+            
+            header('Location: /institution');
             exit;
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            header('Location: /institution?error=' . urlencode($e->getMessage()));
+        } catch (Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao atualizar instituição: ' . $e->getMessage()
+            ];
+            
+            header('Location: /institution');
             exit;
         }
     }
 
-    private function uploadImage($file)
+    public function delete($id)
     {
-        // Lógica Upload da imagem aqui
-        if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = 'uploads/institutions/';
-
-            // Crie um diretório se ele não existir
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $fileExtension = pathinfo($_FILES['logo_url']['name'], PATHINFO_EXTENSION);
-            $fileName = uniqid() . '.' . $fileExtension;
-            $targetPath = $uploadDir . $fileName;
-
-            if (move_uploaded_file($_FILES['logo_url']['tmp_name'], $targetPath)) {
-                // O arquivo foi carregado com sucesso, agora salve os dados da instituição
-                $logoUrl = '/uploads/institutions/' . $fileName;
-
-                return $logoUrl;
-            } else {
-                throw new Exception('Falha ao mover o arquivo carregado');
-            }
-        } else {
-            throw new Exception('Nenhum arquivo carregado ou ocorreu um erro de carregamento');
+        try {
+            $this->institutionModel->delete($id);
+            
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Instituição removida com sucesso'
+            ];
+            
+            header('Location: /institution');
+            exit;
+        } catch (Exception $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Erro ao remover instituição: ' . $e->getMessage()
+            ];
+            
+            header('Location: /institution');
+            exit;
         }
     }
 
@@ -227,24 +196,15 @@ class InstitutionController extends BaseController
         $userId = $_SESSION['user']['id'];
 
         try {
-            // Get institutions where user has children
-            $stmt = $this->db->prepare("
-                SELECT DISTINCT i.id, i.name, i.logo_url, i.active
-                FROM institutions i
-                JOIN guardians_students gs ON gs.institution_id = i.id
-                WHERE gs.guardian_user_id = ?
-                AND i.deleted_at IS NULL
-                ORDER BY i.name
-            ");
-            $stmt->execute([$userId]);
-            $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
+            // Get institutions where user has children using model
+            $institutions = $this->institutionModel->getInstitutionsForGuardian($userId);
+            
             // Render without the main layout by directly outputting
             // instead of using $this->render()
             require_once __DIR__ . '/../Views/institution/list.php';
             exit;
-        } catch (\Exception $e) {
-            error_log("Error in listForResponsavel: " . $e->getMessage());
+        } catch (Exception $e) {
+            error_log("Error in list: " . $e->getMessage());
             $_SESSION['toast'] = [
                 'type' => 'error',
                 'message' => 'Erro ao carregar instituições: ' . $e->getMessage()
@@ -254,7 +214,6 @@ class InstitutionController extends BaseController
         }
     }
 
-    // Make sure this method has the exact signature to match the route parameter
     public function select($id)
     {
         // Debug
@@ -276,36 +235,41 @@ class InstitutionController extends BaseController
             exit;
         }
 
-        // Verify institution exists and user has access
-        $stmt = $this->db->prepare("
-            SELECT i.id
-            FROM institutions i
-            JOIN guardians_students gs ON gs.institution_id = i.id
-            WHERE i.id = ?
-            AND gs.guardian_user_id = ?
-            AND i.deleted_at IS NULL
-            LIMIT 1
-        ");
-        $stmt->execute([$id, $_SESSION['user']['id']]);
-        $institution = $stmt->fetch();
+        try {
+            // Verify institution exists and user has access using model
+            $hasAccess = $this->institutionModel->verifyGuardianAccess($_SESSION['user']['id'], $id);
+            
+            if (!$hasAccess) {
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'Instituição não encontrada ou acesso negado'
+                ];
+                header('Location: /institution/list');
+                exit;
+            }
 
-        if (!$institution) {
+            // Set selected institution in session
+            $_SESSION['user']['institution_id'] = $id;
+
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Instituição selecionada com sucesso'
+            ];
+
+            // Debug
+            error_log("Institution selected successfully, redirecting to dashboard");
+
+            // Redirect to dashboard
+            header('Location: /dashboard-institution');
+            exit;
+        } catch (Exception $e) {
+            error_log("Error in select: " . $e->getMessage());
             $_SESSION['toast'] = [
                 'type' => 'error',
-                'message' => 'Instituição não encontrada ou acesso negado'
+                'message' => 'Erro ao selecionar instituição: ' . $e->getMessage()
             ];
             header('Location: /institution/list');
             exit;
         }
-
-        // Set selected institution in session
-        $_SESSION['user']['institution_id'] = $id;
-
-        // Debug
-        error_log("Institution selected successfully, redirecting to dashboard");
-
-        // Redirect to dashboard
-        header('Location: /dashboard-institution');
-        exit;
     }
 }

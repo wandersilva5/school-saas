@@ -1,19 +1,5 @@
 <!-- Content -->
 <div class="row">
-    <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-            Operação realizada com sucesso!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['error'])): ?>
-        <div class="alert alert-danger alert-dismissible fade show">
-            <?= htmlspecialchars($_GET['error']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
     <div class="card">
         <div class="card-heard">
             <div class="d-flex justify-content-between align-items-center mt-2">
@@ -241,53 +227,49 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editForm" method="POST" action="institution/update" enctype="multipart/form-data">
+                <!-- Replace your current edit form in institution/index.php with this one -->
+                <form id="editForm" method="POST" action="/institution/update" enctype="multipart/form-data">
                     <input type="hidden" id="editId" name="id">
-                    <!-- Campo Nome -->
-                    <div class="mb-3">
-                        <label for="editName" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="editName" name="name" required minlength="3" maxlength="100"
-                            placeholder="Digite o nome completo">
-                        <div class="invalid-feedback">
-                            Por favor, informe um nome válido.
+                    <div class="row">
+                        <!-- Campo Nome -->
+                        <div class="col-md-6 mb-3">
+                            <label for="editName" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="editName" name="name" required minlength="3" maxlength="100">
+                        </div>
+
+                        <!-- Campo Domain -->
+                        <div class="col-md-6 mb-3">
+                            <label for="editDomain" class="form-label">Domain</label>
+                            <input type="text" class="form-control" id="editDomain" name="domain" required>
                         </div>
                     </div>
 
-                    <!-- Campo Domain -->
-                    <div class="mb-3">
-                        <label for="editDomain" class="form-label">Domain</label>
-                        <input type="text" class="form-control" id="editDomain" name="domain" required>
-                        <div class="invalid-feedback">
-                            Por favor, informe um domínio válido.
+                    <div class="row">
+                        <!-- Campo Email -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+
+                        <!-- Campo Telefone -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editPhone" class="form-label">Telefone</label>
+                            <input type="tel" class="form-control phone" id="editPhone" name="phone" required>
+                        </div>
+
+                        <!-- Campo Nome do Contato -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editNameContact" class="form-label">Nome do Contato</label>
+                            <input type="text" class="form-control" id="editNameContact" name="name_contact" required>
                         </div>
                     </div>
 
-                    <!-- Campo Email -->
                     <div class="mb-3">
-                        <label for="editEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="editEmail" name="email" required>
-                    </div>
-
-                    <!-- Campo Telefone -->
-                    <div class="mb-3">
-                        <label for="editPhone" class="form-label">Telefone</label>
-                        <input type="tel" class="form-control" id="editPhone" name="phone" required>
-                    </div>
-
-                    <!-- Campo Nome do Contato -->
-                    <div class="mb-3">
-                        <label for="editNameContact" class="form-label">Nome do Contato</label>
-                        <input type="text" class="form-control" id="editNameContact" name="name_contact" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="editImage" class="form-label">Logo da Instituição</label>
-                        <input type="file" class="form-control d-none" id="editImageInput" name="logo_url" accept="image/*">
+                        <label for="editImageInput" class="form-label">Logo da Instituição</label>
+                        <input type="file" class="form-control" id="editImageInput" name="logo_url" accept="image/*">
                         <input type="hidden" id="existingLogoUrl" name="existing_logo_url">
-                        <div class="invalid-feedback">
-                            Por favor, informe um domínio válido.
-                        </div>
                     </div>
+
                     <div class="text-center" id="editDropZone">
                         <svg class="upload-icon text-primary mb-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -297,14 +279,8 @@
                         <p class="text-muted mb-0">Clique aqui ou arraste uma imagem</p>
                     </div>
 
-                    <div class="preview-container" id="editPreviewContainer">
-                        <img id="editImagePreview" src="" alt="Preview" class="rounded-3">
-                    </div>
-
-                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none align-items-center justify-content-center" id="editLoading">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Carregando...</span>
-                        </div>
+                    <div class="preview-container mt-3" id="editPreviewContainer" style="display: none;">
+                        <img id="editImagePreview" src="" alt="Preview" class="img-fluid rounded">
                     </div>
                 </form>
             </div>
@@ -505,6 +481,10 @@
                 const nameContact = this.getAttribute('data-name-contact');
                 const logo = this.getAttribute('data-logo');
 
+                // Set the form action to the correct URL with the institution ID
+                document.getElementById('editForm').action = '/institution/update/' + id;
+
+                // Populate form fields
                 document.getElementById('editId').value = id;
                 document.getElementById('editName').value = name;
                 document.getElementById('editDomain').value = domain;
@@ -512,8 +492,14 @@
                 document.getElementById('editPhone').value = phone;
                 document.getElementById('editNameContact').value = nameContact;
                 document.getElementById('existingLogoUrl').value = logo;
-                document.getElementById('editPreviewContainer').style.display = 'block';
-                document.getElementById('editImagePreview').src = logo;
+
+                // Show the logo preview if available
+                if (logo && logo !== 'undefined' && logo !== 'null') {
+                    document.getElementById('editPreviewContainer').style.display = 'block';
+                    document.getElementById('editImagePreview').src = logo;
+                } else {
+                    document.getElementById('editPreviewContainer').style.display = 'none';
+                }
             });
         });
 

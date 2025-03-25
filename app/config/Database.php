@@ -12,7 +12,7 @@ class Database
         $host = $_ENV['DB_HOST'] ?? 'localhost';
         $dbname = $_ENV['DB_NAME'] ?? 'portal_escolar';
         $username = $_ENV['DB_USER'] ?? 'root';
-        $password = $_ENV['DB_PASS'] ?? '';
+        $password = $_ENV['DB_PASS'] ?? 'root';
 
         try {
             $dsn = sprintf("mysql:host=%s;dbname=%s;charset=utf8mb4", $host, $dbname);
