@@ -24,6 +24,9 @@ class ClassController extends BaseController
             exit;
         }
 
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         $institutionId = $_SESSION['user']['institution_id'];
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 10;
@@ -144,13 +147,13 @@ class ClassController extends BaseController
             try {
                 $id = $_GET['id'];
                 $class = $this->classModel->getClassById($id);
-                
+
                 if (!$class) {
                     http_response_code(404);
                     echo json_encode(['error' => 'Turma não encontrada']);
                     exit;
                 }
-                
+
                 header('Content-Type: application/json');
                 echo json_encode($class);
             } catch (\Exception $e) {
@@ -161,7 +164,7 @@ class ClassController extends BaseController
             exit;
         }
     }
-    
+
     public function getAvailableStudents()
     {
         // Verificar se o usuário está logado
@@ -175,9 +178,9 @@ class ClassController extends BaseController
             try {
                 $classId = $_GET['class_id'];
                 $institutionId = $_SESSION['user']['institution_id'];
-                
+
                 $students = $this->classModel->getAvailableStudents($institutionId, $classId);
-                
+
                 header('Content-Type: application/json');
                 echo json_encode($students);
             } catch (\Exception $e) {
@@ -188,7 +191,7 @@ class ClassController extends BaseController
             exit;
         }
     }
-    
+
     public function updateStatus()
     {
         // Verificar se o usuário está logado
@@ -203,11 +206,11 @@ class ClassController extends BaseController
                 $classId = $_POST['class_id'];
                 $studentId = $_POST['student_id'];
                 $status = $_POST['status'];
-                
+
                 // Carregar o modelo ClassStudent para gerenciar esta operação
                 $classStudentModel = new \App\Models\ClassStudent();
                 $classStudentModel->updateStatus($classId, $studentId, $status);
-                
+
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true]);
             } catch (\Exception $e) {
@@ -230,7 +233,7 @@ class ClassController extends BaseController
             try {
                 $classId = $_POST['class_id'];
                 $studentId = $_POST['student_id'];
-                
+
                 $this->classModel->addStudentToClass($classId, $studentId);
                 $this->redirect('/classes/show/' . $classId . '?success=1');
             } catch (\Exception $e) {
@@ -250,7 +253,7 @@ class ClassController extends BaseController
             try {
                 $classId = $_POST['class_id'];
                 $studentId = $_POST['student_id'];
-                
+
                 $this->classModel->removeStudentFromClass($classId, $studentId);
                 echo json_encode(['success' => true]);
             } catch (\Exception $e) {

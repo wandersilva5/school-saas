@@ -18,6 +18,9 @@ class HomeAgentController extends BaseController
             exit;
         }
 
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         $user = $_SESSION['user'];
         $institution_id = $user['institution_id'];
 

@@ -20,7 +20,10 @@ class CalendarController extends BaseController
             header('Location: /login');
             exit;
         }
-        
+
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         $institutionId = $_SESSION['user']['institution_id'];
         $month = $_GET['month'] ?? date('m');
         $year = $_GET['year'] ?? date('Y');
@@ -43,8 +46,10 @@ class CalendarController extends BaseController
     public function getDayEvents($date)
     {
         try {
-            if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || 
-                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+            if (
+                !isset($_SERVER['HTTP_X_REQUESTED_WITH']) ||
+                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest'
+            ) {
                 throw new \Exception('Requisição inválida');
             }
 
@@ -62,7 +67,6 @@ class CalendarController extends BaseController
                 'events' => $events ?? [],
                 'date' => $date
             ]);
-
         } catch (\Exception $e) {
             http_response_code(400);
             echo json_encode([

@@ -24,6 +24,10 @@ class DashboardResponsavelController extends BaseController
             header('Location: /login');
             exit;
         }
+
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         try {
             // Inicializa variáveis com valores padrão
             $alunos = [];
@@ -53,10 +57,10 @@ class DashboardResponsavelController extends BaseController
 
             // Busca os alunos vinculados ao responsável
             $alunos = $this->responsavelModel->getAlunosVinculados($responsavelId, $institutionId);
-            
+
             // Extrai IDs dos alunos para buscar dados financeiros
             $alunosIds = array_column($alunos, 'id');
-            
+
             // Busca dados financeiros dos alunos
             $financeiro = $this->responsavelModel->getDadosFinanceiros($alunosIds, $institutionId);
 
@@ -77,7 +81,6 @@ class DashboardResponsavelController extends BaseController
                 'eventos' => $eventos ?: [],
                 'sliderImages' => $sliderImages ?: []
             ]);
-
         } catch (\Exception $e) {
             error_log('Erro detalhado: ' . $e->getMessage());
             error_log('Stack trace: ' . $e->getTraceAsString());

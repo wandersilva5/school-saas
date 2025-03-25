@@ -20,6 +20,9 @@ class RoleController
             header('Location: /login');
             exit;
         }
+
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
         
         $roles = $this->roleModel->getAllRoles();
         // Passar os dados para a view

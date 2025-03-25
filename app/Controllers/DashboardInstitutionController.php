@@ -14,6 +14,9 @@ class DashboardInstitutionController extends BaseController
             exit;
         }
 
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         $user = $_SESSION['user'];
         $institutionId = $user['institution_id'];
         error_log("DashboardController: Usuário encontrado: " . print_r($user, true));
@@ -116,7 +119,7 @@ class DashboardInstitutionController extends BaseController
             'data' => [96.2, 95.8, 94.1, 93.4, 91.5]
         ];
 
-        
+
 
         return $this->render('dashboard/dashboard-institution', [
             'user' => $user,

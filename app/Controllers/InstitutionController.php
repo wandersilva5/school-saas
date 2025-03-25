@@ -27,6 +27,9 @@ class InstitutionController extends BaseController
             exit;
         }
 
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
+
         try {
             $responsavelId = $_SESSION['user']['id'];
 

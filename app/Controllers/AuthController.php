@@ -19,9 +19,6 @@ class AuthController extends BaseController
 
     public function login()
     {
-        // Debug inicial
-        error_log("LOGIN METHOD CALLED: " . $_SERVER['REQUEST_METHOD']);
-
         // Redirect if already logged in
         if (isset($_SESSION['user'])) {
             // Se for Responsavel e sem instituição definida, envie para seleção de instituição

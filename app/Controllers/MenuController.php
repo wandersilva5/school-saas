@@ -16,6 +16,9 @@ class MenuController extends BaseController {
             header('Location: /login');
             exit;
         }
+
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
         
         $menus = $this->menuModel->getAll();
         $roles = $this->menuModel->getAllRoles();

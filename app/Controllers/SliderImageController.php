@@ -20,6 +20,9 @@ class SliderImageController extends BaseController
             header('Location: /login');
             exit;
         }
+
+        // Verify role and institution_id for Responsavel users
+        check_responsavel_institution();
         
         $images = $this->model->getAll($_SESSION['user']['institution_id']);
         return $this->render('slider-images/index', ['images' => $images]);

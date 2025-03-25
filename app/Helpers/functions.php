@@ -88,3 +88,23 @@ if (!function_exists('check_menu_permissions')) {
         \App\Helpers\MenuPermissionHelper::verifyAccess($route);
     }
 }
+
+
+if (!function_exists('check_responsavel_institution')) {
+    /**
+     * Verify that a user with 'Responsavel' role has an institution_id set
+     * If not, redirects to institution selection page
+     */
+    function check_responsavel_institution() {
+        \App\Helpers\UserRoleHelper::checkResponsavelRedirect();
+    }
+}
+
+if (!function_exists('has_role')) {
+    /**
+     * Check if the current user has a specific role
+     */
+    function has_role($role) {
+        return \App\Helpers\UserRoleHelper::hasRole($role);
+    }
+}
