@@ -17,7 +17,7 @@ class Role
     public function getAllRoles(): array
     {
         try {
-            $query = "SELECT * FROM roles ORDER BY name";
+            $query = "SELECT * FROM roles WHERE name != 'SupUser' ORDER BY name";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             
@@ -33,7 +33,7 @@ class Role
     public function getRoleById(int $id): ?array
     {
         try {
-            $query = "SELECT * FROM roles WHERE id = :id";
+            $query = "SELECT * FROM roles WHERE id = :id AND name != 'SupUser'";
             $stmt = $this->db->prepare($query);
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
@@ -49,7 +49,7 @@ class Role
     public function getRolesByInstitution(int $institutionId): array
     {
         try {
-            $query = "SELECT * FROM roles WHERE institution_id = :institution_id ORDER BY name";
+            $query = "SELECT * FROM roles WHERE institution_id = :institution_id AND name != 'SupUser' ORDER BY name";
             $stmt = $this->db->prepare($query);
             $stmt->bindValue(':institution_id', $institutionId, PDO::PARAM_INT);
             $stmt->execute();

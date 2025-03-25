@@ -306,6 +306,7 @@ class UserController extends BaseController
             $stmt = $this->db->prepare("
                 SELECT id, name, description
                 FROM roles 
+                WHERE name != 'SupUser'
                 ORDER BY name ASC
             ");
 

@@ -19,6 +19,7 @@ class Menu {
             INNER JOIN menu_roles mr ON m.id = mr.menu_id
             INNER JOIN roles r ON mr.role_id = r.id
             WHERE r.name IN ($placeholders)
+            AND r.name != 'SupUser'
             ORDER BY m.order_index",
             $roles
         )->fetchAll();
@@ -79,7 +80,7 @@ class Menu {
     }
 
     public function getAllRoles() {
-        return $this->db->query("SELECT * FROM roles ORDER BY name")->fetchAll();
+        return $this->db->query("SELECT * FROM roles where name != 'SupUser' ORDER BY name")->fetchAll();
     }
 
     public function getAllHeaders() {
@@ -90,7 +91,7 @@ class Menu {
     public function getRoutePermissions()
     {
         try {
-            // Agora $this->db é uma instância de PDO, então prepare() vai funcionar
+            
             $db = Database::getInstance();
             $stmt = $db->query("
                 SELECT route, required_roles 
