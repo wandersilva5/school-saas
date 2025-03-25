@@ -22,30 +22,50 @@ function cleanUrl($url)
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $url = trim($requestUri, '/');
 
+// Debug route access
+error_log("Accessing route: " . $url);
+
+// IMPORTANTE: Tratar rota de logout explicitamente
+if ($url === 'logout') {
+    $controller = new \App\Controllers\AuthController();
+    $controller->logout();
+    exit;
+}
+
 // Sistema de roteamento
 $routes = require_once __DIR__ . '/../routes/web.php';
 
-// Rotas públicas
-$publicRoutes = [
-    '',            // Home page
-    'login',       // Login page
-    'register',    // Registration page
-    'assets'       // Public assets
+// Rotas públicas ou especiais que não precisam de verificação
+$specialRoutes = [
+    '',                    // Home page
+    'login',               // Login page
+    'logout',              // Logout explicitly handled
+    'register',            // Registration page
+    'assets',              // Public assets
+    'institution/list',    // Lista de instituições
+    'institution/select',  // Seleção de instituição
+    'select-institution',  // Alias para seleção
 ];
 
-// Verifica se a rota atual é pública
-$baseRoute = explode('/', $url)[0] ?? '';
-$isPublicRoute = in_array($baseRoute, $publicRoutes);
+// Verifica se a rota atual é especial
+$isSpecialRoute = false;
+foreach ($specialRoutes as $route) {
+    if ($url === $route || strpos($url, $route . '/') === 0) {
+        $isSpecialRoute = true;
+        break;
+    }
+}
 
 // Middleware para verificar autenticação apenas para rotas privadas
-// if (!$isPublicRoute && !isset($_SESSION['user'])) {
-//     $_SESSION['toast'] = [
-//         'type' => 'warning',
-//         'message' => 'Você precisa fazer login para acessar esta página.'
-//     ];
-//     header('Location: /login');
-//     exit;
-// }
+// Não verifica para rotas especiais
+if (!$isSpecialRoute && !isset($_SESSION['user'])) {
+    $_SESSION['toast'] = [
+        'type' => 'warning',
+        'message' => 'Você precisa fazer login para acessar esta página.'
+    ];
+    header('Location: /login');
+    exit;
+}
 
 // Carrega permissões de rotas
 function getRoutePermissions()
@@ -56,21 +76,7 @@ function getRoutePermissions()
         try {
             $menuModel = new \App\Models\Menu();
             $permissionsCache = $menuModel->getRoutePermissions();
-
-            // If permissions are empty, set a toast warning
-            if (empty($permissionsCache)) {
-                $_SESSION['toast'] = [
-                    'type' => 'warning',
-                    'message' => 'Nenhuma configuração de permissão encontrada. O acesso pode ser limitado.'
-                ];
-            }
         } catch (\Exception $e) {
-            // Set toast error message
-            $_SESSION['toast'] = [
-                'type' => 'error',
-                'message' => 'Erro ao carregar permissões: ' . $e->getMessage()
-            ];
-
             // Return empty array if there's an error
             $permissionsCache = [];
         }
@@ -81,8 +87,8 @@ function getRoutePermissions()
 
 $routePermissions = getRoutePermissions();
 
-// Se o usuário está logado, verifica a instituição
-if (!$isPublicRoute && isset($_SESSION['user'])) {
+// Verificação de instituição - pulada para rotas especiais
+if (!$isSpecialRoute && isset($_SESSION['user'])) {
     try {
         $institutionCheck = new \App\Middleware\InstitutionCheck();
         $institutionCheck->handle();
@@ -135,30 +141,8 @@ if (isset($routes[$url])) {
     }
 }
 
-// If route exists, check permissions and execute
+// If route exists, execute it
 if ($routeFound) {
-    $baseRoute = explode('/', $routeKey)[0]; // First segment
-    $isPublicRoute = in_array($baseRoute, $publicRoutes);
-
-    // Check permissions only for non-public routes
-    if (!$isPublicRoute) {
-        // Check if user is logged in
-        if (!isset($_SESSION['user'])) {
-            $_SESSION['toast'] = [
-                'type' => 'warning',
-                'message' => 'Você precisa fazer login para acessar esta página.'
-            ];
-            header('Location: /login');
-            exit;
-        }
-
-        // Check permissions using helper function
-        if (isset($routePermissions[$baseRoute])) {
-            check_menu_permissions($baseRoute);
-        }
-    }
-    // If we reach here, user has permission to access the route
-    // Instantiate and execute controller
     $controllerName = "\\App\\Controllers\\" . $routes[$routeKey]['controller'];
     $actionName = $routes[$routeKey]['action'];
 
@@ -172,6 +156,7 @@ if ($routeFound) {
 }
 
 // Se a rota não foi encontrada ou se houve algum erro, exibe a página de erro
-$controller = new \App\Controllers\HomeController();
-$controller->error();
+error_log("Rota não encontrada: " . $url);
+$controller = new \App\Controllers\ErrorController();
+$controller->notFound();
 exit;

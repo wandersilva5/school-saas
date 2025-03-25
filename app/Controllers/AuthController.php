@@ -24,7 +24,17 @@ class AuthController extends BaseController
 
         // Redirect if already logged in
         if (isset($_SESSION['user'])) {
-            header('Location: /dashboard');
+            // Se for Responsavel e sem instituição definida, envie para seleção de instituição
+            if (
+                in_array('Responsavel', $_SESSION['user']['roles']) &&
+                (!isset($_SESSION['user']['institution_id']) || empty($_SESSION['user']['institution_id']))
+            ) {
+                header('Location: /institution/list');
+                exit;
+            }
+
+            // Caso contrário, vá para o dashboard
+            header('Location: /dashboard-institution');
             exit;
         }
 
@@ -64,22 +74,26 @@ class AuthController extends BaseController
                     $_SESSION['just_logged_in'] = true;
                     $roles = $_SESSION['user']['roles'];
 
+                    // Se for Responsavel, envie para seleção de instituição
+                    if (in_array('Responsavel', $roles)) {
+                        // Log details for debugging
+                        error_log("Logging in Responsavel user: " . print_r($_SESSION['user'], true));
+
+                        // Set a specific session flag for Responsavel users
+                        $_SESSION['is_responsavel'] = true;
+
+                        // Direct redirect to institution list
+                        header('Location: /institution/list');
+                        exit;
+                    }
+
+                    // Redirecionamento baseado no papel/role do usuário
                     switch (true) {
                         case in_array('Master', $roles):
                             header('Location: /dashboard');
                             break;
                         case in_array('Agente de controle', $roles):
                             header('Location: /home-agent');
-                            break;
-                        case in_array('Responsavel', $roles):
-                            // Log details for debugging
-                            error_log("Logging in Responsavel user: " . print_r($_SESSION['user'], true));
-
-                            // Set a specific session flag for Responsavel users
-                            $_SESSION['is_responsavel'] = true;
-
-                            // Direct redirect to dashboard
-                            header('Location: /institution/list');
                             break;
                         default:
                             header('Location: /dashboard-institution');
@@ -107,19 +121,11 @@ class AuthController extends BaseController
         $this->render('auth/login');
     }
 
-    public function logout()
-    {
-        session_start();
-        session_destroy();
-        header('Location: /login');
-        exit;
-    }
-
     public function register()
     {
         // Redirect if already logged in
         if (isset($_SESSION['user'])) {
-            header('Location: /dashboard');
+            header('Location: /home-institution');
             exit;
         }
 
@@ -200,5 +206,37 @@ class AuthController extends BaseController
         }
 
         $this->render('auth/register');
+    }
+
+    public function logout()
+    {
+        // Start session if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Clear all session variables
+        $_SESSION = [];
+
+        // If a session cookie is used, destroy that too
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+
+        // Finally destroy the session
+        session_destroy();
+
+        // Redirect to login page
+        header('Location: /login');
+        exit;
     }
 }

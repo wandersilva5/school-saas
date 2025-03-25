@@ -26,7 +26,7 @@ class InstitutionController extends BaseController
             header('Location: /login');
             exit;
         }
-        
+
         try {
             $responsavelId = $_SESSION['user']['id'];
 
@@ -226,7 +226,7 @@ class InstitutionController extends BaseController
         try {
             // Get institutions where user has children
             $stmt = $this->db->prepare("
-                SELECT DISTINCT i.id, i.name, i.logo_url
+                SELECT DISTINCT i.id, i.name, i.logo_url, i.active
                 FROM institutions i
                 JOIN guardians_students gs ON gs.institution_id = i.id
                 WHERE gs.guardian_user_id = ?
@@ -236,18 +236,10 @@ class InstitutionController extends BaseController
             $stmt->execute([$userId]);
             $institutions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // // If only one institution, select it automatically
-            // if (count($institutions) > 1) {
-            //     $_SESSION['user']['institution_id'] = $institutions[0]['id'];
-            //     header('Location: /dashboard-responsavel');
-            //     exit;
-            // }
-
-            // Otherwise render the selection page
-            return $this->render('institution/list', [
-                'institutions' => $institutions,
-                'pageTitle' => 'Selecione uma Instituição'
-            ]);
+            // Render without the main layout by directly outputting
+            // instead of using $this->render()
+            require_once __DIR__ . '/../Views/institution/list.php';
+            exit;
         } catch (\Exception $e) {
             error_log("Error in listForResponsavel: " . $e->getMessage());
             $_SESSION['toast'] = [
@@ -259,13 +251,28 @@ class InstitutionController extends BaseController
         }
     }
 
+    // Make sure this method has the exact signature to match the route parameter
     public function select($id)
     {
-        // Verify user is Responsavel
-        if (!isset($_SESSION['user']) || !in_array('Responsavel', $_SESSION['user']['roles'])) {
+        // Debug
+        error_log("InstitutionController::select called with ID: " . $id);
+
+        // Verify user is logged in
+        if (!isset($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
+
+        // Verify user is Responsavel
+        if (!in_array('Responsavel', $_SESSION['user']['roles'])) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Acesso negado'
+            ];
+            header('Location: /login');
+            exit;
+        }
+
         // Verify institution exists and user has access
         $stmt = $this->db->prepare("
             SELECT i.id
@@ -284,12 +291,15 @@ class InstitutionController extends BaseController
                 'type' => 'error',
                 'message' => 'Instituição não encontrada ou acesso negado'
             ];
-            header('Location: /institutions/list');
+            header('Location: /institution/list');
             exit;
         }
 
         // Set selected institution in session
         $_SESSION['user']['institution_id'] = $id;
+
+        // Debug
+        error_log("Institution selected successfully, redirecting to dashboard");
 
         // Redirect to dashboard
         header('Location: /dashboard-institution');

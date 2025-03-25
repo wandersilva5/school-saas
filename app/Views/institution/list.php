@@ -190,7 +190,7 @@
 </head>
 
 <body>
-    <a href="/dashboard" class="back-button">
+    <a href="/logout" class="back-button">
         <i class="bi bi-arrow-left-circle-fill"></i>
     </a>
 
@@ -220,24 +220,24 @@
 
                             <div class="card-body">
                                 <h3 class="institution-name"><?= htmlspecialchars($institution['name']) ?></h3>
-                                <p class="institution-domain"><?= htmlspecialchars($institution['domain']) ?>.portalescolar.com.br</p>
+                                <p class="institution-domain"><?= htmlspecialchars($institution['name']) ?>.portalescolar.com.br</p>
 
                                 <div class="institution-stats">
                                     <div class="stat">
-                                        <div class="stat-value"><?= $institution['students_count'] ?? 0 ?></div>
+                                        <div class="stat-value"><?= isset($institution['students_count']) ? $institution['students_count'] : 0 ?></div>
                                         <div class="stat-label">Alunos</div>
                                     </div>
                                     <div class="stat">
-                                        <div class="stat-value"><?= $institution['classes_count'] ?? 0 ?></div>
+                                        <div class="stat-value"><?= isset($institution['classes_count']) ? $institution['classes_count'] : 0 ?></div>
                                         <div class="stat-label">Turmas</div>
                                     </div>
                                     <div class="stat">
-                                        <div class="stat-value"><?= $institution['teachers_count'] ?? 0 ?></div>
+                                        <div class="stat-value"><?= isset($institution['teachers_count']) ? $institution['teachers_count'] : 0 ?></div>
                                         <div class="stat-label">Professores</div>
                                     </div>
                                 </div>
 
-                                <a href="/switch-institution/<?= $institution['id'] ?>" class="btn btn-primary btn-access">
+                                <a href="/institution/select/<?= $institution['id'] ?>" class="btn btn-primary btn-access">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>Acessar
                                 </a>
                             </div>

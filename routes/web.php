@@ -26,7 +26,7 @@ return [
     // Rotas para instituições
     'institution'             => ['controller' => 'InstitutionController', 'action' => 'index'],
     'institution/list'        => ['controller' => 'InstitutionController', 'action' => 'list'],
-    'select-institution/{id}' => ['controller' => 'InstitutionController', 'action' => 'select'],
+    'institution/select/{id}' => ['controller' => 'InstitutionController', 'action' => 'select'],
     'institution/store'       => ['controller' => 'InstitutionController', 'action' => 'store'],
     'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
     

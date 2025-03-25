@@ -8,8 +8,7 @@ class DashboardController extends BaseController
 {
     public function index()
     {
-        if (!isset($_SESSION['user'])) {
-            error_log("Alerta: Usuário não está na sessão");
+        if (!in_array('TI', $_SESSION['user']['roles'] ?? [])) {
             header('Location: /login');
             exit;
         }
