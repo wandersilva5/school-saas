@@ -70,6 +70,8 @@ return [
 
     // Rotas para courses
     'courses'             => ['controller' => 'CourseController', 'action' => 'index'],
+    'courses/show/{id}'    > ['controller' => 'CourseController', 'action' => 'show'],
+    'courses/getById'     => ['controller' => 'CourseController', 'action' => 'getById'],
     'courses/store'       => ['controller' => 'CourseController', 'action' => 'store'],
     'courses/edit/{id}'   => ['controller' => 'CourseController', 'action' => 'edit'],
     'courses/update/{id}' => ['controller' => 'CourseController', 'action' => 'update'],

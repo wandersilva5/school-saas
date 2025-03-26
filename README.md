@@ -14,9 +14,15 @@ Sistema de gestão escolar multi-instituição desenvolvido em PHP puro com arqu
 ```
 portal-escola/
 ├── app/
+
+│   ├── config/          # Arquivos de configuração
 │   ├── Controllers/     # Controladores da aplicação
-│   ├── Core/            # Classes de núcleo (Router, Database, etc.)
+│   ├── Database/        # Arquivos de banco de dados
 │   ├── Helpers/         # Classes auxiliares
+│   ├── Middleware/      # Classes de middleware
+│   ├── Models/          # Classes auxiliares
+│   ├── Repositories/    # Classes de acesso a dados
+│   ├── Services/        # Classes de serviços
 │   ├── Models/          # Modelos para acesso aos dados
 │   └── Views/           # Camada de visualização
 ├── config/              # Arquivos de configuração
