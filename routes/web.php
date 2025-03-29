@@ -70,7 +70,7 @@ return [
 
     // Rotas para courses
     'courses'             => ['controller' => 'CourseController', 'action' => 'index'],
-    'courses/show/{id}'    > ['controller' => 'CourseController', 'action' => 'show'],
+    'courses/show/{id}'   => ['controller' => 'CourseController', 'action' => 'show'],
     'courses/getById'     => ['controller' => 'CourseController', 'action' => 'getById'],
     'courses/store'       => ['controller' => 'CourseController', 'action' => 'store'],
     'courses/edit/{id}'   => ['controller' => 'CourseController', 'action' => 'edit'],
@@ -102,4 +102,12 @@ return [
     'class-students/edit/{id}'   => ['controller' => 'ClassStudentController', 'action' => 'edit'],
     'class-students/update/{id}' => ['controller' => 'ClassStudentController', 'action' => 'update'],
     'class-students/delete/{id}' => ['controller' => 'ClassStudentController', 'action' => 'delete'],
+
+    // Rotas para disciplinas
+    'subjects'             => ['controller' => 'SubjectController', 'action' => 'index'],
+    'subjects/show/{id}'   => ['controller' => 'SubjectController', 'action' => 'show'],
+    'subjects/store'       => ['controller' => 'SubjectController', 'action' => 'store'],
+    'subjects/edit/{id}'   => ['controller' => 'SubjectController', 'action' => 'edit'],
+    'subjects/update/{id}' => ['controller' => 'SubjectController', 'action' => 'update'],
+    'subjects/delete/{id}' => ['controller' => 'SubjectController', 'action' => 'delete'],
 ];

@@ -13,6 +13,7 @@ class Database
         $dbname = $_ENV['DB_NAME'] ?? 'portal_escolar';
         $username = $_ENV['DB_USER'] ?? 'root';
         $password = $_ENV['DB_PASS'] ?? 'root';
+        date_default_timezone_set('America/Sao_Paulo');
 
         try {
             $dsn = sprintf("mysql:host=%s;dbname=%s;charset=utf8mb4", $host, $dbname);

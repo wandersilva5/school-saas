@@ -4,10 +4,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
+                        <p class="text-muted mb-0 form-label"> Nome da Disciplina </p>
                         <h4 class="card-title mb-1"><?= htmlspecialchars($course['name']) ?></h4>
-                        <p class="text-muted mb-0">
-                            <i class="bi bi-code"></i> <?= htmlspecialchars($course['code']) ?>
-                        </p>
                     </div>
                     <div>
                         <a href="/courses" class="btn btn-outline-secondary me-2">
@@ -20,6 +18,14 @@
                 </div>
 
                 <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-subtitle text-muted mb-1">Código do Curso</h6>
+                                <h5 class="mb-0 text-success"><?= htmlspecialchars($course['code'] ?? 'Não informado') ?></h5>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-md-3 col-sm-6 mb-3">
                         <div class="card bg-light">
                             <div class="card-body text-center">
@@ -45,14 +51,6 @@
                             <div class="card-body text-center">
                                 <h6 class="card-subtitle text-muted mb-1">Carga Horária</h6>
                                 <h5 class="mb-0"><?= $course['workload'] ? htmlspecialchars($course['workload']) . ' horas' : 'Não informado' ?></h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="card-subtitle text-muted mb-1">Cadastro</h6>
-                                <h5 class="mb-0"><?= isset($course['created_at']) ? format_date($course['created_at']) : 'N/A' ?></h5>
                             </div>
                         </div>
                     </div>
@@ -98,7 +96,7 @@
                     <div class="col-md-12 mb-3">
                         <h5 class="border-bottom pb-2">Disciplinas do Curso</h5>
                     </div>
-                    
+
                     <?php if (isset($subjects) && !empty($subjects)): ?>
                         <div class="col-12">
                             <div class="table-responsive">
@@ -166,7 +164,7 @@
                             <input type="text" class="form-control" id="edit_name" name="name" value="<?= htmlspecialchars($course['name']) ?>" required>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="edit_duration" class="form-label">Duração</label>
@@ -177,17 +175,17 @@
                             <input type="number" class="form-control" id="edit_workload" name="workload" min="0" value="<?= htmlspecialchars($course['workload'] ?? '') ?>">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="edit_description" class="form-label">Descrição</label>
                         <textarea class="form-control" id="edit_description" name="description" rows="3"><?= htmlspecialchars($course['description'] ?? '') ?></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="edit_requirements" class="form-label">Requisitos</label>
                         <textarea class="form-control" id="edit_requirements" name="requirements" rows="2"><?= htmlspecialchars($course['requirements'] ?? '') ?></textarea>
                     </div>
-                    
+
                     <div class="form-check mb-3">
                         <input type="checkbox" class="form-check-input" id="edit_active" name="active" value="1" <?= $course['active'] ? 'checked' : '' ?>>
                         <label class="form-check-label" for="edit_active">Ativo</label>

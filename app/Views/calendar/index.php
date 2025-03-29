@@ -148,49 +148,83 @@
 
         function loadDayEvents(date) {
             document.getElementById('dayEvents').innerHTML = '<div class="text-center"><div class="text-primary spinner-border" role="status"></div></div>';
-            
+
             // Ensure we have a proper date format YYYY-MM-DD
             const formattedDate = date.split('T')[0];
-            
+
             // Make the fetch request
             fetch(`/calendar/day-events/${formattedDate}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    displayDayEvents(data.events, data.date);
-                } else {
-                    throw new Error(data.error || 'Erro ao carregar eventos');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                document.getElementById('dayEvents').innerHTML = `
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        displayDayEvents(data.events, data.date);
+                    } else {
+                        throw new Error(data.error || 'Erro ao carregar eventos');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    document.getElementById('dayEvents').innerHTML = `
                     <div class="text-center text-muted py-4">
                         <i class="d-block bi bi-calendar-x fs-2 mb-3"></i>
                         <p class="mb-1">Não existe evento para o dia selecionado,</p>
                         <p>consulte a instituição.</p>
                     </div>`;
-            });
+                });
         }
 
         function displayDayEvents(events, date) {
             const container = document.getElementById('dayEvents');
             const dateDisplay = document.getElementById('selectedDate');
 
-            // Ensure date is in the correct format
-            const eventDate = new Date(date);
-            const formattedDate = eventDate.toLocaleDateString('pt-BR', {
+
+            // Ensure date is in the correct format without timezone issues
+            let eventDate = new Date(date); // Mantém a variável eventDate para compatibilidade
+            let fixedDate;
+
+            // Verifica se 'date' é uma string no formato ISO (YYYY-MM-DD)
+            if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                // Parse a data mantendo o dia exato, independente do fuso horário
+                const [year, month, day] = date.split('-').map(num => parseInt(num, 10));
+                fixedDate = new Date(year, month - 1, day, 12, 0, 0); // Mês em JS é 0-indexed
+
+                // Atualiza também eventDate para manter consistência
+                eventDate = new Date(fixedDate);
+            }
+            // Verifica se é um objeto Date ou timestamp
+            else {
+                // Obtém a data local (sem conversão de timezone)
+                const year = eventDate.getFullYear();
+                const month = eventDate.getMonth();
+                const day = eventDate.getDate();
+
+                // Cria nova data com horário meio-dia para evitar problemas de UTC
+                fixedDate = new Date(year, month, day, 12, 0, 0);
+
+                // Se ainda assim a data estiver incorreta, força o uso da data local
+                if (fixedDate.getDate() !== day) {
+                    // Força o dia correto usando a data local do usuário
+                    const userTimezoneOffset = new Date().getTimezoneOffset() * 60000;
+                    fixedDate = new Date(eventDate.getTime() + userTimezoneOffset);
+                    fixedDate.setHours(12, 0, 0, 0);
+                }
+
+                // Atualiza também eventDate para manter consistência
+                eventDate = new Date(fixedDate);
+            }
+
+            const formattedDate = fixedDate.toLocaleDateString('pt-BR', {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric'
@@ -200,11 +234,11 @@
 
             if (!events || events.length === 0) {
                 container.innerHTML = `
-            <div class="text-center text-muted py-4">
-                <i class="d-block bi bi-calendar-x fs-2 mb-3"></i>
-                <p class="mb-1">Não existe evento para o dia selecionado,</p>
-                <p>consulte a instituição.</p>
-            </div>`;
+                <div class="text-center text-muted py-4">
+                    <i class="d-block bi bi-calendar-x fs-2 mb-3"></i>
+                    <p class="mb-1">Não existe evento para o dia selecionado,</p>
+                    <p>consulte a instituição.</p>
+                </div>`;
                 return;
             }
 
