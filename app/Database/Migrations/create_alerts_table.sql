@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS alerts (
+    id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Título do alerta',
+    message TEXT COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Conteúdo do alerta',
+    priority ENUM('baixa', 'normal', 'média', 'alta') DEFAULT 'normal' COMMENT 'Prioridade do alerta',
+    target_roles VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT 'all' COMMENT 'Perfis de destino, separados por vírgula, ou "all" para todos',
+    start_date DATE DEFAULT NULL COMMENT 'Data de início da exibição',
+    end_date DATE DEFAULT NULL COMMENT 'Data final da exibição',
+    created_by INT DEFAULT NULL COMMENT 'ID do usuário que criou',
+    institution_id INT NOT NULL COMMENT 'ID da instituição',
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_alerts_institution (institution_id),
+    KEY idx_alerts_dates (start_date, end_date),
+    KEY idx_alerts_created_by (created_by),
+    CONSTRAINT alerts_institution_fk FOREIGN KEY (institution_id) REFERENCES institutions(id),
+    CONSTRAINT alerts_creator_fk FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

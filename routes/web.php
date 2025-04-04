@@ -20,6 +20,14 @@ return [
     'access-management/update-roles' => ['controller' => 'AccessManagementController', 'action' => 'updateUserRoles'],
     'access-management/create-user'  => ['controller' => 'AccessManagementController', 'action' => 'createUser'],
 
+    // Rotas para gerenciamento de alertas
+    'alerts'              => ['controller' => 'AlertController', 'action' => 'index'],
+    'alerts/get-by-id'    => ['controller' => 'AlertController', 'action' => 'getById'],
+    'alerts/user-alerts'  => ['controller' => 'AlertController', 'action' => 'userAlerts'],
+    'alerts/store'        => ['controller' => 'AlertController', 'action' => 'store'],
+    'alerts/update/{id}'  => ['controller' => 'AlertController', 'action' => 'update'],
+    'alerts/delete/{id}'  => ['controller' => 'AlertController', 'action' => 'delete'],
+
     // Rotas para calendário
     'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
 
@@ -29,7 +37,7 @@ return [
     'institution/select/{id}' => ['controller' => 'InstitutionController', 'action' => 'select'],
     'institution/store'       => ['controller' => 'InstitutionController', 'action' => 'store'],
     'institution/update/{id}' => ['controller' => 'InstitutionController', 'action' => 'update'],
-    
+
     // Rotas para usuários das instituições
     'users'             => ['controller' => 'UserController', 'action' => 'index'],
     'users/show/{id}'   => ['controller' => 'UserController', 'action' => 'show'],
@@ -47,7 +55,7 @@ return [
     // Rotas para Alunos
     'students'              => ['controller' => 'StudentController', 'action' => 'index'],
     'students/show/{id}'    => ['controller' => 'StudentController', 'action' => 'show'],
-    'students/get-info/{id}'=> ['controller' => 'StudentController', 'action' => 'getInfo'],
+    'students/get-info/{id}' => ['controller' => 'StudentController', 'action' => 'getInfo'],
     'students/edit/{id}'    => ['controller' => 'StudentController', 'action' => 'show'],
     'students/store'        => ['controller' => 'StudentController', 'action' => 'store'],
     'students/edit/{id}'    => ['controller' => 'StudentController', 'action' => 'edit'],
