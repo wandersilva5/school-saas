@@ -1,0 +1,124 @@
+# Mobile API Integration Guide
+
+This guide provides instructions for integrating the REST API endpoints with your mobile application.
+
+## Setup Instructions
+
+1. Add the API routes to your application by merging the API routes with your existing web routes:
+
+```php
+// In your public/index.php or bootstrap file
+require_once __DIR__ . '/../routes/web.php';
+require_once __DIR__ . '/../routes/api.php';
+
+$routes = array_merge($webRoutes, $apiRoutes);
+```
+
+2. Update your router to handle API requests:
+
+```php
+// In your router or dispatcher file
+$apiRouter = new App\Router\ApiRouter($routes);
+
+// Try to dispatch as API route first
+$routeHandled = $apiRouter->dispatch();
+
+// If not an API route, handle as a web route
+if (!$routeHandled) {
+    // Your existing web router dispatch code
+}
+```
+
+3. Create the API controller directory:
+
+```
+mkdir -p app/Controllers/Api
+```
+
+4. Copy the API controllers from the artifacts into this directory.
+
+## API Authentication
+
+The API uses token-based authentication. To authenticate:
+
+1. Make a POST request to `/api/auth/login` with:
+   ```json
+   {
+     "email": "user@example.com",
+     "password": "your_password"
+   }
+   ```
+
+2. You'll receive a token in the response:
+   ```json
+   {
+     "status": "success",
+     "message": "Authentication successful",
+     "data": {
+       "token": "YOUR_TOKEN_HERE",
+       "user": {
+         "id": 1,
+         "name": "John Doe",
+         "email": "user@example.com",
+         "institution_id": 1,
+         "roles": ["TI"]
+       }
+     }
+   }
+   ```
+
+3. For all subsequent requests, include the token in the Authorization header:
+   ```
+   Authorization: Bearer YOUR_TOKEN_HERE
+   ```
+
+## API Endpoints
+
+The API includes endpoints for all major entities in the system:
+
+- `/api/auth/*` - Authentication endpoints
+- `/api/dashboard/*` - Dashboard data for different user roles
+- `/api/students/*` - Student management
+- `/api/classes/*` - Class management
+- `/api/courses/*` - Course management
+- `/api/subjects/*` - Subject management
+- `/api/institutions/*` - Institution management
+- `/api/users/*` - User management
+- `/api/guardians/*` - Guardian management
+- `/api/calendar/*` - Calendar and events
+- `/api/slider-images/*` - Slider images
+
+See the API Routes file for a complete list of endpoints.
+
+## Mobile Development Notes
+
+When developing your mobile application, consider:
+
+1. Implementing a token storage system (e.g., secure storage)
+2. Handling token expiration and refresh
+3. Building offline capabilities using local storage
+4. Implementing proper error handling for network issues
+5. Creating UI components for each of the main data types
+
+## Security Considerations
+
+1. Always use HTTPS for API communication
+2. Implement rate limiting on your server
+3. Log and monitor API usage for unusual patterns
+4. Use proper validation for all incoming data
+5. Implement timeout for inactive sessions
+
+## Testing the API
+
+You can test the API using tools like Postman or curl:
+
+```bash
+# Example login request
+curl -X POST https://your-domain.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"your_password"}'
+
+# Example fetching students with token
+curl -X GET https://your-domain.com/api/students \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```

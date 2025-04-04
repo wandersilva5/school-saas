@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../app/config/Env.php';
 
 // Carrega as variáveis de ambiente (usando apenas uma implementação)
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
@@ -32,8 +33,121 @@ if ($url === 'logout') {
     exit;
 }
 
-// Sistema de roteamento
-$routes = require_once __DIR__ . '/../routes/web.php';
+// Carregar arquivos de ambiente
+App\Config\Env::load(__DIR__ . '/../.env');
+
+// Definir timezone
+date_default_timezone_set('America/Sao_Paulo');
+
+// Carregar rotas
+$webRoutes = require __DIR__ . '/../routes/web.php';
+
+// Verificar se o arquivo api.php existe
+$apiRoutes = [];
+if (file_exists(__DIR__ . '/../routes/api.php')) {
+    $apiRoutes = require __DIR__ . '/../routes/api.php';
+}
+
+// Combinar rotas
+$routes = array_merge($webRoutes, $apiRoutes);
+
+// Configurar cabeçalhos CORS para API
+if (strpos($_SERVER['REQUEST_URI'], '/api/') === 0) {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        exit(0);
+    }
+}
+
+// Verificar se a classe ApiRouter existe
+$apiRoutingEnabled = class_exists('App\\Router\\ApiRouter');
+
+// Inicializar o roteador da API se disponível
+$routeHandled = false;
+if ($apiRoutingEnabled) {
+    $apiRouter = new App\Router\ApiRouter($routes);
+    $routeHandled = $apiRouter->dispatch();
+}
+
+// Se não for uma rota de API, use o roteador web existente
+if (!$routeHandled) {
+    // Obter URL da requisição
+    $requestUri = $_SERVER['REQUEST_URI'];
+    
+    // Remover parâmetros GET da URL
+    $uri = parse_url($requestUri, PHP_URL_PATH);
+    
+    // Remover a barra inicial para obter o padrão de rota
+    $uri = ltrim($uri, '/');
+    
+    // Se não houver rota, usar a rota padrão
+    if (empty($uri)) {
+        $uri = '';
+    }
+    
+    // Verificar se existe uma rota definida para a URI
+    if (isset($routes[$uri])) {
+        $route = $routes[$uri];
+    } else {
+        // Verificar rotas com parâmetros
+        foreach ($routes as $pattern => $handler) {
+            if (strpos($pattern, '{') !== false) {
+                $regex = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $pattern);
+                $regex = '#^' . $regex . '$#';
+                
+                if (preg_match($regex, $uri, $matches)) {
+                    array_shift($matches); // Remove a correspondência completa
+                    $route = $handler;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Se não encontrou rota, use a rota de erro
+    if (!isset($route)) {
+        $route = $routes['error'] ?? null;
+    }
+    
+    // Verificar se a rota foi encontrada
+    if ($route) {
+        // Extrai o controlador e a ação
+        $controllerName = $route['controller'];
+        $actionName = $route['action'];
+        
+        // Constrói o nome completo da classe do controlador
+        $controllerClass = "\\App\\Controllers\\{$controllerName}";
+        
+        // Verifica se a classe do controlador existe
+        if (class_exists($controllerClass)) {
+            // Instancia o controlador
+            $controller = new $controllerClass();
+            
+            // Verifica se o método da ação existe
+            if (method_exists($controller, $actionName)) {
+                // Chama a ação do controlador com parâmetros, se existirem
+                if (isset($matches)) {
+                    call_user_func_array([$controller, $actionName], $matches);
+                } else {
+                    // Sem parâmetros
+                    $controller->$actionName();
+                }
+            } else {
+                // Método não encontrado
+                echo "404 - Action not found: {$actionName}";
+            }
+        } else {
+            // Controlador não encontrado
+            echo "404 - Controller not found: {$controllerName}";
+        }
+    } else {
+        // Rota não encontrada
+        echo "404 - Route not found";
+    }
+}
 
 // Rotas públicas ou especiais que não precisam de verificação
 $specialRoutes = [
