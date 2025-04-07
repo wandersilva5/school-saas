@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #response {
+            white-space: pre;
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>API Login Test</h1>
+    <form id="loginForm">
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="admin@example.com">
+        </div>
+        <div style="margin-top: 10px;">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="123456">
+        </div>
+        <div style="margin-top: 10px;">
+            <button type="button" onclick="testLogin()">Test Login</button>
+        </div>
+    </form>
+
+    <h2>Response:</h2>
+    <div id="response">No response yet</div>
+
+    <script>
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const responseDiv = document.getElementById('response');
+
+            responseDiv.innerText = 'Sending request...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const statusInfo = `Status: ${response.status} ${response.statusText}\n\n`;
+
+                try {
+                    const data = await response.json();
+                    responseDiv.innerText = statusInfo + JSON.stringify(data, null, 2);
+                } catch (e) {
+                    const text = await response.text();
+                    responseDiv.innerText = statusInfo + text;
+                }
+            } catch (error) {
+                responseDiv.innerText = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+
+</html>

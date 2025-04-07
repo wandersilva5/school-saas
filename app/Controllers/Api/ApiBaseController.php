@@ -43,69 +43,29 @@ class ApiBaseController
     }
 
     /**
-     * Check if user is authenticated via API token
-     */
-    protected function requireAuth()
-    {
-        // Get Authorization header
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? '';
-        
-        // Check token format
-        if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-            $this->errorResponse('Authentication required', 401);
-        }
-        
-        $token = $matches[1];
-        
-        // Validate token (simplified example - implement proper JWT or token validation)
-        // This is just a placeholder - you should implement proper token validation
-        if (!$this->validateToken($token)) {
-            $this->errorResponse('Invalid or expired token', 401);
-        }
-        
-        return true;
-    }
-    
-    /**
-     * Validate token (placeholder implementation)
-     */
-    private function validateToken($token)
-    {
-        // Implement proper token validation logic here
-        // For example, verify JWT signature, check expiration, etc.
-        
-        // For development/example purposes only:
-        // In a real implementation, you should use a proper JWT library
-        
-        try {
-            // Placeholder for token validation logic
-            // In a real implementation, decode and verify the token
-            
-            // Set user session based on token
-            $_SESSION['user'] = [
-                'id' => 1, // This should come from the token
-                'institution_id' => 1, // This should come from the token
-                'roles' => ['TI'] // This should come from the token
-            ];
-            
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-    
-    /**
      * Get JSON request body
      */
     protected function getRequestBody()
     {
-        $json = file_get_contents('php://input');
-        return json_decode($json, true);
+        $rawInput = file_get_contents('php://input');
+        error_log("Raw request body: " . $rawInput); // Debug log
+        
+        if (empty($rawInput)) {
+            return [];
+        }
+        
+        $data = json_decode($rawInput, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("JSON decode error: " . json_last_error_msg());
+            return [];
+        }
+        
+        return $data;
     }
     
     /**
-     * Handle OPTIONS requests for CORS
+     * Handle CORS Options requests
      */
     protected function handleCorsOptions()
     {
@@ -114,6 +74,53 @@ class ApiBaseController
             header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
             header('Access-Control-Allow-Headers: Content-Type, Authorization');
             exit;
+        }
+    }
+    
+    /**
+     * Check if user is authenticated via API token
+     * Simple placeholder implementation
+     */
+    protected function requireAuth()
+    {
+        // Get Authorization header
+        $headers = getallheaders();
+        $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
+        
+        // Check token format
+        if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+            $this->errorResponse('Authentication required', 401);
+        }
+        
+        $token = $matches[1];
+        
+        // Simple token validation
+        $parts = explode('.', $token);
+        if (count($parts) < 2) {
+            $this->errorResponse('Invalid token format', 401);
+        }
+        
+        try {
+            // Decode the payload
+            $payload = json_decode(base64_decode($parts[0]), true);
+            
+            // Check for expiration
+            if (!isset($payload['exp']) || $payload['exp'] < time()) {
+                $this->errorResponse('Token expired', 401);
+            }
+            
+            // Set user in session (simple approach)
+            $_SESSION['user'] = [
+                'id' => $payload['sub'],
+                'name' => $payload['name'],
+                'email' => $payload['email'],
+                'institution_id' => $payload['institution_id'],
+                'roles' => $payload['roles']
+            ];
+            
+            return true;
+        } catch (\Exception $e) {
+            $this->errorResponse('Invalid token: ' . $e->getMessage(), 401);
         }
     }
 }

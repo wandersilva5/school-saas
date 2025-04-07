@@ -3,451 +3,850 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Tester</title>
+    <title>API Browser Testing Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
             padding: 20px;
+            background-color: #f8f9fa;
         }
-        .container {
-            display: flex;
-            gap: 20px;
-        }
-        .sidebar {
-            width: 300px;
-            border-right: 1px solid #ccc;
-            padding-right: 20px;
-        }
-        .content {
-            flex-grow: 1;
-        }
-        .endpoint {
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .endpoint:hover {
-            background-color: #f0f0f0;
-        }
-        .endpoint.selected {
-            background-color: #e0e0e0;
-            font-weight: bold;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        select, input, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 15px;
-            overflow: auto;
-            border-radius: 4px;
-            max-height: 400px;
-        }
-        .category {
+        .card {
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .category-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #eee;
-        }
-        .method {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        .get { background-color: #61affe; color: white; }
-        .post { background-color: #49cc90; color: white; }
-        .put { background-color: #fca130; color: white; }
-        .delete { background-color: #f93e3e; color: white; }
-        #response {
-            margin-top: 20px;
+        .response-container {
+            max-height: 400px;
+            overflow: auto;
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
         }
         #loading {
             display: none;
-            margin-top: 20px;
-            text-align: center;
+            margin-left: 10px;
         }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 2s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
-            vertical-align: middle;
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            background-color: #f8f9fa;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .param-row {
+            margin-bottom: 10px;
         }
-        .authenticating-text {
-            color: #3498db;
-            text-align: center;
-            margin-top: 10px;
+        .remove-param {
+            cursor: pointer;
+            color: #dc3545;
+        }
+        #history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .history-item:hover {
+            background-color: #e9ecef;
+        }
+        .formatted-json {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .token-info {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .method-badge {
+            min-width: 70px;
+        }
+        .badge-get {
+            background-color: #0d6efd !important;
+        }
+        .badge-post {
+            background-color: #198754 !important;
+        }
+        .badge-put {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+        .badge-delete {
+            background-color: #dc3545 !important;
+        }
+        .endpoint-container {
+            max-height: 400px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <h1>API Tester</h1>
-    
-    <div class="form-group">
-        <label for="base-url">Base URL:</label>
-        <input type="text" id="base-url" value="http://school-saas.test/">
-    </div>
-    
-    <div class="form-group">
-        <label for="auth-section">Authentication:</label>
-        <div id="auth-section">
-            <div id="login-form">
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" value="admin@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" value="123456">
-                </div>
-                <button id="login-btn">Login</button>
-                <div id="authenticating" style="display: none">
-                    <div class="spinner"></div>
-                    <span class="authenticating-text">Authenticating...</span>
-                </div>
-            </div>
-            <div id="token-display" style="display: none">
-                <div class="form-group">
-                    <label>Authentication Token:</label>
-                    <input type="text" id="token" readonly>
-                </div>
-                <button id="logout-btn">Logout</button>
-            </div>
-        </div>
-    </div>
-    
     <div class="container">
-        <div class="sidebar">
-            <div class="category">
-                <div class="category-title">Authentication</div>
-                <div class="endpoint" data-method="POST" data-endpoint="/api/auth/login">
-                    <span class="method post">POST</span> /api/auth/login
-                </div>
-                <div class="endpoint" data-method="POST" data-endpoint="/api/auth/logout">
-                    <span class="method post">POST</span> /api/auth/logout
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/auth/profile">
-                    <span class="method get">GET</span> /api/auth/profile
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Dashboard</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/dashboard">
-                    <span class="method get">GET</span> /api/dashboard
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/dashboard/institution">
-                    <span class="method get">GET</span> /api/dashboard/institution
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/dashboard/responsavel">
-                    <span class="method get">GET</span> /api/dashboard/responsavel
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/dashboard/agent">
-                    <span class="method get">GET</span> /api/dashboard/agent
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Students</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/students">
-                    <span class="method get">GET</span> /api/students
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/students/1">
-                    <span class="method get">GET</span> /api/students/{id}
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/students/1/info">
-                    <span class="method get">GET</span> /api/students/{id}/info
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Classes</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/classes">
-                    <span class="method get">GET</span> /api/classes
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/classes/1">
-                    <span class="method get">GET</span> /api/classes/{id}
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/classes/1/students">
-                    <span class="method get">GET</span> /api/classes/{id}/students
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Courses</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/courses">
-                    <span class="method get">GET</span> /api/courses
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/courses/1">
-                    <span class="method get">GET</span> /api/courses/{id}
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Subjects</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/subjects">
-                    <span class="method get">GET</span> /api/subjects
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/subjects/1">
-                    <span class="method get">GET</span> /api/subjects/{id}
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/subjects/course/1">
-                    <span class="method get">GET</span> /api/subjects/course/{id}
-                </div>
-            </div>
-            
-            <div class="category">
-                <div class="category-title">Calendar</div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/calendar/events">
-                    <span class="method get">GET</span> /api/calendar/events
-                </div>
-                <div class="endpoint" data-method="GET" data-endpoint="/api/calendar/events/2023-04-01">
-                    <span class="method get">GET</span> /api/calendar/events/{date}
-                </div>
-            </div>
-        </div>
+        <h1 class="mb-4 text-center">API Browser Testing Tool</h1>
         
-        <div class="content">
-            <h2>Request</h2>
-            <div class="form-group">
-                <label for="method">Method:</label>
-                <select id="method">
-                    <option value="GET">GET</option>
-                    <option value="POST">POST</option>
-                    <option value="PUT">PUT</option>
-                    <option value="DELETE">DELETE</option>
-                </select>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Request</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="base-url" class="form-label">Base URL</label>
+                            <input type="text" class="form-control" id="base-url" value="http://localhost">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="endpoint" class="form-label">Endpoint</label>
+                            <div class="input-group">
+                                <select class="form-select flex-grow-0" style="max-width: 120px;" id="http-method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                                <input type="text" class="form-control" id="endpoint" placeholder="/api/endpoint">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="auth-token" class="form-label">Authentication Token</label>
+                            <input type="text" class="form-control" id="auth-token" placeholder="Bearer token">
+                            <div class="token-info" id="token-info"></div>
+                        </div>
+                        
+                        <ul class="nav nav-tabs mb-3" id="requestTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="params-tab" data-bs-toggle="tab" data-bs-target="#params-content" type="button" role="tab">Query Parameters</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="headers-tab" data-bs-toggle="tab" data-bs-target="#headers-content" type="button" role="tab">Headers</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="body-tab" data-bs-toggle="tab" data-bs-target="#body-content" type="button" role="tab">Request Body</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="requestTabsContent">
+                            <div class="tab-pane fade show active" id="params-content" role="tabpanel">
+                                <div id="params-container">
+                                    <!-- Params will be added here -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-param">Add Parameter</button>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="headers-content" role="tabpanel">
+                                <div id="headers-container">
+                                    <!-- Headers will be added here -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-header">Add Header</button>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="body-content" role="tabpanel">
+                                <div class="mb-3">
+                                    <label for="content-type" class="form-label">Content Type</label>
+                                    <select class="form-select" id="content-type">
+                                        <option value="application/json">application/json</option>
+                                        <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                                        <option value="multipart/form-data">multipart/form-data</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="request-body" class="form-label">Body</label>
+                                    <textarea class="form-control" id="request-body" rows="5" placeholder='{"key": "value"}'></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-primary" id="send-request">
+                                Send Request
+                                <div id="loading" class="spinner-border spinner-border-sm"></div>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="clear-form">Clear Form</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Response</h5>
+                        <div>
+                            <span id="status-badge" class="badge bg-secondary">Status: -</span>
+                            <span id="time-badge" class="badge bg-secondary">Time: -</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="response-container" id="response-container">
+                            <div class="text-center text-muted mt-3">Response will appear here</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="endpoint">Endpoint:</label>
-                <input type="text" id="endpoint">
-            </div>
-            
-            <div class="form-group">
-                <label for="payload">Payload (for POST/PUT):</label>
-                <textarea id="payload" rows="5"></textarea>
-            </div>
-            
-            <button id="send-request">Send Request</button>
-            
-            <div id="loading">
-                <div class="spinner"></div> Loading...
-            </div>
-            
-            <div id="response">
-                <h2>Response</h2>
-                <pre id="response-data"></pre>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-outline-primary mb-2 me-2" id="login-btn">Get Auth Token</button>
+                        <button class="btn btn-outline-secondary mb-2" id="clear-token">Clear Token</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">API Endpoints</h5>
+                    </div>
+                    <div class="card-body endpoint-container">
+                        <div class="list-group" id="endpoints-list">
+                            <!-- Endpoints will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Request History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="history-list" class="list-group">
+                            <!-- History items will be added here -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="clear-history">Clear History</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- Login Modal -->
+    <div class="modal fade" id="login-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login to Get Auth Token</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="login-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="login-email" value="admin@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="login-password" value="123456">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="do-login">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Variables
-            let token = '';
-            const baseUrlInput = document.getElementById('base-url');
-            const methodSelect = document.getElementById('method');
-            const endpointInput = document.getElementById('endpoint');
-            const payloadTextarea = document.getElementById('payload');
-            const sendRequestBtn = document.getElementById('send-request');
-            const responseDataPre = document.getElementById('response-data');
-            const loginBtn = document.getElementById('login-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const tokenInput = document.getElementById('token');
-            const loginForm = document.getElementById('login-form');
-            const tokenDisplay = document.getElementById('token-display');
-            const authenticating = document.getElementById('authenticating');
-            const loading = document.getElementById('loading');
+        // Define API endpoints
+        const apiEndpoints = [
+            { method: 'POST', path: '/api/auth/login', description: 'Login' },
+            { method: 'POST', path: '/api/auth/logout', description: 'Logout' },
+            { method: 'GET', path: '/api/auth/profile', description: 'Get user profile' },
             
-            // Event Listeners
-            document.querySelectorAll('.endpoint').forEach(endpoint => {
-                endpoint.addEventListener('click', function() {
-                    // Remove selected class from all endpoints
-                    document.querySelectorAll('.endpoint').forEach(e => {
-                        e.classList.remove('selected');
-                    });
-                    
-                    // Add selected class to clicked endpoint
-                    this.classList.add('selected');
-                    
-                    // Set method and endpoint
-                    methodSelect.value = this.getAttribute('data-method');
-                    endpointInput.value = this.getAttribute('data-endpoint');
-                    
-                    // Clear payload
-                    payloadTextarea.value = '';
-                    
-                    // Set default payload for login
-                    if (endpointInput.value === '/api/auth/login') {
-                        payloadTextarea.value = JSON.stringify({
-                            email: document.getElementById('email').value,
-                            password: document.getElementById('password').value
-                        }, null, 2);
-                    }
-                });
+            { method: 'GET', path: '/api/dashboard', description: 'Get dashboard data' },
+            { method: 'GET', path: '/api/dashboard/institution', description: 'Get institution dashboard' },
+            { method: 'GET', path: '/api/dashboard/responsavel', description: 'Get parent dashboard' },
+            { method: 'GET', path: '/api/dashboard/agent', description: 'Get agent dashboard' },
+            
+            { method: 'GET', path: '/api/access-management/users', description: 'Get users' },
+            { method: 'GET', path: '/api/access-management/roles', description: 'Get roles' },
+            { method: 'GET', path: '/api/access-management/institutions', description: 'Get institutions' },
+            
+            { method: 'GET', path: '/api/calendar/events', description: 'Get all events' },
+            { method: 'GET', path: '/api/calendar/events/{date}', description: 'Get events by date' },
+            
+            { method: 'GET', path: '/api/institutions', description: 'Get all institutions' },
+            { method: 'GET', path: '/api/institutions/{id}', description: 'Get institution by ID' },
+            { method: 'GET', path: '/api/institutions/guardian/{guardianId}', description: 'Get guardian institutions' },
+            
+            { method: 'GET', path: '/api/users', description: 'Get all users' },
+            { method: 'GET', path: '/api/users/{id}', description: 'Get user by ID' },
+            { method: 'GET', path: '/api/users/{id}/info', description: 'Get user info' },
+            
+            { method: 'GET', path: '/api/slider-images', description: 'Get slider images' },
+            { method: 'GET', path: '/api/slider-images/institution/{institutionId}', description: 'Get institution slider images' },
+            
+            { method: 'GET', path: '/api/students', description: 'Get all students' },
+            { method: 'GET', path: '/api/students/{id}', description: 'Get student by ID' },
+            { method: 'GET', path: '/api/students/{id}/info', description: 'Get student info' },
+            { method: 'GET', path: '/api/students/guardian/{guardianId}', description: 'Get guardian students' },
+            
+            { method: 'GET', path: '/api/guardians', description: 'Get all guardians' },
+            { method: 'GET', path: '/api/guardians/{id}', description: 'Get guardian by ID' },
+            { method: 'GET', path: '/api/guardians/{id}/students', description: 'Get guardian students' },
+            
+            { method: 'GET', path: '/api/classes', description: 'Get all classes' },
+            { method: 'GET', path: '/api/classes/{id}', description: 'Get class by ID' },
+            { method: 'GET', path: '/api/classes/{id}/students', description: 'Get class students' },
+            { method: 'GET', path: '/api/classes/{id}/available-students', description: 'Get available students' },
+            
+            { method: 'GET', path: '/api/courses', description: 'Get all courses' },
+            { method: 'GET', path: '/api/courses/{id}', description: 'Get course by ID' },
+            
+            { method: 'GET', path: '/api/subjects', description: 'Get all subjects' },
+            { method: 'GET', path: '/api/subjects/{id}', description: 'Get subject by ID' },
+            { method: 'GET', path: '/api/subjects/course/{courseId}', description: 'Get course subjects' },
+            
+            { method: 'GET', path: '/api/menus', description: 'Get all menus' },
+            { method: 'GET', path: '/api/menus/role/{roleId}', description: 'Get role menus' },
+            
+            { method: 'GET', path: '/api/access-logs', description: 'Get access logs' },
+            { method: 'GET', path: '/api/pending-authorizations', description: 'Get pending authorizations' },
+            { method: 'GET', path: '/api/alerts', description: 'Get alerts' },
+            
+            { method: 'GET', path: '/api/responsavel/alunos', description: 'Get parent students' },
+            { method: 'GET', path: '/api/responsavel/financeiro', description: 'Get financial data' },
+            { method: 'GET', path: '/api/responsavel/comunicados', description: 'Get announcements' },
+            { method: 'GET', path: '/api/responsavel/eventos', description: 'Get events' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let requestHistory = JSON.parse(localStorage.getItem('apiRequestHistory')) || [];
+            const loginModal = new bootstrap.Modal(document.getElementById('login-modal'));
+            
+            // DOM elements
+            const baseUrlInput = document.getElementById('base-url');
+            const endpointInput = document.getElementById('endpoint');
+            const httpMethodSelect = document.getElementById('http-method');
+            const authTokenInput = document.getElementById('auth-token');
+            const tokenInfoDiv = document.getElementById('token-info');
+            const sendRequestBtn = document.getElementById('send-request');
+            const clearFormBtn = document.getElementById('clear-form');
+            const responseContainer = document.getElementById('response-container');
+            const statusBadge = document.getElementById('status-badge');
+            const timeBadge = document.getElementById('time-badge');
+            const loadingSpinner = document.getElementById('loading');
+            const paramsContainer = document.getElementById('params-container');
+            const headersContainer = document.getElementById('headers-container');
+            const addParamBtn = document.getElementById('add-param');
+            const addHeaderBtn = document.getElementById('add-header');
+            const requestBodyTextarea = document.getElementById('request-body');
+            const contentTypeSelect = document.getElementById('content-type');
+            const loginBtn = document.getElementById('login-btn');
+            const clearTokenBtn = document.getElementById('clear-token');
+            const doLoginBtn = document.getElementById('do-login');
+            const loginEmailInput = document.getElementById('login-email');
+            const loginPasswordInput = document.getElementById('login-password');
+            const historyListContainer = document.getElementById('history-list');
+            const clearHistoryBtn = document.getElementById('clear-history');
+            const endpointsList = document.getElementById('endpoints-list');
+            
+            // Load saved base URL
+            if (localStorage.getItem('baseUrl')) {
+                baseUrlInput.value = localStorage.getItem('baseUrl');
+            }
+            
+            // Load saved auth token
+            if (localStorage.getItem('authToken')) {
+                authTokenInput.value = localStorage.getItem('authToken');
+                parseJwtToken(authTokenInput.value);
+            }
+            
+            // Initialize UI
+            renderEndpoints();
+            renderHistory();
+            
+            // Add initial parameter row
+            addParamRow();
+            addHeaderRow();
+            
+            // Event listeners
+            sendRequestBtn.addEventListener('click', sendRequest);
+            clearFormBtn.addEventListener('click', clearForm);
+            addParamBtn.addEventListener('click', addParamRow);
+            addHeaderBtn.addEventListener('click', addHeaderRow);
+            loginBtn.addEventListener('click', () => loginModal.show());
+            clearTokenBtn.addEventListener('click', clearToken);
+            doLoginBtn.addEventListener('click', doLogin);
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            authTokenInput.addEventListener('input', () => parseJwtToken(authTokenInput.value));
+            baseUrlInput.addEventListener('change', () => {
+                localStorage.setItem('baseUrl', baseUrlInput.value);
             });
             
-            // Login button
-            loginBtn.addEventListener('click', function() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+            // Functions
+            function renderEndpoints() {
+                endpointsList.innerHTML = '';
                 
-                if (!email || !password) {
-                    alert('Please enter email and password');
+                apiEndpoints.forEach(endpoint => {
+                    const item = document.createElement('button');
+                    item.className = 'list-group-item list-group-item-action d-flex align-items-center';
+                    
+                    const methodBadge = document.createElement('span');
+                    methodBadge.className = `badge method-badge me-2 badge-${endpoint.method.toLowerCase()}`;
+                    methodBadge.textContent = endpoint.method;
+                    
+                    const textContainer = document.createElement('div');
+                    textContainer.className = 'd-flex flex-column';
+                    
+                    const pathSpan = document.createElement('span');
+                    pathSpan.textContent = endpoint.path;
+                    
+                    const descSpan = document.createElement('small');
+                    descSpan.className = 'text-muted';
+                    descSpan.textContent = endpoint.description;
+                    
+                    textContainer.appendChild(pathSpan);
+                    textContainer.appendChild(descSpan);
+                    
+                    item.appendChild(methodBadge);
+                    item.appendChild(textContainer);
+                    
+                    item.addEventListener('click', () => {
+                        httpMethodSelect.value = endpoint.method;
+                        endpointInput.value = endpoint.path;
+                    });
+                    
+                    endpointsList.appendChild(item);
+                });
+            }
+            
+            function renderHistory() {
+                historyListContainer.innerHTML = '';
+                
+                requestHistory.slice().reverse().forEach((item, index) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item mb-2';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'd-flex align-items-center mb-1';
+                    
+                    const methodBadge = document.createElement('span');
+                    methodBadge.className = `badge method-badge me-2 badge-${item.method.toLowerCase()}`;
+                    methodBadge.textContent = item.method;
+                    
+                    const path = document.createElement('span');
+                    path.className = 'text-truncate';
+                    path.style.maxWidth = '200px';
+                    path.textContent = item.endpoint;
+                    
+                    header.appendChild(methodBadge);
+                    header.appendChild(path);
+                    
+                    const timestamp = document.createElement('small');
+                    timestamp.className = 'text-muted';
+                    timestamp.textContent = new Date(item.timestamp).toLocaleString();
+                    
+                    historyItem.appendChild(header);
+                    historyItem.appendChild(timestamp);
+                    
+                    historyItem.addEventListener('click', () => {
+                        loadHistoryItem(item);
+                    });
+                    
+                    historyListContainer.appendChild(historyItem);
+                });
+            }
+            
+            function loadHistoryItem(item) {
+                httpMethodSelect.value = item.method;
+                endpointInput.value = item.endpoint;
+                
+                // Clear existing params and headers
+                paramsContainer.innerHTML = '';
+                headersContainer.innerHTML = '';
+                
+                // Add params from history
+                if (item.params && Object.keys(item.params).length > 0) {
+                    Object.entries(item.params).forEach(([key, value]) => {
+                        addParamRow(key, value);
+                    });
+                } else {
+                    addParamRow();
+                }
+                
+                // Add headers from history
+                if (item.headers && Object.keys(item.headers).length > 0) {
+                    Object.entries(item.headers).forEach(([key, value]) => {
+                        addHeaderRow(key, value);
+                    });
+                } else {
+                    addHeaderRow();
+                }
+                
+                // Set request body and content type
+                if (item.contentType) {
+                    contentTypeSelect.value = item.contentType;
+                }
+                
+                if (item.body) {
+                    requestBodyTextarea.value = typeof item.body === 'string' 
+                        ? item.body 
+                        : JSON.stringify(item.body, null, 2);
+                } else {
+                    requestBodyTextarea.value = '';
+                }
+            }
+            
+            function addParamRow(key = '', value = '') {
+                const row = document.createElement('div');
+                row.className = 'param-row d-flex align-items-center';
+                
+                row.innerHTML = `
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" class="form-control form-control-sm param-key" placeholder="Key" value="${key}">
+                    </div>
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" class="form-control form-control-sm param-value" placeholder="Value" value="${value}">
+                    </div>
+                    <div>
+                        <span class="remove-param" title="Remove parameter">&times;</span>
+                    </div>
+                `;
+                
+                row.querySelector('.remove-param').addEventListener('click', () => {
+                    row.remove();
+                });
+                
+                paramsContainer.appendChild(row);
+            }
+            
+            function addHeaderRow(key = '', value = '') {
+                const row = document.createElement('div');
+                row.className = 'param-row d-flex align-items-center';
+                
+                row.innerHTML = `
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" class="form-control form-control-sm header-key" placeholder="Header name" value="${key}">
+                    </div>
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" class="form-control form-control-sm header-value" placeholder="Header value" value="${value}">
+                    </div>
+                    <div>
+                        <span class="remove-param" title="Remove header">&times;</span>
+                    </div>
+                `;
+                
+                row.querySelector('.remove-param').addEventListener('click', () => {
+                    row.remove();
+                });
+                
+                headersContainer.appendChild(row);
+            }
+            
+            function parseJwtToken(token) {
+                if (!token) {
+                    tokenInfoDiv.textContent = '';
                     return;
                 }
                 
-                authenticating.style.display = 'block';
-                loginBtn.style.display = 'none';
-                
-                fetch(`${baseUrlInput.value}/api/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    authenticating.style.display = 'none';
-                    loginBtn.style.display = 'block';
+                try {
+                    // Try to extract payload from JWT-like token format
+                    const parts = token.split('.');
+                    if (parts.length < 2) {
+                        tokenInfoDiv.textContent = 'Not a valid JWT format';
+                        return;
+                    }
                     
-                    if (data.status === 'success' && data.data && data.data.token) {
-                        token = data.data.token;
-                        tokenInput.value = token;
-                        loginForm.style.display = 'none';
-                        tokenDisplay.style.display = 'block';
-                        
-                        // Show response
-                        responseDataPre.textContent = JSON.stringify(data, null, 2);
+                    const payloadBase64 = parts[0];
+                    const payload = JSON.parse(atob(payloadBase64));
+                    
+                    // Display token info
+                    if (payload.name && payload.email) {
+                        tokenInfoDiv.innerHTML = `
+                            <strong>User:</strong> ${payload.name} (${payload.email})<br>
+                            <strong>Roles:</strong> ${Array.isArray(payload.roles) ? payload.roles.join(', ') : payload.roles}
+                        `;
                     } else {
-                        alert('Login failed: ' + (data.message || 'Unknown error'));
-                        responseDataPre.textContent = JSON.stringify(data, null, 2);
+                        tokenInfoDiv.textContent = 'Token payload does not contain user information';
                     }
-                })
-                .catch(error => {
-                    authenticating.style.display = 'none';
-                    loginBtn.style.display = 'block';
-                    alert('Error: ' + error.message);
-                    responseDataPre.textContent = error.message;
+                } catch (e) {
+                    tokenInfoDiv.textContent = 'Could not parse token payload';
+                }
+            }
+            
+            function getParams() {
+                const params = {};
+                const paramRows = paramsContainer.querySelectorAll('.param-row');
+                
+                paramRows.forEach(row => {
+                    const key = row.querySelector('.param-key').value.trim();
+                    const value = row.querySelector('.param-value').value.trim();
+                    
+                    if (key) {
+                        params[key] = value;
+                    }
                 });
-            });
+                
+                return params;
+            }
             
-            // Logout button
-            logoutBtn.addEventListener('click', function() {
-                token = '';
-                tokenInput.value = '';
-                loginForm.style.display = 'block';
-                tokenDisplay.style.display = 'none';
-                responseDataPre.textContent = 'Logged out successfully';
-            });
-            
-            // Send request button
-            sendRequestBtn.addEventListener('click', function() {
-                const method = methodSelect.value;
-                const endpoint = endpointInput.value;
-                const baseUrl = baseUrlInput.value;
-                const url = baseUrl + endpoint;
+            function getHeaders() {
+                const headers = {};
+                const headerRows = headersContainer.querySelectorAll('.param-row');
                 
-                // Show loading spinner
-                loading.style.display = 'block';
-                
-                // Prepare headers
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
-                
-                // Add authorization header if token exists
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
-                
-                // Prepare request options
-                const requestOptions = {
-                    method: method,
-                    headers: headers
-                };
-                
-                // Add payload for POST and PUT requests
-                if (method === 'POST' || method === 'PUT') {
-                    if (payloadTextarea.value) {
-                        try {
-                            requestOptions.body = payloadTextarea.value;
-                        } catch (e) {
-                            alert('Invalid JSON payload: ' + e.message);
-                            loading.style.display = 'none';
-                            return;
-                        }
+                headerRows.forEach(row => {
+                    const key = row.querySelector('.header-key').value.trim();
+                    const value = row.querySelector('.header-value').value.trim();
+                    
+                    if (key) {
+                        headers[key] = value;
                     }
-                }
+                });
                 
-                // Send request
-                fetch(url, requestOptions)
-                .then(response => {
-                    // Try to parse as JSON, fall back to text if not JSON
-                    return response.text().then(text => {
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            return text;
+                return headers;
+            }
+            
+            function buildUrl(endpoint, params) {
+                // Handle path parameters
+                let processedEndpoint = endpoint;
+                const pathParams = endpoint.match(/\{([^}]+)\}/g);
+                
+                if (pathParams) {
+                    pathParams.forEach(param => {
+                        const paramName = param.substring(1, param.length - 1);
+                        if (params[paramName]) {
+                            processedEndpoint = processedEndpoint.replace(param, params[paramName]);
+                            delete params[paramName]; // Remove from query params
                         }
                     });
-                })
-                .then(data => {
-                    loading.style.display = 'none';
-                    
-                    // Display response
-                    if (typeof data === 'object') {
-                        responseDataPre.textContent = JSON.stringify(data, null, 2);
-                    } else {
-                        responseDataPre.textContent = data;
+                }
+                
+                // Build URL with remaining query parameters
+                const url = new URL(baseUrlInput.value + processedEndpoint);
+                
+                Object.entries(params).forEach(([key, value]) => {
+                    if (key && value) {
+                        url.searchParams.append(key, value);
                     }
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                    responseDataPre.textContent = 'Error: ' + error.message;
                 });
-            });
+                
+                return url.toString();
+            }
+            
+            async function sendRequest() {
+                try {
+                    // Show loading state
+                    loadingSpinner.style.display = 'inline-block';
+                    sendRequestBtn.disabled = true;
+                    
+                    // Get request details
+                    const method = httpMethodSelect.value;
+                    const endpoint = endpointInput.value;
+                    const params = getParams();
+                    const headers = getHeaders();
+                    const contentType = contentTypeSelect.value;
+                    let body = requestBodyTextarea.value;
+                    const authToken = authTokenInput.value;
+                    
+                    if (!endpoint) {
+                        throw new Error('Endpoint is required');
+                    }
+                    
+                    // Process body based on content type
+                    if (body && contentType === 'application/json') {
+                        try {
+                            body = JSON.parse(body);
+                        } catch (e) {
+                            throw new Error('Invalid JSON in request body');
+                        }
+                    }
+                    
+                    // Build URL with query parameters
+                    const url = buildUrl(endpoint, params);
+                    
+                    // Set up request options
+                    const options = {
+                        method,
+                        headers: {
+                            ...headers
+                        }
+                    };
+                    
+                    // Add content type header if body exists
+                    if (body && method !== 'GET') {
+                        options.headers['Content-Type'] = contentType;
+                    }
+                    
+                    // Add auth token if provided
+                    if (authToken) {
+                        if (!authToken.startsWith('Bearer ')) {
+                            options.headers['Authorization'] = `Bearer ${authToken}`;
+                        } else {
+                            options.headers['Authorization'] = authToken;
+                        }
+                    }
+                    
+                    // Add body for non-GET requests
+                    if (method !== 'GET' && body) {
+                        if (contentType === 'application/json' && typeof body !== 'string') {
+                            options.body = JSON.stringify(body);
+                        } else if (typeof body === 'string') {
+                            options.body = body;
+                        }
+                    }
+                    
+                    // Start request timer
+                    const startTime = Date.now();
+                    
+                    // Make the request
+                    const response = await fetch(url, options);
+                    
+                    // Calculate request time
+                    const requestTime = Date.now() - startTime;
+                    
+                    // Update status badge
+                    statusBadge.textContent = `Status: ${response.status} ${response.statusText}`;
+                    timeBadge.textContent = `Time: ${requestTime}ms`;
+                    
+                    // Try to parse response as JSON
+                    let responseData;
+                    const contentTypeHeader = response.headers.get('content-type');
+                    
+                    if (contentTypeHeader && contentTypeHeader.includes('application/json')) {
+                        responseData = await response.json();
+                        displayResponse(responseData, true);
+                    } else {
+                        responseData = await response.text();
+                        displayResponse(responseData, false);
+                    }
+                    
+                    // Save the request to history
+                    saveToHistory({
+                        method,
+                        endpoint,
+                        params,
+                        headers,
+                        contentType,
+                        body,
+                        status: response.status,
+                        responseTime: requestTime,
+                        timestamp: Date.now()
+                    });
+                    
+                    // If this was a login request and it was successful, save the token
+                    if (endpoint.includes('/api/auth/login') && response.ok && responseData.data && responseData.data.token) {
+                        authTokenInput.value = responseData.data.token;
+                        localStorage.setItem('authToken', responseData.data.token);
+                        parseJwtToken(responseData.data.token);
+                    }
+                    
+                } catch (error) {
+                    displayError(error);
+                } finally {
+                    // Hide loading state
+                    loadingSpinner.style.display = 'none';
+                    sendRequestBtn.disabled = false;
+                }
+            }
+            
+            function displayResponse(data, isJson) {
+                if (isJson) {
+                    const formattedJson = JSON.stringify(data, null, 2);
+                    responseContainer.innerHTML = `<pre class="formatted-json">${syntaxHighlight(formattedJson)}</pre>`;
+                } else {
+                    responseContainer.innerHTML = `<pre>${data}</pre>`;
+                }
+            }
+            
+            function displayError(error) {
+                statusBadge.textContent = 'Status: Error';
+                timeBadge.textContent = 'Time: -';
+                responseContainer.innerHTML = `<pre class="text-danger">${error.message}</pre>`;
+            }
+            
+            function syntaxHighlight(json) {
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = 'text-primary'; // number
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'text-danger'; // key
+                        } else {
+                            cls = 'text-success'; // string
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'text-warning'; // boolean
+                    } else if (/null/.test(match)) {
+                        cls = 'text-info'; // null
+                    }
+                    return `<span class="${cls}">${match}</span>`;
+                });
+            }
+            
+            function saveToHistory(requestData) {
+                // Add to history array
+                requestHistory.push(requestData);
+                
+                // Limit history to 20 items
+                if (requestHistory.length > 20) {
+                    requestHistory = requestHistory.slice(-20);
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('apiRequestHistory', JSON.stringify(requestHistory));
+                
+                // Update UI
+                renderHistory();
+            }
+            
+            function clearForm() {
+                endpointInput.value = '';
+                httpMethodSelect.value = 'GET';
+                requestBodyTextarea.value = '';
+                contentTypeSelect.value = 'application/json';
+                
+                // Clear params and headers
+                paramsContainer.innerHTML = '';
+                headersContainer.innerHTML = '';
+                
+                // Add empty rows
+                addParamRow();
+                addHeaderRow();
+                
+                // Clear response
+                responseContainer.innerHTML = '<div class="text-center text-muted mt-3">Response will appear here</div>';
+                statusBadge.textContent = 'Status: -';
+                timeBadge.textContent = 'Time: -';
+            }
+            
+            function clearToken() {
+                authTokenInput.value = '';
+                tokenInfoDiv.textContent = '';
+                localStorage.removeItem('authToken');
+            }
+            
+            function clearHistory() {
+                requestHistory = [];
+                localStorage.removeItem('apiRequestHistory');
+                renderHistory();
+            }
+            
+            async function doLogin() {
+                const email = loginEmailInput.value;
+                const password = loginPasswordInput.value;
+                
+                if (!email || !password) {
+                    alert('Email and password are required');
+                    return;
+                }
+                
+                // Set up login form for API request
+                httpMethodSelect.value = 'POST';
+                endpointInput.value = '/api/auth/login';
+                contentTypeSelect.value = 'application/json';
+                requestBodyTextarea.value = JSON.stringify({ email, password }, null, 2);
+                
+                // Close modal
+                loginModal.hide();
+                
+                // Send request
+                sendRequest();
+            }
         });
     </script>
 </body>

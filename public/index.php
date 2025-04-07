@@ -1,5 +1,5 @@
 <?php
-// Inicia a sessão
+// Start the session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -7,11 +7,17 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/config/Env.php';
 
-// Carrega as variáveis de ambiente (usando apenas uma implementação)
+// Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
-// Função para limpar a URL
+// Load environment files
+App\Config\Env::load(__DIR__ . '/../.env');
+
+// Set timezone
+date_default_timezone_set('America/Sao_Paulo');
+
+// Function to clean URL
 function cleanUrl($url)
 {
     $url = trim($url, '/');
@@ -19,40 +25,34 @@ function cleanUrl($url)
     return $url;
 }
 
-// Obtém a URL atual
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$url = trim($requestUri, '/');
+// Get current URL
+$requestUri = $_SERVER['REQUEST_URI'];
+$url = trim(parse_url($requestUri, PHP_URL_PATH), '/');
 
-// Debug route access
+// Debug log
 error_log("Accessing route: " . $url);
 
-// IMPORTANTE: Tratar rota de logout explicitamente
+// Handle logout explicitly
 if ($url === 'logout') {
     $controller = new \App\Controllers\AuthController();
     $controller->logout();
     exit;
 }
 
-// Carregar arquivos de ambiente
-App\Config\Env::load(__DIR__ . '/../.env');
-
-// Definir timezone
-date_default_timezone_set('America/Sao_Paulo');
-
-// Carregar rotas
+// Load routes
 $webRoutes = require __DIR__ . '/../routes/web.php';
 
-// Verificar se o arquivo api.php existe
+// Check if api.php exists
 $apiRoutes = [];
 if (file_exists(__DIR__ . '/../routes/api.php')) {
     $apiRoutes = require __DIR__ . '/../routes/api.php';
 }
 
-// Combinar rotas
+// Combine routes
 $routes = array_merge($webRoutes, $apiRoutes);
 
-// Configurar cabeçalhos CORS para API
-if (strpos($_SERVER['REQUEST_URI'], '/api/') === 0) {
+// Set CORS headers for API requests
+if (strpos($url, 'api/') === 0) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -62,106 +62,42 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/') === 0) {
     }
 }
 
-// Verificar se a classe ApiRouter existe
+// Initialize route handling flag
+$routeHandled = false;
+
+// Check if the ApiRouter class exists
 $apiRoutingEnabled = class_exists('App\\Router\\ApiRouter');
 
-// Inicializar o roteador da API se disponível
-$routeHandled = false;
-if ($apiRoutingEnabled) {
+// Handle API routes if it's an API request
+if (strpos($url, 'api/') === 0 && $apiRoutingEnabled) {
     $apiRouter = new App\Router\ApiRouter($routes);
     $routeHandled = $apiRouter->dispatch();
+    
+    // If API router couldn't handle it, return a 404 JSON response
+    if (!$routeHandled) {
+        header('Content-Type: application/json');
+        http_response_code(404);
+        echo json_encode(['status' => 'error', 'message' => 'Route not found']);
+        exit;
+    }
+    
+    // If the API route was handled, exit
+    exit;
 }
 
-// Se não for uma rota de API, use o roteador web existente
-if (!$routeHandled) {
-    // Obter URL da requisição
-    $requestUri = $_SERVER['REQUEST_URI'];
-    
-    // Remover parâmetros GET da URL
-    $uri = parse_url($requestUri, PHP_URL_PATH);
-    
-    // Remover a barra inicial para obter o padrão de rota
-    $uri = ltrim($uri, '/');
-    
-    // Se não houver rota, usar a rota padrão
-    if (empty($uri)) {
-        $uri = '';
-    }
-    
-    // Verificar se existe uma rota definida para a URI
-    if (isset($routes[$uri])) {
-        $route = $routes[$uri];
-    } else {
-        // Verificar rotas com parâmetros
-        foreach ($routes as $pattern => $handler) {
-            if (strpos($pattern, '{') !== false) {
-                $regex = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $pattern);
-                $regex = '#^' . $regex . '$#';
-                
-                if (preg_match($regex, $uri, $matches)) {
-                    array_shift($matches); // Remove a correspondência completa
-                    $route = $handler;
-                    break;
-                }
-            }
-        }
-    }
-    
-    // Se não encontrou rota, use a rota de erro
-    if (!isset($route)) {
-        $route = $routes['error'] ?? null;
-    }
-    
-    // Verificar se a rota foi encontrada
-    if ($route) {
-        // Extrai o controlador e a ação
-        $controllerName = $route['controller'];
-        $actionName = $route['action'];
-        
-        // Constrói o nome completo da classe do controlador
-        $controllerClass = "\\App\\Controllers\\{$controllerName}";
-        
-        // Verifica se a classe do controlador existe
-        if (class_exists($controllerClass)) {
-            // Instancia o controlador
-            $controller = new $controllerClass();
-            
-            // Verifica se o método da ação existe
-            if (method_exists($controller, $actionName)) {
-                // Chama a ação do controlador com parâmetros, se existirem
-                if (isset($matches)) {
-                    call_user_func_array([$controller, $actionName], $matches);
-                } else {
-                    // Sem parâmetros
-                    $controller->$actionName();
-                }
-            } else {
-                // Método não encontrado
-                echo "404 - Action not found: {$actionName}";
-            }
-        } else {
-            // Controlador não encontrado
-            echo "404 - Controller not found: {$controllerName}";
-        }
-    } else {
-        // Rota não encontrada
-        echo "404 - Route not found";
-    }
-}
-
-// Rotas públicas ou especiais que não precisam de verificação
+// Special routes that don't need authentication check
 $specialRoutes = [
     '',                    // Home page
     'login',               // Login page
     'logout',              // Logout explicitly handled
     'register',            // Registration page
     'assets',              // Public assets
-    'institution/list',    // Lista de instituições
-    'institution/select',  // Seleção de instituição
-    'select-institution',  // Alias para seleção
+    'institution/list',    // Institution list
+    'institution/select',  // Institution selection
+    'select-institution',  // Alias for selection
 ];
 
-// Verifica se a rota atual é especial
+// Check if current route is special
 $isSpecialRoute = false;
 foreach ($specialRoutes as $route) {
     if ($url === $route || strpos($url, $route . '/') === 0) {
@@ -170,8 +106,7 @@ foreach ($specialRoutes as $route) {
     }
 }
 
-// Middleware para verificar autenticação apenas para rotas privadas
-// Não verifica para rotas especiais
+// Authentication middleware for private routes
 if (!$isSpecialRoute && !isset($_SESSION['user'])) {
     $_SESSION['toast'] = [
         'type' => 'warning',
@@ -181,7 +116,7 @@ if (!$isSpecialRoute && !isset($_SESSION['user'])) {
     exit;
 }
 
-// Carrega permissões de rotas
+// Load route permissions
 function getRoutePermissions()
 {
     static $permissionsCache = null;
@@ -201,7 +136,7 @@ function getRoutePermissions()
 
 $routePermissions = getRoutePermissions();
 
-// Verificação de instituição - pulada para rotas especiais
+// Institution check middleware - skipped for special routes
 if (!$isSpecialRoute && isset($_SESSION['user'])) {
     try {
         $institutionCheck = new \App\Middleware\InstitutionCheck();
@@ -216,61 +151,90 @@ if (!$isSpecialRoute && isset($_SESSION['user'])) {
     }
 }
 
-// PROCESSAMENTO DE ROTAS
-$routeFound = false;
-$routeKey = null;
-$params = [];
-
-// Try exact match first
+// WEB ROUTE PROCESSING
+// First try exact match
 if (isset($routes[$url])) {
-    $routeKey = $url;
-    $routeFound = true;
-} else {
-    // Try with parameters
-    foreach ($routes as $pattern => $route) {
-        $patternParts = explode('/', $pattern);
-        $urlParts = explode('/', $url);
-
-        if (count($patternParts) === count($urlParts)) {
-            $match = true;
-            $extractedParams = [];
-
-            for ($i = 0; $i < count($patternParts); $i++) {
-                if (preg_match('/\{([a-z_]+)\}/', $patternParts[$i], $matches)) {
-                    // This is a parameter
-                    $extractedParams[] = $urlParts[$i];
-                } else if ($patternParts[$i] !== $urlParts[$i]) {
-                    $match = false;
-                    break;
-                }
-            }
-
-            if ($match) {
-                $routeKey = $pattern;
-                $routeFound = true;
-                $params = $extractedParams;
-                break;
-            }
-        }
-    }
-}
-
-// If route exists, execute it
-if ($routeFound) {
-    $controllerName = "\\App\\Controllers\\" . $routes[$routeKey]['controller'];
-    $actionName = $routes[$routeKey]['action'];
-
-    if (class_exists($controllerName)) {
-        $controller = new $controllerName();
+    $route = $routes[$url];
+    
+    $controllerName = $route['controller'];
+    $actionName = $route['action'];
+    
+    // Construct full controller class name
+    $controllerClass = "\\App\\Controllers\\{$controllerName}";
+    
+    // Check if controller class exists
+    if (class_exists($controllerClass)) {
+        // Instantiate controller
+        $controller = new $controllerClass();
+        
+        // Check if action method exists
         if (method_exists($controller, $actionName)) {
-            call_user_func_array([$controller, $actionName], $params);
+            // Call controller action without parameters
+            $controller->$actionName();
             exit;
         }
     }
 }
 
-// Se a rota não foi encontrada ou se houve algum erro, exibe a página de erro
-error_log("Rota não encontrada: " . $url);
+// Try routes with parameters
+$matches = [];
+foreach ($routes as $pattern => $route) {
+    if (strpos($pattern, '{') !== false) {
+        $regex = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $pattern);
+        $regex = '#^' . $regex . '$#';
+        
+        if (preg_match($regex, $url, $matches)) {
+            array_shift($matches); // Remove the complete match
+            
+            $controllerName = $route['controller'];
+            $actionName = $route['action'];
+            
+            // Construct full controller class name
+            $controllerClass = "\\App\\Controllers\\{$controllerName}";
+            
+            // Check if controller class exists
+            if (class_exists($controllerClass)) {
+                // Instantiate controller
+                $controller = new $controllerClass();
+                
+                // Check if action method exists
+                if (method_exists($controller, $actionName)) {
+                    // Call controller action with parameters
+                    call_user_func_array([$controller, $actionName], $matches);
+                    exit;
+                } else {
+                    // Method not found
+                    echo "404 - Action not found: {$actionName}";
+                    exit;
+                }
+            } else {
+                // Controller not found
+                echo "404 - Controller not found: {$controllerName}";
+                exit;
+            }
+        }
+    }
+}
+
+// If no route was found, use the error route
+if (isset($routes['error'])) {
+    $route = $routes['error'];
+    $controllerName = $route['controller'];
+    $actionName = $route['action'];
+    
+    $controllerClass = "\\App\\Controllers\\{$controllerName}";
+    
+    if (class_exists($controllerClass)) {
+        $controller = new $controllerClass();
+        if (method_exists($controller, $actionName)) {
+            $controller->$actionName();
+            exit;
+        }
+    }
+}
+
+// If we get here, display a 404 error
+error_log("Route not found: " . $url);
 $controller = new \App\Controllers\ErrorController();
 $controller->notFound();
 exit;
