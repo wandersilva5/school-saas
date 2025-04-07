@@ -5,179 +5,154 @@ namespace App\Router;
 class ApiRouter
 {
     private $routes;
-    private $baseControllerNamespace = 'App\\Controllers\\Api\\';
+    private $baseControllerNamespace = 'App\\Controllers\\';
 
     public function __construct(array $routes)
     {
         $this->routes = $routes;
-        error_log("API Router initialized with " . count($routes) . " routes");
     }
 
+    /**
+     * Process the current request and route it to the appropriate controller/action
+     */
     public function dispatch()
     {
-        // Get the request URI and method
+        error_log("Dispatching API route for: " . $_SERVER['REQUEST_URI']);
+        error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+
+        // Get the request URI
         $uri = $_SERVER['REQUEST_URI'];
-        $method = $_SERVER['REQUEST_METHOD'];
-        
-        // Debug log
-        error_log("API Request: $method $uri");
-        
+
         // Handle CORS preflight requests
-        if ($method === 'OPTIONS') {
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             header('Access-Control-Allow-Origin: *');
-            header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+            header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
             header('Access-Control-Allow-Headers: Content-Type, Authorization');
             exit;
         }
-        
+
         // Extract path from URI without query string
         $path = parse_url($uri, PHP_URL_PATH);
-        $path = ltrim($path, '/');
-        
-        // Log the path we're looking for
-        error_log("Looking for route matching path: $path");
-        
+
         // Check if this is an API route
-        if (strpos($path, 'api/') !== 0) {
-            error_log("Not an API route: $path");
-            return false;
+        if (strpos($path, '/api/') !== 0) {
+            return false; // Not an API route
         }
-        
+
         // Find matching route
         $route = $this->findRoute($path);
-        
+
         if (!$route) {
-            error_log("No route found for: $path");
-            error_log("Available routes: " . implode(', ', array_keys($this->routes)));
-            $this->sendJsonError('Route not found: ' . $path, 404);
+            $this->sendJsonError('Route not found', 404);
             return true;
         }
-        
-        // Debug the found route
-        error_log("Found route: " . json_encode($route));
-        
-        // Check HTTP method if specified
-        if (isset($route['method']) && $method !== $route['method']) {
-            error_log("Method not allowed: $method (expected: {$route['method']})");
+
+        // Check HTTP method
+        if (isset($route['method']) && $_SERVER['REQUEST_METHOD'] !== $route['method']) {
             $this->sendJsonError('Method not allowed', 405);
             return true;
         }
-        
+
         // Get controller and action
         $controllerName = $route['controller'];
         $actionName = $route['action'];
         $params = $route['params'] ?? [];
-        
-        // Debug controller and action
-        error_log("Controller: $controllerName, Action: $actionName");
-        
-        // Check for fully qualified controller name
-        if (strpos($controllerName, '\\') === 0) {
-            $controllerClass = $controllerName;
-        } else {
-            // Construct controller class name with namespace
-            $controllerClass = $this->baseControllerNamespace . $controllerName;
-        }
-        
-        error_log("Controller class: $controllerClass");
-        
-        // Check if controller class exists
-        if (!class_exists($controllerClass)) {
-            error_log("Controller not found: $controllerClass");
-            $this->sendJsonError('Controller not found: ' . $controllerName, 500);
-            return true;
-        }
-        
+
         // Instantiate controller
-        try {
-            $controller = new $controllerClass();
-        } catch (\Throwable $e) {
-            error_log("Error instantiating controller: " . $e->getMessage());
-            $this->sendJsonError('Error creating controller: ' . $e->getMessage(), 500);
+        $controllerClass = $this->baseControllerNamespace . $controllerName;
+        
+        error_log("Attempting to load controller class: " . $controllerClass);
+
+        if (!class_exists($controllerClass)) {
+            $this->sendJsonError("Controller not found: $controllerClass", 500);
             return true;
         }
-        
+
+        $controller = new $controllerClass();
+
         // Check if action exists
         if (!method_exists($controller, $actionName)) {
-            error_log("Action not found: $actionName");
-            $this->sendJsonError('Action not found: ' . $actionName, 500);
+            $this->sendJsonError('Action not found', 500);
             return true;
         }
-        
+
         // Call the action with params
         try {
-            error_log("Calling action: $actionName with params: " . json_encode($params));
             call_user_func_array([$controller, $actionName], $params);
-        } catch (\Throwable $e) {
-            error_log("Error in controller action: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+        } catch (\Exception $e) {
             $this->sendJsonError('Error processing request: ' . $e->getMessage(), 500);
         }
-        
+
+        if (!$route) {
+            error_log("No route found for: " . $path);
+            error_log("Available routes: " . print_r(array_keys($this->routes), true));
+        }
+
         return true;
     }
-    
+
+    /**
+     * Find a matching route for the given path
+     */
     private function findRoute($path)
     {
-        // Log that we're searching for a route
-        error_log("Searching for route: $path");
-        
-        // Look for exact match
+        // Remove leading slash if present
+        $path = ltrim($path, '/');
+
+        // Exact match check
         if (isset($this->routes[$path])) {
-            error_log("Found exact route match: $path");
             return $this->routes[$path];
         }
-        
-        // Then try pattern routes
+
+        // Check for pattern-based routes
         foreach ($this->routes as $pattern => $routeInfo) {
             // Skip non-API routes
             if (strpos($pattern, 'api/') !== 0) {
                 continue;
             }
-            
-            // Check for pattern match
-            if (strpos($pattern, '{') !== false) {
-                $patternRegex = $this->patternToRegex($pattern);
-                
-                error_log("Testing pattern: $pattern with regex: $patternRegex");
-                
-                if (preg_match($patternRegex, $path, $matches)) {
-                    error_log("Found pattern match: $pattern");
-                    
-                    // Remove the full match
-                    array_shift($matches);
-                    
-                    // Add params to route info
-                    $routeInfo['params'] = $matches;
-                    
-                    return $routeInfo;
-                }
+
+            // Convert route pattern to regex
+            $regex = $this->patternToRegex($pattern);
+
+            // Check for match
+            if (preg_match($regex, $path, $matches)) {
+                // Remove the full match
+                array_shift($matches);
+
+                // Add params to route info
+                $routeInfo['params'] = $matches;
+                return $routeInfo;
             }
         }
-        
-        error_log("No route found for path: $path");
+
+        // Log the failure for debugging
+        error_log("API route not found for path: $path");
+        error_log("Available routes: " . implode(', ', array_keys($this->routes)));
+
         return null;
     }
-    
+
+    /**
+     * Convert a route pattern like 'api/users/{id}' to a regex
+     */
     private function patternToRegex($pattern)
     {
         // Replace {param} with regex capture group
-        $pattern = preg_replace('/\{([^\/]+)\}/', '([^/]+)', $pattern);
-        
-        // Escape forward slashes and add start/end markers
+        $pattern = preg_replace('/{([^\/]+)}/', '([^/]+)', $pattern);
+
+        // Escape slashes and add start/end markers
         $pattern = '#^' . str_replace('/', '\\/', $pattern) . '$#';
-        
+
         return $pattern;
     }
-    
+
+    /**
+     * Send a JSON error response
+     */
     private function sendJsonError($message, $statusCode = 400)
     {
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=utf-8');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization');
-        
         echo json_encode([
             'status' => 'error',
             'message' => $message

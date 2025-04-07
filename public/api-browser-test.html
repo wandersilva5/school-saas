@@ -253,13 +253,13 @@
     <script>
         // Define API endpoints
         const apiEndpoints = [
-            { method: 'POST', path: '/api/auth/login', description: 'Login' },
-            { method: 'POST', path: '/api/auth/logout', description: 'Logout' },
-            { method: 'GET', path: '/api/auth/profile', description: 'Get user profile' },
+            { method: 'POST', path: '/api/login', description: 'Login' },
+            { method: 'POST', path: '/api/logout', description: 'Logout' },
+            { method: 'GET', path: '/api/profile', description: 'Get user profile' },
             
             { method: 'GET', path: '/api/dashboard', description: 'Get dashboard data' },
             { method: 'GET', path: '/api/dashboard/institution', description: 'Get institution dashboard' },
-            { method: 'GET', path: '/api/dashboard/responsavel', description: 'Get parent dashboard' },
+            { method: 'GET', path: '/api/dashboard/guardian', description: 'Get parent dashboard' },
             { method: 'GET', path: '/api/dashboard/agent', description: 'Get agent dashboard' },
             
             { method: 'GET', path: '/api/access-management/users', description: 'Get users' },
@@ -730,7 +730,7 @@
                     });
                     
                     // If this was a login request and it was successful, save the token
-                    if (endpoint.includes('/api/auth/login') && response.ok && responseData.data && responseData.data.token) {
+                    if (endpoint.includes('/api/login') && response.ok && responseData.data && responseData.data.token) {
                         authTokenInput.value = responseData.data.token;
                         localStorage.setItem('authToken', responseData.data.token);
                         parseJwtToken(responseData.data.token);
@@ -837,7 +837,7 @@
                 
                 // Set up login form for API request
                 httpMethodSelect.value = 'POST';
-                endpointInput.value = '/api/auth/login';
+                endpointInput.value = '/api/login';
                 contentTypeSelect.value = 'application/json';
                 requestBodyTextarea.value = JSON.stringify({ email, password }, null, 2);
                 

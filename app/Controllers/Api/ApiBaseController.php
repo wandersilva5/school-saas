@@ -9,6 +9,11 @@ class ApiBaseController
      */
     protected function jsonResponse($data, $statusCode = 200)
     {
+        // Prevent any previous output from breaking our JSON
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=utf-8');
         header('Access-Control-Allow-Origin: *');
@@ -115,7 +120,7 @@ class ApiBaseController
                 'name' => $payload['name'],
                 'email' => $payload['email'],
                 'institution_id' => $payload['institution_id'],
-                'roles' => $payload['roles']
+                'roles' => $payload['roles'] ?? [] // Add null coalescing operator here
             ];
             
             return true;

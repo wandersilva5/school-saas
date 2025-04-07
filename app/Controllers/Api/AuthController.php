@@ -16,10 +16,6 @@ class AuthController extends ApiBaseController
 
     public function login()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return $this->errorResponse('Method not allowed', 405);
-        }
-
         error_log("Login method called in AuthController");
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -29,6 +25,11 @@ class AuthController extends ApiBaseController
 
         $data = $this->getRequestBody();
         error_log("Request body: " . print_r($data, true));
+
+        // Check if we received the required data
+        if (!isset($data['email']) || !isset($data['password'])) {
+            return $this->errorResponse('Email and password are required', 400);
+        }
 
         try {
             // Check credentials
@@ -45,18 +46,23 @@ class AuthController extends ApiBaseController
             // Generate API token
             $token = $this->generateToken($user);
 
-            // Return user data and token
+            // Return user data and token with safe role handling
             return $this->successResponse([
                 'token' => $token,
                 'user' => [
                     'id' => $user['id'],
                     'name' => $user['name'],
                     'email' => $user['email'],
-                    'institution_id' => $user['institution_id'],
-                    'roles' => is_string($user['roles']) ? explode(',', $user['roles']) : $user['roles']
+                    'institution_id' => $user['institution_id'] ?? null,
+                    'roles' => isset($user['roles']) 
+                        ? (is_string($user['roles']) 
+                            ? explode(',', $user['roles']) 
+                            : $user['roles'])
+                        : []
                 ]
             ], 'Authentication successful');
         } catch (\Exception $e) {
+            error_log("Authentication error: " . $e->getMessage());
             return $this->errorResponse('Authentication error: ' . $e->getMessage(), 500);
         }
     }
@@ -104,8 +110,8 @@ class AuthController extends ApiBaseController
             'sub' => $user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
-            'institution_id' => $user['institution_id'],
-            'roles' => $user['roles'],
+            'institution_id' => $user['institution_id'] ?? null,
+            'roles' => $user['roles'] ?? [],
             'iat' => time(),
             'exp' => time() + (60 * 60 * 24) // 24 hours
         ];
