@@ -216,9 +216,7 @@ class InstitutionController extends BaseController
 
     public function select($id)
     {
-        // Debug
-        error_log("InstitutionController::select called with ID: " . $id);
-
+       
         // Verify user is logged in
         if (!isset($_SESSION['user'])) {
             header('Location: /login');
@@ -235,10 +233,11 @@ class InstitutionController extends BaseController
             exit;
         }
 
+        // $idInstitution = (int)$id; // Ensure $id is an integer
+
         try {
             // Verify institution exists and user has access using model
             $hasAccess = $this->institutionModel->verifyGuardianAccess($_SESSION['user']['id'], $id);
-            
             if (!$hasAccess) {
                 $_SESSION['toast'] = [
                     'type' => 'error',

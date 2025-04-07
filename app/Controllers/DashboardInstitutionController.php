@@ -18,7 +18,10 @@ class DashboardInstitutionController extends BaseController
         check_responsavel_institution();
 
         $user = $_SESSION['user'];
-        $institutionId = $user['institution_id'];
+         // Fetch slider images for the current institution
+         $sliderModel = new SliderImage();
+         $sliderImages = $sliderModel->getSliderImagesByInstitution($user['institution_id']);
+
         error_log("DashboardController: Usuário encontrado: " . print_r($user, true));
 
         // Dados para os cards do dashboard - informações fictícias relevantes
@@ -121,10 +124,11 @@ class DashboardInstitutionController extends BaseController
 
 
 
-        return $this->render('dashboard/dashboard-institution', [
+        return $this->render('home-institution/index', [
             'user' => $user,
             'pageTitle' => "Dashboard Institucional",
-            'currentPage' => 'dashboard-institution',
+            'currentPage' => 'home-institution',
+            'sliderImages' => $sliderImages,
             'dashboardData' => $dashboardData,
             'academicPerformance' => $academicPerformance,
             'classDistribution' => $classDistribution,

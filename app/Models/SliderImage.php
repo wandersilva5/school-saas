@@ -65,7 +65,12 @@ class SliderImage
     }
 
     public function getSliderImagesByInstitution($institutionId) {
-        $sql = "SELECT * FROM slider_images WHERE institution_id = ? ORDER BY `order_position` ASC";
+        $sql = "
+            SELECT * 
+            FROM slider_images 
+            WHERE institution_id = ? 
+            ORDER BY `order_position` ASC"
+            ;
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$institutionId]);
         return $stmt->fetchAll();

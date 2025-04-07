@@ -153,13 +153,14 @@ class Institution {
             $stmt = $this->db->prepare("
                 SELECT DISTINCT i.id, i.name, i.logo_url, i.active
                 FROM institutions i
-                JOIN guardians_students gs ON gs.institution_id = i.id
-                WHERE gs.guardian_user_id = ?
-                AND i.deleted_at IS NULL
+                JOIN user_institutions ui ON ui.institution_id = i.id
+                WHERE ui.user_id = ?
+                AND i.active = 1
                 ORDER BY i.name
             ");
             $stmt->execute([$guardianId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
         } catch (\PDOException $e) {
             error_log($e->getMessage());
             throw new \Exception("Erro ao buscar instituições do responsável: " . $e->getMessage());
@@ -172,13 +173,11 @@ class Institution {
     public function verifyGuardianAccess($guardianId, $institutionId) {
         try {
             $stmt = $this->db->prepare("
-                SELECT i.id
+                SELECT i.id 
                 FROM institutions i
-                JOIN guardians_students gs ON gs.institution_id = i.id
-                WHERE gs.guardian_user_id = ?
+                JOIN user_institutions ui ON ui.institution_id = i.id
+                AND ui.user_id = ?
                 AND i.id = ?
-                AND i.deleted_at IS NULL
-                LIMIT 1
             ");
             $stmt->execute([$guardianId, $institutionId]);
             return $stmt->fetch(PDO::FETCH_ASSOC) ? true : false;

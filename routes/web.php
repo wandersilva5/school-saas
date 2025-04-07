@@ -9,7 +9,7 @@ return [
 
     // Rotas para o painel de controle
     'dashboard'             => ['controller' => 'DashboardController', 'action' => 'index'],
-    'dashboard-institution' => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
+    'dashboard-institution' => ['controller' => 'DashboardInstitutionController', 'action' => 'index'],
     'dashboard-responsavel' => ['controller' => 'DashboardResponsavelController', 'action' => 'index'],
     'home-agent'            => ['controller' => 'HomeAgentController', 'action' => 'index'],
     'home-institution'      => ['controller' => 'HomeInstitutionController', 'action' => 'index'],
@@ -30,7 +30,6 @@ return [
 
     // Rotas para calendário
     'calendar' => ['controller' => 'CalendarController', 'action' => 'index'],
-
     // Rotas para instituições
     'institution'             => ['controller' => 'InstitutionController', 'action' => 'index'],
     'institution/list'        => ['controller' => 'InstitutionController', 'action' => 'list'],

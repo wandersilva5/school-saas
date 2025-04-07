@@ -70,16 +70,12 @@ class DashboardResponsavelController extends BaseController
             // Busca próximos eventos
             $eventos = $this->responsavelModel->getEventos($institutionId);
 
-            // Busca imagens do slider
-            $sliderImages = $this->sliderModel->getSliderImagesByInstitution($institutionId);
-
             return $this->render('dashboard/responsavel', [
                 'pageTitle' => 'Seja bem-vindo(a) Área do Responsável',
                 'alunos' => $alunos ?: [],
                 'financeiro' => $financeiro ?: [],
                 'comunicados' => $comunicados ?: [],
                 'eventos' => $eventos ?: [],
-                'sliderImages' => $sliderImages ?: []
             ]);
         } catch (\Exception $e) {
             error_log('Erro detalhado: ' . $e->getMessage());

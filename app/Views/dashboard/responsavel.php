@@ -1,35 +1,4 @@
-<!-- Carrossel de Imagens -->
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        <?php foreach ($sliderImages as $index => $image): ?>
-            <button type="button"
-                data-bs-target="#carouselExampleIndicators"
-                data-bs-slide-to="<?= $index ?>"
-                class="<?= $index === 0 ? 'active' : '' ?>"
-                aria-current="<?= $index === 0 ? 'true' : 'false' ?>"
-                aria-label="Slide <?= $index + 1 ?>">
-            </button>
-        <?php endforeach; ?>
-    </div>
-    <div class="carousel-inner">
-        <?php foreach ($sliderImages as $index => $image): ?>
-            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                <img src="<?= base_url('uploads/slider/' . $image['image_url']) ?>"
-                    class="d-block w-100"
-                    alt="<?= htmlspecialchars($image['title'] ?? 'Slide ' . ($index + 1)) ?>">
-            </div>
-        <?php endforeach; ?>
-    </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
-</div>
-<!-- Fim do Carrossel de Imagens -->
+
 <!-- Content Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
         <div>
