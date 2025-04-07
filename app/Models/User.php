@@ -16,7 +16,13 @@ class User
 
     public function authenticate($email, $password)
     {
-        $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $this->db->prepare("
+                SELECT u.*, r.name as roles
+                FROM users u
+                JOIN user_roles ur ON u.id = ur.user_id
+                JOIN roles r ON r.id = ur.role_id
+                WHERE email = ?"
+            );
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
