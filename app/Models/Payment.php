@@ -22,54 +22,52 @@ class Payment
         try {
             $params = [$institutionId];
             $whereConditions = ["p.institution_id = ?"];
-            
+
             // Add filters if provided
             if (!empty($filters['status'])) {
                 $whereConditions[] = "p.status = ?";
                 $params[] = $filters['status'];
             }
-            
+
             if (!empty($filters['student_id'])) {
                 $whereConditions[] = "p.student_id = ?";
                 $params[] = $filters['student_id'];
             }
-            
+
             if (!empty($filters['due_date_from'])) {
                 $whereConditions[] = "p.due_date >= ?";
                 $params[] = $filters['due_date_from'];
             }
-            
+
             if (!empty($filters['due_date_to'])) {
                 $whereConditions[] = "p.due_date <= ?";
                 $params[] = $filters['due_date_to'];
             }
-            
+
             // Build the WHERE clause
             $whereClause = implode(' AND ', $whereConditions);
-            
+
             $sql = "
-                SELECT 
-                    p.*,
-                    u.name as student_name,
-                    u.email as student_email,
-                    c.name as class_name
-                FROM payments p
-                LEFT JOIN users u ON p.student_id = u.id
-                LEFT JOIN class_students cs ON u.id = cs.user_id
-                LEFT JOIN classes c ON cs.class_id = c.id
-                WHERE {$whereClause}
-                GROUP BY p.id
-                ORDER BY c.name ASC
-                ORDER BY p.due_date DESC
-                LIMIT ? OFFSET ?
-            ";
-            
+            SELECT 
+                p.*,
+                u.name as student_name,
+                u.email as student_email,
+                c.name as class_name
+            FROM payments p
+            LEFT JOIN users u ON p.student_id = u.id
+            LEFT JOIN class_students cs ON u.id = cs.user_id
+            LEFT JOIN classes c ON cs.class_id = c.id
+            WHERE {$whereClause}
+            ORDER BY p.due_date DESC
+            LIMIT ? OFFSET ?
+        ";
+
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             error_log("Error in getPayments: " . $e->getMessage());
@@ -85,34 +83,34 @@ class Payment
         try {
             $params = [$institutionId];
             $whereConditions = ["institution_id = ?"];
-            
+
             // Add filters if provided
             if (!empty($filters['status'])) {
                 $whereConditions[] = "status = ?";
                 $params[] = $filters['status'];
             }
-            
+
             if (!empty($filters['student_id'])) {
                 $whereConditions[] = "student_id = ?";
                 $params[] = $filters['student_id'];
             }
-            
+
             if (!empty($filters['due_date_from'])) {
                 $whereConditions[] = "due_date >= ?";
                 $params[] = $filters['due_date_from'];
             }
-            
+
             if (!empty($filters['due_date_to'])) {
                 $whereConditions[] = "due_date <= ?";
                 $params[] = $filters['due_date_to'];
             }
-            
+
             // Build the WHERE clause
             $whereClause = implode(' AND ', $whereConditions);
-            
+
             $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM payments WHERE {$whereClause}");
             $stmt->execute($params);
-            
+
             return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         } catch (\PDOException $e) {
             error_log("Error in getTotalPayments: " . $e->getMessage());
@@ -140,7 +138,7 @@ class Payment
                 LIMIT 1
             ");
             $stmt->execute([$id, $institutionId]);
-            
+
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             error_log("Error in getPaymentById: " . $e->getMessage());
@@ -155,7 +153,7 @@ class Payment
     {
         try {
             $this->db->beginTransaction();
-            
+
             $stmt = $this->db->prepare("
                 INSERT INTO payments (
                     student_id, 
@@ -174,7 +172,7 @@ class Payment
                     created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
-            
+
             $stmt->execute([
                 $data['student_id'],
                 $data['amount'],
@@ -190,10 +188,10 @@ class Payment
                 $data['notes'] ?? null,
                 $data['institution_id']
             ]);
-            
+
             $paymentId = $this->db->lastInsertId();
             $this->db->commit();
-            
+
             return $paymentId;
         } catch (\PDOException $e) {
             $this->db->rollBack();
@@ -209,7 +207,7 @@ class Payment
     {
         try {
             $this->db->beginTransaction();
-            
+
             $stmt = $this->db->prepare("
                 UPDATE payments 
                 SET 
@@ -228,7 +226,7 @@ class Payment
                     updated_at = NOW()
                 WHERE id = ? AND institution_id = ?
             ");
-            
+
             $result = $stmt->execute([
                 $data['student_id'],
                 $data['amount'],
@@ -245,7 +243,7 @@ class Payment
                 $id,
                 $data['institution_id']
             ]);
-            
+
             $this->db->commit();
             return $result;
         } catch (\PDOException $e) {
@@ -262,7 +260,7 @@ class Payment
     {
         try {
             $this->db->beginTransaction();
-            
+
             $stmt = $this->db->prepare("
                 UPDATE payments 
                 SET 
@@ -273,7 +271,7 @@ class Payment
                     updated_at = NOW()
                 WHERE id = ? AND institution_id = ?
             ");
-            
+
             $result = $stmt->execute([
                 $data['payment_date'] ?? date('Y-m-d'),
                 $data['payment_method'],
@@ -281,7 +279,7 @@ class Payment
                 $id,
                 $data['institution_id']
             ]);
-            
+
             $this->db->commit();
             return $result;
         } catch (\PDOException $e) {
@@ -318,7 +316,7 @@ class Payment
                 LIMIT ? OFFSET ?
             ");
             $stmt->execute([$studentId, $institutionId, $limit, $offset]);
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             error_log("Error in getStudentPayments: " . $e->getMessage());
@@ -333,7 +331,7 @@ class Payment
     {
         try {
             $stats = [];
-            
+
             // Total amount pending
             $stmt = $this->db->prepare("
                 SELECT SUM(amount) as total_pending
@@ -342,7 +340,7 @@ class Payment
             ");
             $stmt->execute([$institutionId]);
             $stats['total_pending'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_pending'] ?? 0;
-            
+
             // Total amount paid
             $stmt = $this->db->prepare("
                 SELECT SUM(payment_amount) as total_paid
@@ -351,7 +349,7 @@ class Payment
             ");
             $stmt->execute([$institutionId]);
             $stats['total_paid'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'] ?? 0;
-            
+
             // Overdue payments count
             $stmt = $this->db->prepare("
                 SELECT COUNT(*) as overdue_count
@@ -360,7 +358,7 @@ class Payment
             ");
             $stmt->execute([$institutionId]);
             $stats['overdue_count'] = $stmt->fetch(PDO::FETCH_ASSOC)['overdue_count'] ?? 0;
-            
+
             // Payments due in the next 15 days
             $stmt = $this->db->prepare("
                 SELECT COUNT(*) as upcoming_count
@@ -370,7 +368,7 @@ class Payment
             ");
             $stmt->execute([$institutionId]);
             $stats['upcoming_count'] = $stmt->fetch(PDO::FETCH_ASSOC)['upcoming_count'] ?? 0;
-            
+
             return $stats;
         } catch (\PDOException $e) {
             error_log("Error in getPaymentStats: " . $e->getMessage());
@@ -384,27 +382,52 @@ class Payment
     public function generateBoleto($paymentId, $institutionId)
     {
         try {
-            // First, get the payment details
             $payment = $this->getPaymentById($paymentId, $institutionId);
-            
             if (!$payment) {
                 throw new \Exception('Pagamento não encontrado');
             }
-            
-            // Here you would integrate with the boleto library
-            // This is just a placeholder - actual implementation depends on the library used
-            $boletoCode = 'BOL' . str_pad($paymentId, 8, '0', STR_PAD_LEFT) . date('YmdHis');
-            
-            // Update the payment with the boleto code
+
+            // Buscar configurações do banco da instituição
+            $stmt = $this->db->prepare("SELECT bank_config FROM institutions WHERE id = ?");
+            $stmt->execute([$institutionId]);
+            $bankConfig = json_decode($stmt->fetch(PDO::FETCH_ASSOC)['bank_config'], true);
+
+            if (empty($bankConfig)) {
+                throw new \Exception('Configurações bancárias não encontradas');
+            }
+
+            // Gerar boleto usando o serviço
+            $boletoService = new \App\Services\BoletoService($bankConfig);
+            $boletoData = $boletoService->generateBoleto($payment);
+
+            // Atualizar no banco de dados
             $stmt = $this->db->prepare("
                 UPDATE payments 
-                SET boleto_code = ?, updated_at = NOW()
+                SET boleto_code = ?, 
+                    boleto_url = ?,
+                    linha_digitavel = ?,
+                    nosso_numero = ?,
+                    updated_at = NOW()
                 WHERE id = ? AND institution_id = ?
             ");
-            $stmt->execute([$boletoCode, $paymentId, $institutionId]);
+
+            if (!$stmt->execute([
+                $boletoData['nosso_numero'],
+                $boletoData['pdf_url'],
+                $boletoData['linha_digitavel'],
+                $boletoData['nosso_numero'],
+                $paymentId,
+                $institutionId
+            ])) {
+                throw new \Exception('Erro ao salvar o boleto');
+            }
+
+            return [
+                'code' => $boletoData['nosso_numero'],
+                'url' => $boletoData['pdf_url']
+            ];
             
-            return $boletoCode;
-        } catch (\PDOException $e) {
+        } catch (\Exception $e) {
             error_log("Error in generateBoleto: " . $e->getMessage());
             throw new \Exception('Erro ao gerar boleto: ' . $e->getMessage());
         }
@@ -428,11 +451,10 @@ class Payment
                 LEFT JOIN class_students cs ON u.id = cs.user_id
                 LEFT JOIN classes c ON cs.class_id = c.id
                 WHERE u.institution_id = ? AND u.active = 1
-                GROUP BY u.id
                 ORDER BY u.name
             ");
             $stmt->execute([$institutionId]);
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             error_log("Error in getStudentsForPayment: " . $e->getMessage());
@@ -447,7 +469,7 @@ class Payment
     {
         try {
             $this->db->beginTransaction();
-            
+
             // Get all active students
             $stmt = $this->db->prepare("
                 SELECT 
@@ -460,10 +482,10 @@ class Payment
             ");
             $stmt->execute([$institutionId]);
             $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             $counter = 0;
             $errors = [];
-            
+
             foreach ($students as $student) {
                 try {
                     // Check if a payment already exists for this student and month/year
@@ -476,17 +498,17 @@ class Payment
                         AND institution_id = ?
                     ");
                     $checkStmt->execute([
-                        $student['id'], 
-                        $data['reference_month'], 
-                        $data['reference_year'], 
+                        $student['id'],
+                        $data['reference_month'],
+                        $data['reference_year'],
                         $institutionId
                     ]);
-                    
+
                     if ($checkStmt->fetch(PDO::FETCH_ASSOC)['count'] > 0) {
                         // Skip if payment already exists
                         continue;
                     }
-                    
+
                     // Create payment for this student
                     $paymentData = [
                         'student_id' => $student['id'],
@@ -499,16 +521,16 @@ class Payment
                         'discount_amount' => $data['discount_amount'] ?? 0,
                         'institution_id' => $institutionId
                     ];
-                    
+
                     $this->createPayment($paymentData);
                     $counter++;
                 } catch (\Exception $e) {
                     $errors[] = "Erro para {$student['name']}: {$e->getMessage()}";
                 }
             }
-            
+
             $this->db->commit();
-            
+
             return [
                 'success' => true,
                 'count' => $counter,
@@ -521,5 +543,40 @@ class Payment
         }
     }
 
-    
+    /**
+     * Get payment details with institution info for boleto
+     */
+    public function getPaymentForBoleto($id, $institutionId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    p.*,
+                    u.name as student_name,
+                    u.email as student_email,
+                    i.name as institution_name,
+                    i.bank_config,
+                    c.name as class_name
+                FROM payments p
+                JOIN users u ON p.student_id = u.id
+                JOIN institutions i ON p.institution_id = i.id
+                LEFT JOIN class_students cs ON u.id = cs.user_id
+                LEFT JOIN classes c ON cs.class_id = c.id
+                WHERE p.id = ? AND p.institution_id = ?
+                LIMIT 1
+            ");
+            
+            $stmt->execute([$id, $institutionId]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$payment) {
+                throw new \Exception('Pagamento não encontrado');
+            }
+
+            return $payment;
+        } catch (\PDOException $e) {
+            error_log("Error in getPaymentForBoleto: " . $e->getMessage());
+            throw new \Exception('Erro ao buscar dados do boleto: ' . $e->getMessage());
+        }
+    }
 }

@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <form action="/payments/store" method="POST">
+                <form action="<?= base_url('payments/store') ?>" method="POST">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="student_id" class="form-label">Aluno <span class="text-danger">*</span></label>

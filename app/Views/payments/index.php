@@ -7,7 +7,7 @@
                         <h4 class="card-title"><?= $pageTitle ?></h4>
                     </div>
                     <div class="col-md-6 text-end">
-                        <a href="/payments/create" class="btn btn-primary me-2">
+                        <a href="<?= base_url('payments/create') ?>" class="btn btn-primary me-2">
                             <i class="bi bi-plus-circle"></i> Novo Pagamento
                         </a>
                         <a href="/payments/batch-generate" class="btn btn-secondary">
@@ -200,6 +200,13 @@
                                                             title="Gerar Boleto">
                                                             <i class="bi bi-upc"></i>
                                                         </button>
+                                                    <?php else: ?>
+                                                        <a href="<?= base_url('payments/view-boleto/'.$payment['id']) ?>" 
+                                                           target="_blank"
+                                                           class="btn btn-sm btn-secondary" 
+                                                           title="Visualizar Boleto">
+                                                            <i class="bi bi-file-text"></i>
+                                                        </a>
                                                     <?php endif; ?>
                                                     <button type="button" class="btn btn-sm btn-danger" 
                                                         data-bs-toggle="modal" 
@@ -240,6 +247,17 @@
                 <?php endif; ?>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Toast para mensagens -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toast-title">Mensagem</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-message"></div>
     </div>
 </div>
 
@@ -304,6 +322,25 @@
     </div>
 </div>
 
+<!-- Generate Boleto Modal -->
+<div class="modal fade" id="generateBoletoModal" tabindex="-1" aria-labelledby="generateBoletoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateBoletoModalLabel">Gerar Boleto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja gerar um boleto para este pagamento?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmGenerateBoleto">Gerar Boleto</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php 
 // Helper function to get month name
 function month_name($month) {
@@ -328,6 +365,23 @@ function month_name($month) {
 <?php push('scripts') ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
+    // Função para mostrar toast
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        
+        toast.classList.remove('bg-success', 'bg-danger');
+        toast.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
+        toast.classList.add('text-white');
+        
+        toastTitle.textContent = type === 'success' ? 'Sucesso' : 'Erro';
+        toastMessage.textContent = message;
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize money mask
         $('.money').mask('#.##0,00', {reverse: true});
@@ -353,31 +407,57 @@ function month_name($month) {
                 window.location.href = '/payments/delete/' + paymentId;
             };
         });
+
+        // Exibir toast da sessão se existir
+        <?php if (isset($_SESSION['toast'])): ?>
+            showToast('<?= $_SESSION['toast']['message'] ?>', '<?= $_SESSION['toast']['type'] ?>');
+            <?php unset($_SESSION['toast']); ?>
+        <?php endif; ?>
     });
 
     // Generate boleto function
+    let currentPaymentId = null;
+    
     function generateBoleto(paymentId) {
-        if (confirm('Deseja gerar um boleto para este pagamento?')) {
-            fetch('/payments/generate-boleto/' + paymentId, {
+        currentPaymentId = paymentId;
+        const modal = new bootstrap.Modal(document.getElementById('generateBoletoModal'));
+        modal.show();
+    }
+
+    // Add event listener for generate boleto confirmation
+    document.getElementById('confirmGenerateBoleto').addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('generateBoletoModal'));
+        modal.hide();
+        
+        if (currentPaymentId) {
+            fetch(`/payments/generate-boleto/${currentPaymentId}`, {  // Corrigido o caminho
                 method: 'GET',
                 headers: {
+                    'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    alert('Boleto gerado com sucesso!');
-                    window.location.reload();
+                    showToast('Boleto gerado com sucesso!\nCódigo: ' + data.boleto_code, 'success');
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    alert('Erro ao gerar boleto: ' + data.error);
+                    throw new Error(data.error || 'Erro ao gerar boleto');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Erro ao gerar boleto. Tente novamente.');
+                showToast(error.message || 'Erro desconhecido ao gerar boleto', 'danger');
             });
         }
-    }
+    });
 </script>
 <?php endpush() ?>

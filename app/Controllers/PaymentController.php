@@ -100,6 +100,13 @@ class PaymentController extends BaseController
                 throw new \Exception('Pagamento não encontrado');
             }
 
+            // Adiciona dados formatados para a view
+            $payment['formatted_amount'] = number_format($payment['amount'], 2, ',', '.');
+            $payment['formatted_due_date'] = date('d/m/Y', strtotime($payment['due_date']));
+            if ($payment['payment_date']) {
+                $payment['formatted_payment_date'] = date('d/m/Y', strtotime($payment['payment_date']));
+            }
+
             $this->render('payments/show', [
                 'pageTitle' => 'Detalhes do Pagamento',
                 'payment' => $payment,
@@ -127,41 +134,21 @@ class PaymentController extends BaseController
             try {
                 $institutionId = $_SESSION['user']['institution_id'];
 
-                // Form data validation
-                $studentId = $_POST['student_id'] ?? null;
-                $amount = $_POST['amount'] ?? null;
-                $description = $_POST['description'] ?? '';
-                $dueDate = $_POST['due_date'] ?? null;
-                $referenceMonth = $_POST['reference_month'] ?? null;
-                $referenceYear = $_POST['reference_year'] ?? null;
+                // Form data validation and conversion
+                $amount = str_replace(['.', ','], ['', '.'], $_POST['amount']);
+                $discountAmount = str_replace(['.', ','], ['', '.'], $_POST['discount_amount'] ?? '0,00');
+                $fineAmount = str_replace(['.', ','], ['', '.'], $_POST['fine_amount'] ?? '0,00');
 
-                if (empty($studentId)) {
-                    throw new \Exception('O aluno é obrigatório');
-                }
-
-                if (empty($amount) || !is_numeric($amount)) {
-                    throw new \Exception('Valor inválido');
-                }
-
-                if (empty($dueDate)) {
-                    throw new \Exception('A data de vencimento é obrigatória');
-                }
-
-                if (empty($referenceMonth) || empty($referenceYear)) {
-                    throw new \Exception('Mês e ano de referência são obrigatórios');
-                }
-
-                // Prepare data
                 $data = [
-                    'student_id' => $studentId,
-                    'amount' => $amount,
-                    'description' => $description,
-                    'due_date' => $dueDate,
-                    'reference_month' => $referenceMonth,
-                    'reference_year' => $referenceYear,
+                    'student_id' => $_POST['student_id'],
+                    'amount' => floatval($amount),
+                    'description' => $_POST['description'],
+                    'due_date' => $_POST['due_date'],
+                    'reference_month' => $_POST['reference_month'],
+                    'reference_year' => $_POST['reference_year'],
                     'status' => 'Pendente',
-                    'discount_amount' => $_POST['discount_amount'] ?? 0,
-                    'fine_amount' => $_POST['fine_amount'] ?? 0,
+                    'discount_amount' => floatval($discountAmount),
+                    'fine_amount' => floatval($fineAmount),
                     'notes' => $_POST['notes'] ?? null,
                     'institution_id' => $institutionId
                 ];
@@ -192,6 +179,7 @@ class PaymentController extends BaseController
 
                 $this->redirect('/payments');
             } catch (\Exception $e) {
+                error_log('Error creating payment: ' . $e->getMessage());
                 $_SESSION['toast'] = [
                     'type' => 'error',
                     'message' => 'Erro ao criar pagamento: ' . $e->getMessage()
@@ -528,58 +516,43 @@ class PaymentController extends BaseController
      */
     public function generateBoleto($id)
     {
-        if (!isset($_SESSION['user'])) {
-            $this->redirect('/login');
-        }
+        // Prevent any output before JSON
+        while (ob_get_level()) ob_end_clean();
+        header('Content-Type: application/json; charset=utf-8');
 
         try {
-            $institutionId = $_SESSION['user']['institution_id'];
+            if (!isset($_SESSION['user'])) {
+                throw new \Exception('Sessão expirada');
+            }
 
+            $institutionId = $_SESSION['user']['institution_id'];
+            
             // Check if payment exists
             $payment = $this->paymentModel->getPaymentById($id, $institutionId);
             if (!$payment) {
                 throw new \Exception('Pagamento não encontrado');
             }
 
-            // Don't allow generating boletos for paid payments
             if ($payment['status'] === 'Pago') {
                 throw new \Exception('Não é possível gerar boleto para um pagamento já realizado');
             }
 
-            // Generate boleto
-            $boletoCode = $this->paymentModel->generateBoleto($id, $institutionId);
+            $result = $this->paymentModel->generateBoleto($id, $institutionId);
+            
+            echo json_encode([
+                'success' => true,
+                'boleto_code' => $result['code'],
+                'boleto_url' => $result['url']
+            ]);
 
-            // If ajax request, return JSON
-            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'success' => true,
-                    'boleto_code' => $boletoCode
-                ]);
-                exit;
-            }
-
-            $_SESSION['toast'] = [
-                'type' => 'success',
-                'message' => 'Boleto gerado com sucesso!'
-            ];
-            $this->redirect('/payments/show/' . $id);
         } catch (\Exception $e) {
-            $_SESSION['toast'] = [
-                'type' => 'error',
-                'message' => 'Erro ao gerar boleto: ' . $e->getMessage()
-            ];
-
-            // If ajax request, return JSON
-            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                http_response_code(400);
-                echo json_encode(['error' => $e->getMessage()]);
-                exit;
-            }
-
-            $this->redirect('/payments');
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
         }
+        exit;
     }
 
     /**
@@ -720,5 +693,42 @@ class PaymentController extends BaseController
         exit;
     }
 
-    
+    /**
+     * View boleto for a payment
+     */
+    public function viewBoleto($id)
+    {
+        if (!isset($_SESSION['user'])) {
+            die('Acesso negado');
+        }
+
+        try {
+            $institutionId = $_SESSION['user']['institution_id'];
+            
+            // Usar o modelo para buscar os dados
+            $payment = $this->paymentModel->getPaymentForBoleto($id, $institutionId);
+
+            if (empty($payment['boleto_code'])) {
+                throw new \Exception('Boleto não encontrado');
+            }
+
+            // Gerar código de barras (pode usar uma biblioteca ou gerar um placeholder)
+            $barcode_image = base64_encode('BARCODE-' . $payment['boleto_code']);
+
+            // Renderizar view do boleto sem o layout padrão
+            return $this->render('payments/boleto', [
+                'payment' => $payment,
+                'barcode_image' => $barcode_image
+            ], false);
+
+        } catch (\Exception $e) {
+            die('Erro ao gerar boleto: ' . $e->getMessage());
+        }
+    }
+
+    private function generateBarcodeImage($code) {
+        // Aqui você pode usar uma biblioteca de geração de código de barras
+        // Por enquanto vamos simular com um placeholder
+        return base64_encode('Simulação do código de barras');
+    }
 }

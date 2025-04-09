@@ -1,7 +1,9 @@
 {
     "require": {
         "vlucas/phpdotenv": "^5.6",
-        "umbrella/boleto": "^1.8"
+        "umbrella/boleto": "^1.8",
+        "openboleto/openboleto": "dev-master",
+        "picqer/php-barcode-generator": "^3.2"
     },
     "autoload": {
         "psr-4": {
