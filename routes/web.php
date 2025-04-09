@@ -129,4 +129,8 @@ return [
     'payments/generate-boleto/{id}'  => ['controller' => 'PaymentController', 'action' => 'generateBoleto'],
     'payments/view-boleto/{id}'      => ['controller' => 'PaymentController', 'action' => 'viewBoleto'],
 
+    // Rotas para Configurações Bancárias
+    'bank-config'        => ['controller' => 'BankConfigController', 'action' => 'index'],
+    'bank-config/update' => ['controller' => 'BankConfigController', 'action' => 'update'],
+
 ];

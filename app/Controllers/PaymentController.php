@@ -4,16 +4,19 @@ namespace App\Controllers;
 
 use App\Models\Payment;
 use App\Models\Student;
+use App\Models\Institution;
 
 class PaymentController extends BaseController
 {
     private $paymentModel;
     private $studentModel;
+    private $institutionModel;
 
     public function __construct()
     {
         $this->paymentModel = new Payment();
         $this->studentModel = new Student();
+        $this->institutionModel = new Institution();
     }
 
     public function index()
@@ -705,30 +708,63 @@ class PaymentController extends BaseController
         try {
             $institutionId = $_SESSION['user']['institution_id'];
             
-            // Usar o modelo para buscar os dados
+            // Get payment and institution data
             $payment = $this->paymentModel->getPaymentForBoleto($id, $institutionId);
+            $institution = $this->institutionModel->getInstitutionBankInfo($institutionId);
+
+            if (!$institution) {
+                throw new \Exception('Instituição não encontrada');
+            }
 
             if (empty($payment['boleto_code'])) {
                 throw new \Exception('Boleto não encontrado');
             }
 
-            // Gerar código de barras (pode usar uma biblioteca ou gerar um placeholder)
-            $barcode_image = base64_encode('BARCODE-' . $payment['boleto_code']);
+            if (empty($institution['bank_assignor_name']) || 
+                empty($institution['bank_agency']) || 
+                empty($institution['bank_account'])) {
+                throw new \Exception('Dados bancários da instituição incompletos. Configure-os nas configurações da instituição.');
+            }
 
-            // Renderizar view do boleto sem o layout padrão
-            return $this->render('payments/boleto', [
+            // Gerar código de barras
+            $barcode_image = $this->generateBarcodeImage($payment['boleto_code']);
+
+            // Retornar view diretamente sem layout
+            echo $this->renderView('payments/boleto', [
                 'payment' => $payment,
+                'institution' => $institution,
                 'barcode_image' => $barcode_image
-            ], false);
-
+            ]);
+            exit;
         } catch (\Exception $e) {
             die('Erro ao gerar boleto: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Generate barcode image from code
+     * @param string $code The code to generate barcode from
+     * @return string Base64 encoded image
+     */
     private function generateBarcodeImage($code) {
-        // Aqui você pode usar uma biblioteca de geração de código de barras
-        // Por enquanto vamos simular com um placeholder
-        return base64_encode('Simulação do código de barras');
+        try {
+            // Create new barcode generator instance
+            $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+            
+            // Generate barcode image
+            $barcode = $generator->getBarcode(
+                $code,
+                $generator::TYPE_CODE_128,
+                3, // bar width
+                50 // bar height
+            );
+
+            // Convert to base64 for embedding in HTML
+            return base64_encode($barcode);
+        } catch (\Exception $e) {
+            error_log('Error generating barcode: ' . $e->getMessage());
+            // Return a placeholder in case of error
+            return base64_encode('ERROR_GENERATING_BARCODE');
+        }
     }
 }

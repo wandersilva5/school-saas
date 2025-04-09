@@ -212,4 +212,95 @@ class Institution {
             throw new \Exception('Falha ao mover o arquivo carregado');
         }
     }
+
+    public function getBankConfig($institutionId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    bank_code,
+                    bank_agency,
+                    bank_account,
+                    bank_wallet,
+                    bank_agreement,
+                    bank_assignor_name,
+                    bank_assignor_document,
+                    bank_assignor_address
+                FROM institutions 
+                WHERE id = ?
+            ");
+            $stmt->execute([$institutionId]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \Exception('Erro ao buscar configurações bancárias');
+        }
+    }
+
+    public function updateBankConfig($institutionId, $data)
+    {
+        try {
+            // Converter dados para JSON
+            $bankConfig = json_encode($data);
+            
+            $stmt = $this->db->prepare("
+                UPDATE institutions 
+                SET 
+                    bank_config = ?,
+                    bank_code = ?,
+                    bank_agency = ?,
+                    bank_account = ?,
+                    bank_wallet = ?,
+                    bank_agreement = ?,
+                    bank_assignor_name = ?,
+                    bank_assignor_document = ?,
+                    bank_assignor_address = ?
+                WHERE id = ?
+            ");
+
+            return $stmt->execute([
+                $bankConfig,
+                $data['bank_code'],
+                $data['bank_agency'],
+                $data['bank_account'],
+                $data['bank_wallet'],
+                $data['bank_agreement'],
+                $data['bank_assignor_name'],
+                $data['bank_assignor_document'],
+                $data['bank_assignor_address'],
+                $institutionId
+            ]);
+        } catch (\PDOException $e) {
+            throw new \Exception('Erro ao atualizar configurações bancárias');
+        }
+    }
+
+    /**
+     * Get institution bank information
+     */
+    public function getInstitutionBankInfo($institutionId)
+    {
+        try {
+            $sql = "SELECT 
+            id, 
+            name, 
+            'bank_code',
+            'bank_agency',
+            'bank_wallet',
+            'bank_account',
+            'bank_agreement',
+            'bank_assignor_name',
+            'bank_assignor_address',
+            'bank_assignor_document'
+                    FROM institutions 
+                    WHERE id = ?";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$institutionId]);
+            
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log('Error getting institution bank info: ' . $e->getMessage());
+            throw new \Exception('Erro ao obter dados bancários da instituição');
+        }
+    }
 }

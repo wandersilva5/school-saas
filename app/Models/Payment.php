@@ -555,7 +555,14 @@ class Payment
                     u.name as student_name,
                     u.email as student_email,
                     i.name as institution_name,
-                    i.bank_config,
+                    i.bank_code,
+                    i.bank_agency,
+                    i.bank_account,
+                    i.bank_agreement,
+                    i.bank_assignor_name,
+                    i.bank_assignor_address,
+                    i.bank_assignor_document,
+                    i.bank_wallet,
                     c.name as class_name
                 FROM payments p
                 JOIN users u ON p.student_id = u.id
