@@ -64,7 +64,7 @@
                         <a href="#recursos" class="btn btn-outline-light btn-lg">Saiba Mais</a>
                     </div>
                 </div>
-                <div class="col-lg-6 text-end ms-auto">
+                <div class="col-lg-6 text-center ms-auto">
                     <img src="<?= base_url('assets/images/logo.svg') ?>" alt="Portal Escola Dashboard" class="img-fluid" width="300">
                 </div>
             </div>

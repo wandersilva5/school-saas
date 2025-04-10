@@ -85,56 +85,50 @@
 
                 <!-- Filters -->
                 <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
-                                <i class="bi bi-funnel me-1"></i> Filtros
-                            </button>
-                        </h5>
+                    <div class="row">
+                        <h5>Filtros</h5>
                     </div>
-                    <div class="collapse" id="collapseFilters">
-                        <div class="card-body">
-                            <form method="GET" action="/payments">
-                                <div class="row g-3">
-                                    <div class="col-md-3">
-                                        <label for="status" class="form-label">Status</label>
-                                        <select class="form-select" id="status" name="status">
-                                            <option value="">Todos</option>
-                                            <option value="Pendente" <?= isset($filters['status']) && $filters['status'] === 'Pendente' ? 'selected' : '' ?>>Pendente</option>
-                                            <option value="Pago" <?= isset($filters['status']) && $filters['status'] === 'Pago' ? 'selected' : '' ?>>Pago</option>
-                                            <option value="Atrasado" <?= isset($filters['status']) && $filters['status'] === 'Atrasado' ? 'selected' : '' ?>>Atrasado</option>
-                                            <option value="Cancelado" <?= isset($filters['status']) && $filters['status'] === 'Cancelado' ? 'selected' : '' ?>>Cancelado</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="student_id" class="form-label">Aluno</label>
-                                        <select class="form-select" id="student_id" name="student_id">
-                                            <option value="">Todos</option>
-                                            <?php foreach ($students as $student): ?>
-                                                <option value="<?= $student['id'] ?>" <?= isset($filters['student_id']) && $filters['student_id'] == $student['id'] ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($student['name']) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="due_date_from" class="form-label">Vencimento (De)</label>
-                                        <input type="date" class="form-control" id="due_date_from" name="due_date_from" value="<?= isset($filters['due_date_from']) ? $filters['due_date_from'] : '' ?>">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="due_date_to" class="form-label">Vencimento (Até)</label>
-                                        <input type="date" class="form-control" id="due_date_to" name="due_date_to" value="<?= isset($filters['due_date_to']) ? $filters['due_date_to'] : '' ?>">
-                                    </div>
-                                    <div class="col-12 text-end">
-                                        <a href="/payments" class="btn btn-outline-secondary me-2">Limpar</a>
-                                        <button type="submit" class="btn btn-primary">Filtrar</button>
-                                    </div>
+
+                    <div class="card-body">
+                        <form method="GET" action="/payments">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">Todos</option>
+                                        <option value="Pendente" <?= isset($filters['status']) && $filters['status'] === 'Pendente' ? 'selected' : '' ?>>Pendente</option>
+                                        <option value="Pago" <?= isset($filters['status']) && $filters['status'] === 'Pago' ? 'selected' : '' ?>>Pago</option>
+                                        <option value="Atrasado" <?= isset($filters['status']) && $filters['status'] === 'Atrasado' ? 'selected' : '' ?>>Atrasado</option>
+                                        <option value="Cancelado" <?= isset($filters['status']) && $filters['status'] === 'Cancelado' ? 'selected' : '' ?>>Cancelado</option>
+                                    </select>
                                 </div>
-                            </form>
-                        </div>
+                                <div class="col-md-3">
+                                    <label for="student_id" class="form-label">Aluno</label>
+                                    <select class="form-select" id="student_id" name="student_id">
+                                        <option value="">Todos</option>
+                                        <?php foreach ($students as $student): ?>
+                                            <option value="<?= $student['id'] ?>" <?= isset($filters['student_id']) && $filters['student_id'] == $student['id'] ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($student['name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="due_date_from" class="form-label">Vencimento (De)</label>
+                                    <input type="date" class="form-control" id="due_date_from" name="due_date_from" value="<?= isset($filters['due_date_from']) ? $filters['due_date_from'] : '' ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="due_date_to" class="form-label">Vencimento (Até)</label>
+                                    <input type="date" class="form-control" id="due_date_to" name="due_date_to" value="<?= isset($filters['due_date_to']) ? $filters['due_date_to'] : '' ?>">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <a href="/payments" class="btn btn-outline-secondary me-2">Limpar</a>
+                                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
                 <!-- Payments Table -->
                 <div class="table-responsive">
                     <table class="table table-hover table-striped align-middle">
@@ -186,31 +180,31 @@
                                                     <a href="/payments/edit/<?= $payment['id'] ?>" class="btn btn-sm btn-primary" title="Editar">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <button type="button" class="btn btn-sm btn-success" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#markPaidModal" 
+                                                    <button type="button" class="btn btn-sm btn-success"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#markPaidModal"
                                                         data-payment-id="<?= $payment['id'] ?>"
                                                         data-payment-amount="<?= $payment['amount'] ?>"
                                                         title="Registrar Pagamento">
                                                         <i class="bi bi-check-circle"></i>
                                                     </button>
                                                     <?php if (empty($payment['boleto_code'])): ?>
-                                                        <button type="button" class="btn btn-sm btn-secondary" 
-                                                            onclick="generateBoleto(<?= $payment['id'] ?>)" 
+                                                        <button type="button" class="btn btn-sm btn-secondary"
+                                                            onclick="generateBoleto(<?= $payment['id'] ?>)"
                                                             title="Gerar Boleto">
                                                             <i class="bi bi-upc"></i>
                                                         </button>
                                                     <?php else: ?>
-                                                        <a href="<?= base_url('payments/view-boleto/'.$payment['id']) ?>" 
-                                                           target="_blank"
-                                                           class="btn btn-sm btn-secondary" 
-                                                           title="Visualizar Boleto">
+                                                        <a href="<?= base_url('payments/view-boleto/' . $payment['id']) ?>"
+                                                            target="_blank"
+                                                            class="btn btn-sm btn-secondary"
+                                                            title="Visualizar Boleto">
                                                             <i class="bi bi-file-text"></i>
                                                         </a>
                                                     <?php endif; ?>
-                                                    <button type="button" class="btn btn-sm btn-danger" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteModal" 
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal"
                                                         data-payment-id="<?= $payment['id'] ?>"
                                                         title="Excluir">
                                                         <i class="bi bi-trash"></i>
@@ -341,9 +335,10 @@
     </div>
 </div>
 
-<?php 
+<?php
 // Helper function to get month name
-function month_name($month) {
+function month_name($month)
+{
     $months = [
         1 => 'Janeiro',
         2 => 'Fevereiro',
@@ -370,39 +365,41 @@ function month_name($month) {
         const toast = document.getElementById('toast');
         const toastTitle = document.getElementById('toast-title');
         const toastMessage = document.getElementById('toast-message');
-        
+
         toast.classList.remove('bg-success', 'bg-danger');
         toast.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
         toast.classList.add('text-white');
-        
+
         toastTitle.textContent = type === 'success' ? 'Sucesso' : 'Erro';
         toastMessage.textContent = message;
-        
+
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize money mask
-        $('.money').mask('#.##0,00', {reverse: true});
+        $('.money').mask('#.##0,00', {
+            reverse: true
+        });
 
         // Mark as paid modal
         const markPaidModal = document.getElementById('markPaidModal');
-        markPaidModal.addEventListener('show.bs.modal', function (event) {
+        markPaidModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const paymentId = button.getAttribute('data-payment-id');
             const paymentAmount = button.getAttribute('data-payment-amount');
-            
+
             document.getElementById('markPaidForm').action = '/payments/mark-as-paid/' + paymentId;
             document.getElementById('payment_amount').value = paymentAmount.replace('.', ',');
         });
 
         // Delete modal
         const deleteModal = document.getElementById('deleteModal');
-        deleteModal.addEventListener('show.bs.modal', function (event) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const paymentId = button.getAttribute('data-payment-id');
-            
+
             document.getElementById('confirmDelete').onclick = function() {
                 window.location.href = '/payments/delete/' + paymentId;
             };
@@ -417,7 +414,7 @@ function month_name($month) {
 
     // Generate boleto function
     let currentPaymentId = null;
-    
+
     function generateBoleto(paymentId) {
         currentPaymentId = paymentId;
         const modal = new bootstrap.Modal(document.getElementById('generateBoletoModal'));
@@ -428,35 +425,35 @@ function month_name($month) {
     document.getElementById('confirmGenerateBoleto').addEventListener('click', function() {
         const modal = bootstrap.Modal.getInstance(document.getElementById('generateBoletoModal'));
         modal.hide();
-        
+
         if (currentPaymentId) {
-            fetch(`/payments/generate-boleto/${currentPaymentId}`, {  // Corrigido o caminho
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(text);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    showToast('Boleto gerado com sucesso!\nCódigo: ' + data.boleto_code, 'success');
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    throw new Error(data.error || 'Erro ao gerar boleto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast(error.message || 'Erro desconhecido ao gerar boleto', 'danger');
-            });
+            fetch(`/payments/generate-boleto/${currentPaymentId}`, { // Corrigido o caminho
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(text);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast('Boleto gerado com sucesso!\nCódigo: ' + data.boleto_code, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        throw new Error(data.error || 'Erro ao gerar boleto');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message || 'Erro desconhecido ao gerar boleto', 'danger');
+                });
         }
     });
 </script>

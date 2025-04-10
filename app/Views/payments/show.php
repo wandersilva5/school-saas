@@ -57,7 +57,7 @@
                                     <p><strong>Código do Boleto:</strong> <?= htmlspecialchars($payment['boleto_code']) ?></p>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <a href="<?= htmlspecialchars($payment['boleto_url']) ?>" 
+                                    <a href="<?= base_url('payments/view-boleto/'.$payment['id']) ?>" 
                                        target="_blank" 
                                        class="btn btn-primary">
                                         <i class="bi bi-file-text me-1"></i> Visualizar Boleto
