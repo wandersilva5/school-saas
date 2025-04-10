@@ -123,10 +123,10 @@ return [
     'payments/show/{id}'             => ['controller' => 'PaymentController', 'action' => 'show'],
     'payments/create'                => ['controller' => 'PaymentController', 'action' => 'create'],
     'payments/store'                 => ['controller' => 'PaymentController', 'action' => 'store'],
-    'payments/batch-generate'        => ['controller' => 'PaymentController', 'action' => 'batchGenerate'],
     'payments/edit/{id}'             => ['controller' => 'PaymentController', 'action' => 'edit'],
     'payments/update/{id}'           => ['controller' => 'PaymentController', 'action' => 'update'],
     'payments/delete/{id}'           => ['controller' => 'PaymentController', 'action' => 'delete'],
+    'payments/batch-generate'        => ['controller' => 'PaymentController', 'action' => 'batchGenerate'],
     'payments/generate-boleto/{id}'  => ['controller' => 'PaymentController', 'action' => 'generateBoleto'],
     'payments/view-boleto/{id}'      => ['controller' => 'PaymentController', 'action' => 'viewBoleto'],
 

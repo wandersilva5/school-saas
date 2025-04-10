@@ -34,7 +34,7 @@ class PaymentController extends BaseController
 
         // Pagination setup
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 10; // items per page
+        $limit = 7; // items per page
         $offset = ($page - 1) * $limit;
 
         // Filters

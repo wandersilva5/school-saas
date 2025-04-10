@@ -14,9 +14,15 @@
                         <div class="col-md-6">
                             <label for="month" class="form-label">Mês de Referência</label>
                             <select class="form-select" id="month" name="month" required>
-                                <?php for($i = 1; $i <= 12; $i++): ?>
+                                <?php
+                                $meses = [
+                                    1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
+                                    5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
+                                    9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+                                ];
+                                for ($i = 1; $i <= 12; $i++): ?>
                                     <option value="<?= $i ?>" <?= $i == date('n') ? 'selected' : '' ?>>
-                                        <?= strftime('%B', mktime(0, 0, 0, $i, 1)) ?>
+                                        <?= $meses[$i] ?>
                                     </option>
                                 <?php endfor; ?>
                             </select>
