@@ -15,35 +15,77 @@ class Course
     }
 
     /**
-     * Get all courses for an institution with pagination
+     * Get all courses for an institution with pagination and filters
      */
-    public function getCourses($institutionId, $limit = 10, $offset = 0)
+    public function getCourses($institutionId, $limit = 10, $offset = 0, $filters = [])
     {
-        $stmt = $this->db->prepare("
-            SELECT * 
-            FROM courses
-            WHERE institution_id = ? 
-            AND deleted_at IS NULL
-            ORDER BY name DESC
-            LIMIT ? OFFSET ?
-        ");
-        $stmt->execute([$institutionId, $limit, $offset]);
+        $query = "SELECT * FROM courses WHERE institution_id = :institution_id";
+        $params = ['institution_id' => $institutionId];
+        
+        if (!empty($filters['code'])) {
+            $query .= " AND code LIKE :code";
+            $params['code'] = "%{$filters['code']}%";
+        }
+        
+        if (!empty($filters['name'])) {
+            $query .= " AND name LIKE :name";
+            $params['name'] = "%{$filters['name']}%";
+        }
+        
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query .= " AND active = :status";
+            $params['status'] = $filters['status'];
+        }
+        
+        if (!empty($filters['workload'])) {
+            $query .= " AND workload >= :workload";
+            $params['workload'] = $filters['workload'];
+        }
+
+        $query .= " LIMIT :offset, :limit";
+        $params['offset'] = $offset;
+        $params['limit'] = $limit;
+
+        $stmt = $this->db->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Get total number of courses for pagination
+     * Get total number of courses for pagination with filters
      */
-    public function getTotalCourses($institutionId)
+    public function getTotalCourses($institutionId, $filters = [])
     {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) as total 
-            FROM courses 
-            WHERE institution_id = ? 
-            AND deleted_at IS NULL
-        ");
-        $stmt->execute([$institutionId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        $query = "SELECT COUNT(*) as total FROM courses WHERE institution_id = :institution_id";
+        $params = ['institution_id' => $institutionId];
+        
+        if (!empty($filters['code'])) {
+            $query .= " AND code LIKE :code";
+            $params['code'] = "%{$filters['code']}%";
+        }
+        
+        if (!empty($filters['name'])) {
+            $query .= " AND name LIKE :name";
+            $params['name'] = "%{$filters['name']}%";
+        }
+        
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query .= " AND active = :status";
+            $params['status'] = $filters['status'];
+        }
+        
+        if (!empty($filters['workload'])) {
+            $query .= " AND workload >= :workload";
+            $params['workload'] = $filters['workload'];
+        }
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+        return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
 
     /**

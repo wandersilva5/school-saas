@@ -24,19 +24,30 @@ class CourseController extends BaseController
             exit;
         }
 
-        // Verify role and institution_id for Responsavel users
         check_responsavel_institution();
-
         $institutionId = $_SESSION['user']['institution_id'];
+
+        // Get filters
+        $filters = [
+            'code' => $_GET['code'] ?? '',
+            'name' => $_GET['name'] ?? '',
+            'status' => $_GET['status'] ?? '',
+            'workload' => $_GET['workload'] ?? ''
+        ];
+
+        // Clean empty filters
+        $filters = array_filter($filters, function($value) {
+            return ($value !== null && $value !== '');
+        });
 
         // Pagination setup
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 10; // items per page
+        $limit = 10;
         $offset = ($page - 1) * $limit;
 
         try {
-            $courses = $this->courseModel->getCourses($institutionId, $limit, $offset);
-            $totalCourses = $this->courseModel->getTotalCourses($institutionId);
+            $courses = $this->courseModel->getCourses($institutionId, $limit, $offset, $filters);
+            $totalCourses = $this->courseModel->getTotalCourses($institutionId, $filters);
             $totalPages = ceil($totalCourses / $limit);
 
             $this->render('courses/index', [
@@ -44,19 +55,20 @@ class CourseController extends BaseController
                 'courses' => $courses,
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
-                'currentSection' => 'courses' // For active sidebar item
+                'filters' => $filters,
+                'currentSection' => 'courses'
             ]);
         } catch (\Exception $e) {
             $_SESSION['toast'] = [
                 'type' => 'error',
                 'message' => 'Error loading courses: ' . $e->getMessage()
             ];
-
             $this->render('courses/index', [
                 'pageTitle' => 'Course Management',
                 'courses' => [],
                 'currentPage' => 1,
                 'totalPages' => 1,
+                'filters' => $filters,
                 'currentSection' => 'courses'
             ]);
         }

@@ -13,6 +13,44 @@
                     </div>
                 </div>
 
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="row">
+                        <h5>Filtros</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="GET" action="/courses">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="code" class="form-label">Código do Curso</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="<?= isset($filters['code']) ? $filters['code'] : '' ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="name" class="form-label">Nome do Curso</label>
+                                    <input type="text" class="form-control" id="name" name="name" value="<?= isset($filters['name']) ? $filters['name'] : '' ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">Todos</option>
+                                        <option value="1" <?= isset($filters['status']) && $filters['status'] === '1' ? 'selected' : '' ?>>Ativo</option>
+                                        <option value="0" <?= isset($filters['status']) && $filters['status'] === '0' ? 'selected' : '' ?>>Inativo</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="workload" class="form-label">Carga Horária Mínima</label>
+                                    <input type="number" class="form-control" id="workload" name="workload" value="<?= isset($filters['workload']) ? $filters['workload'] : '' ?>">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <a href="/courses" class="btn btn-outline-secondary me-2">Limpar</a>
+                                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
@@ -67,17 +105,17 @@
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
                             <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>">Anterior</a>
+                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>&<?= http_build_query(array_filter($filters ?? [])) ?>">Anterior</a>
                             </li>
 
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= ($currentPage == $i) ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                    <a class="page-link" href="?page=<?= $i ?>&<?= http_build_query(array_filter($filters ?? [])) ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
 
                             <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage + 1 ?>">Próximo</a>
+                                <a class="page-link" href="?page=<?= $currentPage + 1 ?>&<?= http_build_query(array_filter($filters ?? [])) ?>">Próximo</a>
                             </li>
                         </ul>
                     </nav>
