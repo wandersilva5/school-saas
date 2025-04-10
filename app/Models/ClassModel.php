@@ -14,9 +14,9 @@ class ClassModel
         $this->db = Database::getInstance()->getConnection();
     }
 
-    public function getClasses($institutionId, $limit = 10, $offset = 0)
+    public function getClasses($institutionId, $limit = 10, $offset = 0, $filters = [])
     {
-        $stmt = $this->db->prepare("
+        $query = "
             SELECT 
                 c.id, 
                 c.name, 
@@ -27,25 +27,85 @@ class ClassModel
                 c.created_at,
                 (SELECT COUNT(*) FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL) as student_count
             FROM classes c
-            WHERE c.institution_id = ? 
-            AND c.deleted_at IS NULL
-            ORDER BY c.year DESC, c.name ASC
-            LIMIT ? OFFSET ?
-        ");
+            WHERE c.institution_id = :institution_id 
+            AND c.deleted_at IS NULL";
+        
+        $params = ['institution_id' => $institutionId];
 
-        $stmt->execute([$institutionId, $limit, $offset]);
+        if (!empty($filters['name'])) {
+            $query .= " AND c.name LIKE :name";
+            $params['name'] = "%{$filters['name']}%";
+        }
+
+        if (!empty($filters['shift'])) {
+            $query .= " AND c.shift = :shift";
+            $params['shift'] = $filters['shift'];
+        }
+
+        if (!empty($filters['year'])) {
+            $query .= " AND c.year = :year";
+            $params['year'] = $filters['year'];
+        }
+
+        if (!empty($filters['capacity'])) {
+            $query .= " AND c.capacity >= :capacity";
+            $params['capacity'] = $filters['capacity'];
+        }
+
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query .= " AND c.active = :status";
+            $params['status'] = $filters['status'];
+        }
+
+        $query .= " ORDER BY c.year DESC, c.name ASC LIMIT :limit OFFSET :offset";
+        $params['limit'] = $limit;
+        $params['offset'] = $offset;
+
+        $stmt = $this->db->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getTotalClasses($institutionId)
+    public function getTotalClasses($institutionId, $filters = [])
     {
-        $stmt = $this->db->prepare("
+        $query = "
             SELECT COUNT(*) as total 
             FROM classes 
-            WHERE institution_id = ? 
-            AND deleted_at IS NULL
-        ");
-        $stmt->execute([$institutionId]);
+            WHERE institution_id = :institution_id 
+            AND deleted_at IS NULL";
+        
+        $params = ['institution_id' => $institutionId];
+
+        if (!empty($filters['name'])) {
+            $query .= " AND name LIKE :name";
+            $params['name'] = "%{$filters['name']}%";
+        }
+
+        if (!empty($filters['shift'])) {
+            $query .= " AND shift = :shift";
+            $params['shift'] = $filters['shift'];
+        }
+
+        if (!empty($filters['year'])) {
+            $query .= " AND year = :year";
+            $params['year'] = $filters['year'];
+        }
+
+        if (!empty($filters['capacity'])) {
+            $query .= " AND capacity >= :capacity";
+            $params['capacity'] = $filters['capacity'];
+        }
+
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query .= " AND active = :status";
+            $params['status'] = $filters['status'];
+        }
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
 

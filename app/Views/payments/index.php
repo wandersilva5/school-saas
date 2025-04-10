@@ -85,10 +85,6 @@
 
                 <!-- Filters -->
                 <div class="card mb-4">
-                    <div class="row">
-                        <h5>Filtros</h5>
-                    </div>
-
                     <div class="card-body">
                         <form method="GET" action="/payments">
                             <div class="row g-3">

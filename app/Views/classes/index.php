@@ -118,6 +118,50 @@
                     </div>
                 </div>
 
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="GET" action="/classes">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="name" class="form-label">Nome da Turma</label>
+                                    <input type="text" class="form-control" id="name" name="name" value="<?= isset($filters['name']) ? $filters['name'] : '' ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="shift" class="form-label">Turno</label>
+                                    <select class="form-select" id="shift" name="shift">
+                                        <option value="">Todos</option>
+                                        <option value="Manhã" <?= isset($filters['shift']) && $filters['shift'] === 'Manhã' ? 'selected' : '' ?>>Manhã</option>
+                                        <option value="Tarde" <?= isset($filters['shift']) && $filters['shift'] === 'Tarde' ? 'selected' : '' ?>>Tarde</option>
+                                        <option value="Noite" <?= isset($filters['shift']) && $filters['shift'] === 'Noite' ? 'selected' : '' ?>>Noite</option>
+                                        <option value="Integral" <?= isset($filters['shift']) && $filters['shift'] === 'Integral' ? 'selected' : '' ?>>Integral</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="year" class="form-label">Ano Letivo</label>
+                                    <input type="number" class="form-control" id="year" name="year" value="<?= isset($filters['year']) ? $filters['year'] : '' ?>">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="capacity" class="form-label">Capacidade Mínima</label>
+                                    <input type="number" class="form-control" id="capacity" name="capacity" min="1" value="<?= isset($filters['capacity']) ? $filters['capacity'] : '' ?>">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">Todos</option>
+                                        <option value="1" <?= isset($filters['status']) && $filters['status'] === '1' ? 'selected' : '' ?>>Ativa</option>
+                                        <option value="0" <?= isset($filters['status']) && $filters['status'] === '0' ? 'selected' : '' ?>>Inativa</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <a href="/classes" class="btn btn-outline-secondary me-2">Limpar</a>
+                                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
@@ -165,22 +209,22 @@
                     </table>
                 </div>
 
-                <!-- Paginação -->
+                <!-- Update pagination links to include filters -->
                 <?php if ($totalPages > 1): ?>
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
                             <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>">Anterior</a>
+                                <a class="page-link" href="?page=<?= $currentPage - 1 ?>&<?= http_build_query(array_filter($filters)) ?>">Anterior</a>
                             </li>
 
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= ($currentPage == $i) ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                    <a class="page-link" href="?page=<?= $i ?>&<?= http_build_query(array_filter($filters)) ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
 
                             <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $currentPage + 1 ?>">Próximo</a>
+                                <a class="page-link" href="?page=<?= $currentPage + 1 ?>&<?= http_build_query(array_filter($filters)) ?>">Próximo</a>
                             </li>
                         </ul>
                     </nav>

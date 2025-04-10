@@ -24,25 +24,43 @@ class ClassController extends BaseController
             exit;
         }
 
-        // Verify role and institution_id for Responsavel users
         check_responsavel_institution();
-
         $institutionId = $_SESSION['user']['institution_id'];
+
+        // Get filters
+        $filters = [
+            'name' => $_GET['name'] ?? '',
+            'shift' => $_GET['shift'] ?? '',
+            'year' => $_GET['year'] ?? '',
+            'capacity' => $_GET['capacity'] ?? '',
+            'status' => $_GET['status'] ?? ''
+        ];
+
+        // Clean empty filters
+        $filters = array_filter($filters, function($value) {
+            return ($value !== null && $value !== '');
+        });
+
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $classes = $this->classModel->getClasses($institutionId, $limit, $offset);
-        $totalClasses = $this->classModel->getTotalClasses($institutionId);
-        $totalPages = ceil($totalClasses / $limit);
+        try {
+            $classes = $this->classModel->getClasses($institutionId, $limit, $offset, $filters);
+            $totalClasses = $this->classModel->getTotalClasses($institutionId, $filters);
+            $totalPages = ceil($totalClasses / $limit);
 
-        $this->render('classes/index', [
-            'pageTitle' => 'Gerenciar Turmas',
-            'classes' => $classes,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'currentSection' => 'classes' // Para marcar item ativo no sidebar
-        ]);
+            $this->render('classes/index', [
+                'pageTitle' => 'Gerenciar Turmas',
+                'classes' => $classes,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'filters' => $filters,
+                'currentSection' => 'classes'
+            ]);
+        } catch (\Exception $e) {
+            // ...existing error handling code...
+        }
     }
 
     public function store()
